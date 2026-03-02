@@ -377,7 +377,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
                                                         </div>
                                                 )}
                                         </div>
-                                        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                                        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3">
                                                 <div className="flex items-center gap-2">
                                                         <Medal className="text-stardust" />
                                                         <span className="text-[11px] sm:text-xs font-bold">
@@ -390,6 +390,65 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
                                                                 <span>~{etaMinutes}m</span>
                                                         </div>
                                                 )}
+                                                <div className="flex items-center gap-1.5">
+                                                        <button
+                                                                type="button"
+                                                                onClick={audioManager.handleToggleMute}
+                                                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
+                                                                aria-label={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
+                                                                aria-pressed={!audioManager.isMuted}
+                                                                title={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
+                                                        >
+                                                                {audioManager.isMuted ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5" />}
+                                                        </button>
+                                                        <input
+                                                                type="range"
+                                                                min="0"
+                                                                max="1"
+                                                                step="0.1"
+                                                                value={audioManager.volume}
+                                                                onChange={(e) => audioManager.handleVolumeChange(null, parseFloat(e.target.value))}
+                                                                className="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                                                                aria-label="Volume control"
+                                                                title={`Volume: ${Math.round(audioManager.volume * 100)}%`}
+                                                        />
+                                                        <button
+                                                                type="button"
+                                                                onClick={audioManager.handlePreviousTrack}
+                                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
+                                                                aria-label="Previous track"
+                                                                title="Previous track"
+                                                        >
+                                                                <SkipBack className="size-3" />
+                                                        </button>
+                                                        <button
+                                                                type="button"
+                                                                onClick={audioManager.toggleBackgroundMusic}
+                                                                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                                                                        audioManager.backgroundMusicEnabled
+                                                                                ? "bg-primary/20 text-primary"
+                                                                                : "bg-white/5 text-white/60 hover:text-white"
+                                                                }`}
+                                                                aria-label={
+                                                                        audioManager.backgroundMusicEnabled
+                                                                                ? "Stop background music"
+                                                                                : "Play background music"
+                                                                }
+                                                                aria-pressed={audioManager.backgroundMusicEnabled}
+                                                                title={`${audioManager.backgroundMusicEnabled ? "Stop" : "Play"} background music: ${audioManager.currentTrack}`}
+                                                        >
+                                                                <Music className="size-3.5" />
+                                                        </button>
+                                                        <button
+                                                                type="button"
+                                                                onClick={audioManager.handleNextTrack}
+                                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
+                                                                aria-label="Next track"
+                                                                title="Next track"
+                                                        >
+                                                                <SkipForward className="size-3" />
+                                                        </button>
+                                                </div>
                                         </div>
                                 </div>
                                 <div className="flex flex-col gap-2">
@@ -417,76 +476,6 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
                                         padding="small"
                                         variant="default"
                                 >
-                                        <div className="w-full sm:w-auto flex flex-wrap gap-2 items-center justify-center sm:justify-start">
-                                                <button
-                                                        type="button"
-                                                        onClick={audioManager.handleToggleMute}
-                                                        className="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
-                                                        aria-label={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
-                                                        aria-pressed={!audioManager.isMuted}
-                                                        title={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
-                                                >
-                                                        {audioManager.isMuted ? <VolumeX /> : <Volume2 />}
-                                                </button>
-                                                <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="1"
-                                                        step="0.1"
-                                                        value={audioManager.volume}
-                                                        onChange={(e) => audioManager.handleVolumeChange(null, parseFloat(e.target.value))}
-                                                        className="w-full max-w-[180px] sm:w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
-                                                        aria-label="Volume control"
-                                                        title={`Volume: ${Math.round(audioManager.volume * 100)}%`}
-                                                />
-                                                <button
-                                                        type="button"
-                                                        onClick={audioManager.handlePreviousTrack}
-                                                        className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
-                                                        aria-label="Previous track"
-                                                        title="Previous track"
-                                                >
-                                                        <SkipBack className="size-3.5" />
-                                                </button>
-                                                <button
-                                                        type="button"
-                                                        onClick={audioManager.toggleBackgroundMusic}
-                                                        className={`w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg transition-colors ${
-                                                                audioManager.backgroundMusicEnabled
-                                                                        ? "bg-primary/20 text-primary"
-                                                                        : "bg-white/5 text-white/60 hover:text-white"
-                                                        }`}
-                                                        aria-label={
-                                                                audioManager.backgroundMusicEnabled
-                                                                        ? "Stop background music"
-                                                                        : "Play background music"
-                                                        }
-                                                        aria-pressed={audioManager.backgroundMusicEnabled}
-                                                        title={`${audioManager.backgroundMusicEnabled ? "Stop" : "Play"} background music: ${audioManager.currentTrack}`}
-                                                >
-                                                        <Music className="size-3.5" />
-                                                </button>
-                                                <button
-                                                        type="button"
-                                                        onClick={audioManager.handleNextTrack}
-                                                        className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors"
-                                                        aria-label="Next track"
-                                                        title="Next track"
-                                                >
-                                                        <SkipForward className="size-3.5" />
-                                                </button>
-                                                {handleQuit && (
-                                                        <button
-                                                                type="button"
-                                                                onClick={handleQuit}
-                                                                className="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
-                                                                aria-label="Quit tournament"
-                                                                title="Quit tournament"
-                                                        >
-                                                                <X />
-                                                        </button>
-                                                )}
-                                        </div>
                                         <button
                                                 type="button"
                                                 onClick={() => setCatPictures(!showCatPictures)}
