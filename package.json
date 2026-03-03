@@ -55,7 +55,9 @@
 		"test:coverage": "vitest --coverage"
 	},
 	"dependencies": {
+		"@capacitor/android": "7.4.4",
 		"@capacitor/cli": "7.4.4",
+		"@capacitor/ios": "7.4.4",
 		"@hello-pangea/dnd": "^18.0.1",
 		"@heroui/react": "^2.8.9",
 		"@supabase/supabase-js": "^2.97.0",
@@ -91,6 +93,8 @@
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"@types/supertest": "^6.0.3",
+		"@types/testing-library__jest-dom": "^6.0.0",
+		"@types/three": "^0.182.0",
 		"@vitejs/plugin-react": "^5.1.4",
 		"@vitest/coverage-v8": "^4.0.18",
 		"autoprefixer": "^10.4.24",
@@ -103,6 +107,7 @@
 		"supertest": "^7.2.2",
 		"tailwindcss": "4.1.18",
 		"terser": "^5.46.0",
+		"three": "^0.182.0",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
