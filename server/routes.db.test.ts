@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 // @vitest-environment node
 import express from "express";
 import request from "supertest";
@@ -158,7 +159,7 @@ describe("Server Routes (DB Mode)", () => {
 
 			// Note: validation schema requires userId to be a valid UUID
 			const res = await request(app).post("/api/ratings").send({
-				userId: "00000000-0000-0000-0000-000000000000",
+				userId: jwt.sign({ userId: "00000000-0000-0000-0000-000000000000" }, process.env.JWT_SECRET || "default-dev-secret"),
 				ratings,
 			});
 
