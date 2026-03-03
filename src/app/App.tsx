@@ -8,9 +8,11 @@
  */
 
 import { Suspense, useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
+import { NameSuggestion } from "@/features/tournament/components/NameSuggestion";
+import { ProfileSection } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
@@ -96,17 +98,28 @@ function App() {
 }
 
 function HomeContent() {
+	const { login } = useAuth();
+
 	return (
-		<Section id="pick" variant="minimal" padding="none" maxWidth="full">
-			<Suspense fallback={<Loading variant="skeleton" height={400} />}>
-				<TournamentFlow />
-			</Suspense>
-		</Section>
+		<>
+			<Section id="pick" variant="minimal" padding="none" maxWidth="full">
+				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
+					<TournamentFlow />
+				</Suspense>
+			</Section>
+
+			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
+				<NameSuggestion variant="inline" />
+			</Section>
+
+			<ProfileSection onLogin={(name) => login({ name })} />
+		</>
 	);
 }
 
 function TournamentContent() {
 	const { user, tournament, tournamentActions } = useAppStore();
+	const navigate = useNavigate();
 	const { handleTournamentComplete } = useTournamentHandlers({
 		userName: user.name,
 		tournamentActions,
@@ -124,8 +137,8 @@ function TournamentContent() {
 				) : (
 					<div className="text-center py-20">
 						<p className="text-xl text-white/70 mb-4">No names selected for tournament</p>
-						<Button variant="gradient" onClick={() => window.history.back()}>
-							Go Back
+						<Button variant="gradient" onClick={() => navigate("/")}>
+							Back To Name Picker
 						</Button>
 					</div>
 				)}

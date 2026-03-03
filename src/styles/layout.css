@@ -88,6 +88,28 @@
 	display: flex;
 }
 
+.app {
+	min-height: 100dvh;
+}
+
+.app-main-wrapper {
+	position: relative;
+	min-height: 100dvh;
+	padding: var(--space-4);
+	padding-bottom: max(7rem, var(--mobile-nav-safe-offset));
+}
+
+.app-main-wrapper--login {
+	padding-top: var(--space-8);
+}
+
+@media (min-width: 768px) {
+	.app-main-wrapper {
+		padding: var(--space-6);
+		padding-bottom: var(--space-20);
+	}
+}
+
 /* Cat background positioning */
 .app .cat-background {
 	position: fixed;

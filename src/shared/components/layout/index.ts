@@ -12,6 +12,7 @@ export {
 export { default as CatImage } from "./CatImage";
 export { BumpChart } from "./Charts";
 export { CollapsibleContent, CollapsibleHeader } from "./CollapsibleHeader";
+export { ConfirmDialog } from "./ConfirmDialog";
 export { EmptyState } from "./EmptyState";
 export {
 	ErrorBoundary,

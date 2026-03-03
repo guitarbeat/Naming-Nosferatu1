@@ -354,7 +354,9 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			namesKey: "",
 			ratings: {},
 		});
-		window.history.back();
+		setHistory([]);
+		setRatings({});
+		setRefreshKey((key) => key + 1);
 	}, [updatePersistentState]);
 
 	return {

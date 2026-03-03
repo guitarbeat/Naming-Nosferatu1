@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { type KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
 import { ErrorComponent } from "@/shared/components/layout/Feedback";
@@ -12,13 +13,11 @@ import { CAT_IMAGES } from "@/shared/lib/constants";
 import {
 	Clock,
 	Gamepad2,
-	Home,
 	LogOut,
 	Medal,
 	Music,
 	PartyPopper,
 	PawPrint,
-	RefreshCcw,
 	SkipBack,
 	SkipForward,
 	Trophy,
@@ -33,7 +32,9 @@ import { useAudioManager, useTournamentState } from "./hooks";
 
 function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	// Optimization: Only select user.name to avoid re-renders on other store changes
+	const navigate = useNavigate();
 	const userName = useAppStore((state) => state.user.name);
+	const tournamentActions = useAppStore((state) => state.tournamentActions);
 	const visibleNames = useMemo(() => getVisibleNames(names), [names]);
 	const audioManager = useAudioManager();
 	const prefersReducedMotion = useReducedMotion();
@@ -278,6 +279,12 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		? `${roundNumber}-${currentMatchNumber}-${matchData.leftId}-${matchData.rightId}`
 		: `${roundNumber}-${currentMatchNumber}`;
 
+	const quitTournament = useCallback(() => {
+		handleQuit();
+		tournamentActions.resetTournament();
+		navigate("/");
+	}, [handleQuit, tournamentActions, navigate]);
+
 	if (isComplete) {
 		return (
 			<div className="relative min-h-screen w-full flex flex-col overflow-hidden font-display text-white selection:bg-primary/30">
@@ -315,22 +322,22 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 							<div className="flex flex-col gap-3 pt-4">
 								<button
-									onClick={() => window.location.reload()}
+									type="button"
+									onClick={quitTournament}
 									className="w-full glass-panel py-3 px-6 rounded-full flex items-center justify-center gap-3 border border-primary/20 cursor-pointer hover:bg-white/5 transition-colors"
 								>
-									<RefreshCcw className="text-primary" />
+									<LogOut className="text-primary" />
 									<span className="font-bold text-white">Start New Tournament</span>
 								</button>
 
-								{onComplete && (
-									<button
-										onClick={() => onComplete({})}
-										className="w-full glass-panel py-3 px-6 rounded-full flex items-center justify-center gap-3 border border-white/20 cursor-pointer hover:bg-white/5 transition-colors"
-									>
-										<Home className="text-white" />
-										<span className="font-bold text-white">Back to Main Menu</span>
-									</button>
-								)}
+								<button
+									type="button"
+									onClick={() => navigate("/analysis")}
+									className="w-full glass-panel py-3 px-6 rounded-full flex items-center justify-center gap-3 border border-white/20 cursor-pointer hover:bg-white/5 transition-colors"
+								>
+									<Trophy className="text-white" />
+									<span className="font-bold text-white">View Analysis</span>
+								</button>
 							</div>
 						</div>
 					</Card>
@@ -357,7 +364,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	} = matchData;
 
 	return (
-		<div className="relative h-screen w-full overflow-hidden flex flex-col font-display text-white selection:bg-primary/30">
+		<div className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col font-display text-white selection:bg-primary/30">
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -651,20 +658,20 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 									type="button"
 									onClick={() => handleUndo()}
 									className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-primary/20 cursor-pointer hover:bg-white/5 transition-colors"
+									aria-label="Undo last vote"
 									title="Undo last vote"
 								>
 									<Undo2 className="size-3.5 text-primary" />
 								</button>
-								{handleQuit && (
-									<button
-										type="button"
-										onClick={handleQuit}
-										className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-red-500/20 cursor-pointer hover:bg-red-500/10 transition-colors"
-										title="Quit tournament"
-									>
-										<LogOut className="size-3.5 text-red-400" />
-									</button>
-								)}
+								<button
+									type="button"
+									onClick={quitTournament}
+									className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-red-500/20 cursor-pointer hover:bg-red-500/10 transition-colors"
+									aria-label="Quit tournament"
+									title="Quit tournament"
+								>
+									<LogOut className="size-3.5 text-red-400" />
+								</button>
 							</div>
 						</div>
 

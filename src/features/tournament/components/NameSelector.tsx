@@ -5,6 +5,7 @@
 
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useToast } from "@/app/providers/Providers";
 import { useNamesCache } from "@/hooks/useNamesCache.ts";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
@@ -12,6 +13,7 @@ import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
 import { CollapsibleContent } from "@/shared/components/layout/CollapsibleHeader";
+import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible } from "@/shared/hooks";
@@ -61,7 +63,14 @@ function isRpcSignatureError(message: string): boolean {
 	);
 }
 
+type PendingAdminAction = {
+	type: "toggle-hidden" | "toggle-locked";
+	nameId: IdType;
+	isCurrentlyEnabled: boolean;
+};
+
 export function NameSelector() {
+	const toast = useToast();
 	const [selectedNames, setSelectedNames] = useState<Set<IdType>>(new Set());
 	const isSwipeMode = useAppStore((state) => state.ui.isSwipeMode);
 	const isAdmin = useAppStore((state) => state.user.isAdmin);
@@ -84,6 +93,7 @@ export function NameSelector() {
 	const [hiddenShowSelectedOnly, setHiddenShowSelectedOnly] = useState(false);
 	const [hiddenRenderCount, setHiddenRenderCount] = useState(24);
 	const [hiddenExpandTimer, setHiddenExpandTimer] = useState<number | null>(null);
+	const [pendingAdminAction, setPendingAdminAction] = useState<PendingAdminAction | null>(null);
 	const [swipeHistory, setSwipeHistory] = useState<
 		Array<{ id: IdType; direction: "left" | "right"; timestamp: number }>
 	>([]);
@@ -321,31 +331,34 @@ export function NameSelector() {
 	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
 
 	// Admin handlers for toggling hidden/locked status
-	const handleToggleHidden = useCallback(
-		async (nameId: IdType, isCurrentlyHidden: boolean) => {
+	const requestAdminAction = useCallback(
+		(action: PendingAdminAction) => {
 			if (!isAdmin) {
-				console.warn("Only admins can toggle hidden status");
+				toast.showWarning("Only admins can perform that action.");
 				return;
 			}
 			if (!userName?.trim()) {
-				console.warn("User name not available for admin action");
-				alert("Admin actions require a valid user name. Please refresh or log in.");
+				toast.showError("Admin actions require a valid user session. Please log in again.");
+				return;
+			}
+			setPendingAdminAction(action);
+		},
+		[isAdmin, toast, userName],
+	);
+
+	const handleToggleHidden = useCallback(
+		async (nameId: IdType, isCurrentlyHidden: boolean) => {
+			if (!isAdmin || !userName?.trim()) {
 				return;
 			}
 
-			setTogglingHidden((prev) => new Set(prev).add(nameId));
+			setTogglingHidden((prev) => {
+				const next = new Set(prev);
+				next.add(nameId);
+				return next;
+			});
 
 			try {
-				const action = isCurrentlyHidden ? "unhide" : "hide";
-				if (!confirm(`Are you sure you want to ${action} this name?`)) {
-					setTogglingHidden((prev) => {
-						const next = new Set(prev);
-						next.delete(nameId);
-						return next;
-					});
-					return;
-				}
-
 				// Ensure user context is set
 				await withSupabase(async (_client) => {
 					try {
@@ -372,13 +385,13 @@ export function NameSelector() {
 					}
 				}
 
-				// Refresh names after toggling hidden status
 				const fetchedNames = await coreAPI.getTrendingNames(true);
 				setNames(fetchedNames);
+				toast.showSuccess(isCurrentlyHidden ? "Name is visible again." : "Name is now hidden.");
 			} catch (error) {
 				console.error("Failed to toggle hidden status:", error);
 				const detail = error instanceof Error ? error.message : "Unknown error";
-				alert(`Failed to ${isCurrentlyHidden ? "unhide" : "hide"} name: ${detail}`);
+				toast.showError(`Could not update hidden status: ${detail}`);
 			} finally {
 				setTogglingHidden((prev) => {
 					const next = new Set(prev);
@@ -387,38 +400,24 @@ export function NameSelector() {
 				});
 			}
 		},
-		[userName, isAdmin],
+		[userName, isAdmin, toast],
 	);
 
 	const handleToggleLocked = useCallback(
 		async (nameId: IdType, isCurrentlyLocked: boolean) => {
-			if (!isAdmin) {
-				console.warn("Only admins can toggle locked status");
-				return;
-			}
-			if (!userName?.trim()) {
-				console.warn("User name not available for admin action");
-				alert("Admin actions require a valid user name. Please refresh or log in.");
+			if (!isAdmin || !userName?.trim()) {
 				return;
 			}
 
-			setTogglingLocked((prev) => new Set(prev).add(nameId));
+			setTogglingLocked((prev) => {
+				const next = new Set(prev);
+				next.add(nameId);
+				return next;
+			});
 
 			try {
-				const action = isCurrentlyLocked ? "unlock" : "lock";
-				if (!confirm(`Are you sure you want to ${action} this name?`)) {
-					setTogglingLocked((prev) => {
-						const next = new Set(prev);
-						next.delete(nameId);
-						return next;
-					});
-					return;
-				}
-
-				// Ensure user context is set
 				const result = await withSupabase(async (client) => {
 					try {
-						// Ensure user context is set
 						await client.rpc("set_user_context", { user_name_param: userName.trim() });
 					} catch {
 						/* ignore */
@@ -447,24 +446,56 @@ export function NameSelector() {
 				}, null);
 
 				if (result) {
-					// Refresh names to get updated state
 					const fetchedNames = await coreAPI.getTrendingNames(true);
 					setNames(fetchedNames);
+					toast.showSuccess(isCurrentlyLocked ? "Name unlocked." : "Name locked in.");
 				}
 			} catch (error) {
 				console.error("Failed to toggle locked status:", error);
 				const detail = error instanceof Error ? error.message : "Unknown error";
-				alert(`Failed to ${isCurrentlyLocked ? "unlock" : "lock"} name: ${detail}`);
+				toast.showError(`Could not update lock state: ${detail}`);
 			} finally {
 				setTogglingLocked((prev) => {
-					const newSet = new Set(prev);
-					newSet.delete(nameId);
-					return newSet;
+					const next = new Set(prev);
+					next.delete(nameId);
+					return next;
 				});
 			}
 		},
-		[userName, isAdmin],
+		[userName, isAdmin, toast],
 	);
+
+	const confirmActionName = useMemo(() => {
+		if (!pendingAdminAction) {
+			return "";
+		}
+		const target = names.find((name) => name.id === pendingAdminAction.nameId);
+		return target?.name ?? "this name";
+	}, [names, pendingAdminAction]);
+
+	const isPendingAdminActionBusy = useMemo(() => {
+		if (!pendingAdminAction) {
+			return false;
+		}
+		if (pendingAdminAction.type === "toggle-hidden") {
+			return togglingHidden.has(pendingAdminAction.nameId);
+		}
+		return togglingLocked.has(pendingAdminAction.nameId);
+	}, [pendingAdminAction, togglingHidden, togglingLocked]);
+
+	const handleConfirmAdminAction = useCallback(async () => {
+		if (!pendingAdminAction) {
+			return;
+		}
+
+		if (pendingAdminAction.type === "toggle-hidden") {
+			await handleToggleHidden(pendingAdminAction.nameId, pendingAdminAction.isCurrentlyEnabled);
+		} else {
+			await handleToggleLocked(pendingAdminAction.nameId, pendingAdminAction.isCurrentlyEnabled);
+		}
+
+		setPendingAdminAction(null);
+	}, [pendingAdminAction, handleToggleHidden, handleToggleLocked]);
 
 	const visibleCards = names.filter(
 		(name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in),
@@ -808,7 +839,11 @@ export function NameSelector() {
 																		type="button"
 																		onClick={(e) => {
 																			e.stopPropagation();
-																			handleToggleHidden(nameItem.id, nameItem.isHidden || false);
+																			requestAdminAction({
+																				type: "toggle-hidden",
+																				nameId: nameItem.id,
+																				isCurrentlyEnabled: nameItem.isHidden || false,
+																			});
 																		}}
 																		disabled={togglingHidden.has(nameItem.id)}
 																		className={`mt-4 flex items-center gap-2 pointer-events-auto w-fit text-sm font-bold tracking-wider uppercase transition-all ${
@@ -997,7 +1032,11 @@ export function NameSelector() {
 																type="button"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	handleToggleHidden(nameItem.id, nameItem.isHidden || false);
+																	requestAdminAction({
+																		type: "toggle-hidden",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled: nameItem.isHidden || false,
+																	});
 																}}
 																disabled={togglingHidden.has(nameItem.id)}
 																whileHover={{ scale: 1.05 }}
@@ -1032,10 +1071,12 @@ export function NameSelector() {
 																type="button"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	handleToggleLocked(
-																		nameItem.id,
-																		nameItem.lockedIn || nameItem.locked_in || false,
-																	);
+																	requestAdminAction({
+																		type: "toggle-locked",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled:
+																			nameItem.lockedIn || nameItem.locked_in || false,
+																	});
 																}}
 																disabled={togglingLocked.has(nameItem.id)}
 																whileHover={{ scale: 1.05 }}
@@ -1113,8 +1154,6 @@ export function NameSelector() {
 										onMouseLeave={clearHiddenExpandTimer}
 										onTouchStart={startHiddenExpandTimer}
 										onTouchEnd={clearHiddenExpandTimer}
-										role="button"
-										tabIndex={0}
 										className="select-none"
 									>
 										<button
@@ -1282,7 +1321,11 @@ export function NameSelector() {
 																		type="button"
 																		onClick={(e) => {
 																			e.stopPropagation();
-																			handleToggleHidden(nameItem.id, true);
+																			requestAdminAction({
+																				type: "toggle-hidden",
+																				nameId: nameItem.id,
+																				isCurrentlyEnabled: true,
+																			});
 																		}}
 																		disabled={togglingHidden.has(nameItem.id)}
 																		className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-green-600 hover:bg-green-700 text-white ${
@@ -1338,6 +1381,37 @@ export function NameSelector() {
 					onNavigate={setLightboxIndex}
 				/>
 			)}
+
+			<ConfirmDialog
+				open={Boolean(pendingAdminAction)}
+				title={
+					pendingAdminAction?.type === "toggle-hidden"
+						? pendingAdminAction.isCurrentlyEnabled
+							? "Unhide this name?"
+							: "Hide this name?"
+						: pendingAdminAction?.isCurrentlyEnabled
+							? "Unlock this name?"
+							: "Lock this name?"
+				}
+				description={
+					pendingAdminAction?.type === "toggle-hidden"
+						? `${confirmActionName} will ${pendingAdminAction.isCurrentlyEnabled ? "be visible to everyone again." : "be removed from public view."}`
+						: `${confirmActionName} will ${pendingAdminAction?.isCurrentlyEnabled ? "be removed from the locked list." : "stay selected for all users."}`
+				}
+				confirmLabel={
+					pendingAdminAction?.type === "toggle-hidden"
+						? pendingAdminAction?.isCurrentlyEnabled
+							? "Unhide"
+							: "Hide"
+						: pendingAdminAction?.isCurrentlyEnabled
+							? "Unlock"
+							: "Lock"
+				}
+				confirmTone="danger"
+				loading={isPendingAdminActionBusy}
+				onCancel={() => setPendingAdminAction(null)}
+				onConfirm={handleConfirmAdminAction}
+			/>
 		</Card>
 	);
 }

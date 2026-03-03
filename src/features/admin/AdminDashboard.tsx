@@ -102,12 +102,12 @@ export function AdminDashboard() {
 				recentVotes: 0, // TODO: Implement vote tracking
 			};
 
-			// Add some mock stats for demonstration
+			// Derive stats from real name data instead of mock/random placeholders
 			const namesWithStats: NameWithStats[] = allNames.map((name) => ({
 				...name,
-				votes: Math.floor(Math.random() * 100),
-				lastVoted: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-				popularityScore: Math.random() * 100,
+				votes: Number((name.wins || 0) + (name.losses || 0)),
+				lastVoted: undefined,
+				popularityScore: Number(name.popularity_score || 0),
 			}));
 
 			setStats(adminStats);
