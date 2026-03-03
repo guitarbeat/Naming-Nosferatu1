@@ -5,7 +5,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { coreAPI, hiddenNamesAPI, imagesAPI } from "@/services/supabase/api";
+import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
@@ -89,7 +89,10 @@ export function AdminDashboard() {
 		setIsLoading(true);
 		try {
 			// Load all names with admin visibility
-			const allNames = await coreAPI.getTrendingNames(true);
+			const [allNames, siteStats] = await Promise.all([
+				coreAPI.getTrendingNames(true),
+				statsAPI.getSiteStats()
+			]);
 
 			// Load stats (we'll simulate some for now)
 			const adminStats: AdminStats = {
@@ -97,9 +100,9 @@ export function AdminDashboard() {
 				activeNames: allNames.filter((n) => !n.isHidden && !(n.lockedIn || n.locked_in)).length,
 				hiddenNames: allNames.filter((n) => n.isHidden).length,
 				lockedInNames: allNames.filter((n) => n.lockedIn || n.locked_in).length,
-				totalUsers: 0, // TODO: Implement user count
+				totalUsers: siteStats?.totalUsers || 0,
 				activeTournaments: 0, // TODO: Implement tournament count
-				recentVotes: 0, // TODO: Implement vote tracking
+				recentVotes: siteStats?.totalRatings || 0,
 			};
 
 			// Add some mock stats for demonstration
