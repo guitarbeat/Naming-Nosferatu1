@@ -1,3 +1,4 @@
+import { rateLimit } from "express-rate-limit";
 import jwt from "jsonwebtoken";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { Router } from "express";
@@ -13,6 +14,11 @@ import { requireAdmin } from "./auth";
 import { db } from "./db";
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-dev-secret";
+const authRateLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 100,
+	message: { error: "Too many requests, please try again later." },
+});
 import {
 	batchHideSchema,
 	createNameSchema,
@@ -137,7 +143,7 @@ router.post("/api/names", async (req, res) => {
 			.returning();
 		res.json({
 			success: true,
-			data: { ...inserted, userId: jwt.sign({ userId: inserted.userId }, JWT_SECRET) },
+			data: inserted,
 		});
 	} catch (error) {
 		if (error instanceof ZodError) {
@@ -322,7 +328,7 @@ router.post("/api/users", async (req, res) => {
 });
 
 // Get user roles
-router.get("/api/users/:userId/roles", async (req, res) => {
+router.get("/api/users/:userId/roles", authRateLimiter, async (req, res) => {
 	try {
 		if (!db) {
 			return res.json([]);
@@ -342,7 +348,7 @@ router.get("/api/users/:userId/roles", async (req, res) => {
 });
 
 // Save ratings
-router.post("/api/ratings", async (req, res) => {
+router.post("/api/ratings", authRateLimiter, async (req, res) => {
 	try {
 		const { userId, ratings } = saveRatingsSchema.parse(req.body);
 

@@ -116,8 +116,7 @@ describe("Server Routes (DB Mode)", () => {
 
 			expect(res.status).toBe(200);
 			expect(res.body.success).toBe(true);
-			expect(res.body.data).toEqual(expect.objectContaining(insertedCat));
-			expect(res.body.data).toHaveProperty("userId");
+			expect(res.body.data).toEqual(insertedCat);
 			expect(dbMocks.insert).toHaveBeenCalled();
 			expect(dbMocks.values).toHaveBeenCalledWith(
 				expect.objectContaining({ name: "New Cat", description: "Desc" }),
