@@ -92,7 +92,11 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	);
 
 	const persistentState = useMemo((): PersistentTournamentState => {
-		if (!persistentStateRaw || typeof persistentStateRaw !== "object" || Array.isArray(persistentStateRaw)) {
+		if (
+			!persistentStateRaw ||
+			typeof persistentStateRaw !== "object" ||
+			Array.isArray(persistentStateRaw)
+		) {
 			return createDefaultPersistentState(userName || "anonymous");
 		}
 
