@@ -9,8 +9,8 @@ import { CAT_IMAGES, ELO_RATING } from "@/shared/lib/constants";
 
 export class EloRating {
 	constructor(
-		public defaultRating = ELO_RATING.DEFAULT_RATING,
-		public kFactor = ELO_RATING.DEFAULT_K_FACTOR,
+		public defaultRating: number = ELO_RATING.DEFAULT_RATING,
+		public kFactor: number = ELO_RATING.DEFAULT_K_FACTOR,
 	) {}
 	getExpectedScore(ra: number, rb: number) {
 		return 1 / (1 + 10 ** ((rb - ra) / ELO_RATING.RATING_DIVISOR));
