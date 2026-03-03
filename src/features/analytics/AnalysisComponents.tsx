@@ -42,13 +42,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
 }) => {
 	return (
 		<div className={cn("analysis-panel flex flex-col gap-4", className)}>
-			{showHeader && (
-				<CollapsibleHeader
-					title={title || ""}
-					actions={actions}
-					variant="compact"
-				/>
-			)}
+			{showHeader && <CollapsibleHeader title={title || ""} actions={actions} variant="compact" />}
 			{toolbar && <div className="analysis-panel-toolbar flex gap-2">{toolbar}</div>}
 			{children}
 		</div>

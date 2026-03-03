@@ -91,7 +91,7 @@ export function AdminDashboard() {
 			// Load all names with admin visibility
 			const [allNames, siteStats] = await Promise.all([
 				coreAPI.getTrendingNames(true),
-				statsAPI.getSiteStats()
+				statsAPI.getSiteStats(),
 			]);
 
 			// Load stats (we'll simulate some for now)

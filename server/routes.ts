@@ -1,7 +1,7 @@
-import { rateLimit } from "express-rate-limit";
-import jwt from "jsonwebtoken";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { Router } from "express";
+import { rateLimit } from "express-rate-limit";
+import jwt from "jsonwebtoken";
 import { ZodError } from "zod";
 import {
 	catAppUsers,
@@ -19,6 +19,7 @@ const authRateLimiter = rateLimit({
 	max: 100,
 	message: { error: "Too many requests, please try again later." },
 });
+
 import {
 	batchHideSchema,
 	createNameSchema,

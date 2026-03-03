@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
 // @vitest-environment node
 import express from "express";
+import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -158,10 +158,15 @@ describe("Server Routes (DB Mode)", () => {
 			dbMocks.values.mockReturnValue(mockQuery);
 
 			// Note: validation schema requires userId to be a valid UUID
-			const res = await request(app).post("/api/ratings").send({
-				userId: jwt.sign({ userId: "00000000-0000-0000-0000-000000000000" }, process.env.JWT_SECRET || "default-dev-secret"),
-				ratings,
-			});
+			const res = await request(app)
+				.post("/api/ratings")
+				.send({
+					userId: jwt.sign(
+						{ userId: "00000000-0000-0000-0000-000000000000" },
+						process.env.JWT_SECRET || "default-dev-secret",
+					),
+					ratings,
+				});
 
 			expect(res.status).toBe(200);
 			expect(dbMocks.insert).toHaveBeenCalledTimes(1);

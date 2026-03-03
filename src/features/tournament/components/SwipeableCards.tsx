@@ -1,8 +1,8 @@
 import { Button, Chip, cn, Progress } from "@heroui/react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getRandomCatImage, playSound } from "@/shared/lib/basic";
 import { Card } from "@/shared/components/layout/Card";
+import { getRandomCatImage, playSound } from "@/shared/lib/basic";
 import { Check, ChevronLeft, ChevronRight, Heart, X } from "@/shared/lib/icons";
 import type { NameItem } from "@/shared/types";
 
