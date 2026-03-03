@@ -1,5 +1,4 @@
 import { api } from "@/services/apiClient";
-import { syncQueue } from "@/services/SyncQueue";
 import { devLog } from "@/shared/lib/basic";
 import type { NameItem } from "@/shared/types";
 
@@ -55,12 +54,10 @@ export const tournamentsAPI = {
 			wins?: number;
 			losses?: number;
 		}>,
-		skipQueue = false,
 	): Promise<RatingSaveResult> {
-		if (!skipQueue && typeof navigator !== "undefined" && !navigator.onLine) {
-			syncQueue.enqueue("SAVE_RATINGS", { userId, ratings });
-			devLog("[TournamentAPI] Offline: queued ratings save");
-			return { success: true, savedCount: ratings.length, offline: true };
+		if (typeof navigator !== "undefined" && !navigator.onLine) {
+			devLog("[TournamentAPI] Offline: cannot save ratings");
+			return { success: false, error: "Offline mode not supported", offline: true };
 		}
 
 		try {
