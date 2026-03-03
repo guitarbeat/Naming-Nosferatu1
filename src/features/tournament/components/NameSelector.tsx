@@ -593,6 +593,8 @@ export function NameSelector() {
 		setHiddenExpandTimer(t);
 	}, [clearHiddenExpandTimer, hiddenPanel]);
 
+	console.log("[v0] NameSelector render: isLoading=", isLoading, "error=", error, "names.length=", names.length, "isSwipeMode=", isSwipeMode, "isAdmin=", isAdmin);
+
 	if (isLoading) {
 		return (
 			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
