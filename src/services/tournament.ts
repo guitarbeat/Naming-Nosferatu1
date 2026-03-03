@@ -1,4 +1,3 @@
-import { getRandomCatImage as getRandomCatImageFromLib } from "@/shared/lib/basic";
 import { CAT_IMAGES, ELO_RATING } from "@/shared/lib/constants";
 /* =========================================================================
    SERVICE
@@ -154,13 +153,6 @@ export function calculateBracketRound(totalNames: number, currentMatch: number):
 	}
 	const matchesPerRound = Math.ceil(totalNames / 2);
 	return Math.ceil(currentMatch / matchesPerRound);
-}
-
-export function getRandomCatImage(
-	id?: string | number | null,
-	images: readonly string[] = CAT_IMAGES,
-): string {
-	return getRandomCatImageFromLib(id, images);
 }
 
 export { CAT_IMAGES };
