@@ -13,8 +13,6 @@
  * - Never duplicate a type — import it.
  */
 
-import type React from "react";
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // Identifiers
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -189,90 +187,6 @@ export interface TournamentFilters {
 	selectionFilter?: "all" | "selected" | "unselected";
 	dateFilter?: "all" | "today" | "week" | "month";
 	searchTerm?: string;
-}
-
-export type NameManagementViewExtensions = {
-	header?: React.ReactNode | (() => React.ReactNode);
-	dashboard?: React.ReactNode | React.ComponentType | (() => React.ReactNode);
-	contextLogic?: React.ReactNode | (() => React.ReactNode);
-	bulkActions?: React.ReactNode | React.ComponentType | (() => React.ReactNode);
-} & Record<string, unknown>;
-
-export interface UseNameManagementViewProps {
-	mode: "tournament" | "profile";
-	userName?: string;
-	profileProps?: Record<string, unknown>;
-	tournamentProps?: Record<string, unknown>;
-	analysisMode: boolean;
-	setAnalysisMode: React.Dispatch<React.SetStateAction<boolean>>;
-	extensions?: NameManagementViewExtensions;
-}
-
-export interface UseNameManagementViewResult {
-	names: NameItem[];
-	filteredNames: NameItem[];
-	filteredNamesForSwipe: NameItem[];
-	sortedNames: NameItem[];
-
-	isLoading: boolean;
-	isError: boolean;
-	error: Error | null;
-	dataError: Error | null;
-	refetch: () => void;
-	clearErrors: () => void;
-
-	setNames: (updater: NameItem[] | ((prev: NameItem[]) => NameItem[])) => void;
-	setHiddenIds: (ids: Set<string | number>) => void;
-
-	selectedNames: NameItem[];
-	selectedIds: Set<IdType>;
-	selectedCount: number;
-	isSelected: (id: IdType) => boolean;
-
-	isSelectionMode: boolean;
-	setIsSelectionMode: (value: boolean) => void;
-
-	toggleName: (name: NameItem) => void;
-	toggleNameById: (id: IdType) => void;
-	toggleNamesByIds: (ids: IdType[]) => void;
-	clearSelection: () => void;
-	selectAll: () => void;
-
-	filterStatus: "all" | "visible" | "hidden";
-	setFilterStatus: React.Dispatch<React.SetStateAction<"all" | "visible" | "hidden">>;
-	showSelectedOnly: boolean;
-	setShowSelectedOnly: React.Dispatch<React.SetStateAction<boolean>>;
-	selectionFilter: "all" | "selected" | "unselected";
-	setSelectionFilter: React.Dispatch<React.SetStateAction<"all" | "selected" | "unselected">>;
-	userFilter: "all" | "user" | "other";
-	setUserFilter: React.Dispatch<React.SetStateAction<"all" | "user" | "other">>;
-	dateFilter: "all" | "today" | "week" | "month";
-	setDateFilter: React.Dispatch<React.SetStateAction<"all" | "today" | "week" | "month">>;
-	searchTerm: string;
-	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-
-	isSwipeMode: boolean;
-	showCatPictures: boolean;
-
-	activeTab: string;
-	setActiveTab: React.Dispatch<React.SetStateAction<string>>;
-
-	stats: {
-		total: number;
-		visible: number;
-		hidden: number;
-		selected: number;
-	};
-
-	filterConfig: TournamentFilters;
-	handleFilterChange: (name: keyof TournamentFilters, value: string | number | boolean) => void;
-	handleAnalysisModeToggle: () => void;
-
-	profileProps: Record<string, unknown>;
-	tournamentProps: Record<string, unknown>;
-	analysisMode: boolean;
-	setAnalysisMode: React.Dispatch<React.SetStateAction<boolean>>;
-	extensions: NameManagementViewExtensions;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

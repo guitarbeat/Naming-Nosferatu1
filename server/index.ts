@@ -11,7 +11,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 const corsOrigin = process.env.CORS_ORIGIN || process.env.VITE_APP_URL || "http://localhost:5173";
-const corsOrigins = corsOrigin.split(",").map((s) => s.trim()).filter(Boolean);
+const corsOrigins = corsOrigin
+	.split(",")
+	.map((s) => s.trim())
+	.filter(Boolean);
 app.use(
 	cors({
 		origin: corsOrigins,

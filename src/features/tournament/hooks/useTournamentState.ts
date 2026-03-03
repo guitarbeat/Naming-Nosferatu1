@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EloRating, PreferenceSorter } from "@/services/tournament";
 import { useToast } from "@/app/providers/Providers";
+import { EloRating, PreferenceSorter } from "@/services/tournament";
 import { useLocalStorage } from "@/shared/hooks";
 import type { Match, MatchRecord, NameItem } from "@/shared/types";
 import { useAudioManager } from "./useHelpers";
@@ -92,7 +92,11 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	);
 
 	const persistentState = useMemo((): PersistentTournamentState => {
-		if (!persistentStateRaw || typeof persistentStateRaw !== "object" || Array.isArray(persistentStateRaw)) {
+		if (
+			!persistentStateRaw ||
+			typeof persistentStateRaw !== "object" ||
+			Array.isArray(persistentStateRaw)
+		) {
 			return createDefaultPersistentState(userName || "anonymous");
 		}
 

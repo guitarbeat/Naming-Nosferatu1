@@ -1,6 +1,4 @@
 export { useAudioManager } from "./useHelpers";
-export { useTournamentSelectionSaver } from "./useTournamentSelectionSaver";
-export { useNameManagementView } from "./useNameManagementView";
 export { useTournamentHandlers } from "./useTournamentHandlers";
-export { useTournamentState } from "./useTournamentState";
-export { useTournamentState as useTournament } from "./useTournamentState";
+export { useTournamentSelectionSaver } from "./useTournamentSelectionSaver";
+export { useTournamentState, useTournamentState as useTournament } from "./useTournamentState";
