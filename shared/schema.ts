@@ -3,6 +3,7 @@ import {
 	bigserial,
 	boolean,
 	doublePrecision,
+	index,
 	integer,
 	jsonb,
 	pgTable,
@@ -51,6 +52,7 @@ export const catNameRatings = pgTable(
 	(table) => {
 		return {
 			pk: primaryKey({ columns: [table.userId, table.nameId] }),
+			nameIdIdx: index("cat_name_ratings_name_id_idx").on(table.nameId),
 		};
 	},
 );
