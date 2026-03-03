@@ -192,7 +192,6 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
                                         : undefined,
                 };
         }, [currentMatch]);
-        const selectedName =
                 selectedSide === "left"
                         ? (matchData?.leftName ?? null)
                         : selectedSide === "right"
