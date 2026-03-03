@@ -42,10 +42,13 @@ function mapNameRow(item: ApiNameRow): NameItem {
 
 async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]> {
 	try {
+		console.log("[v0] getNamesFromSupabase called, includeHidden:", includeHidden);
 		const client = await resolveSupabaseClient();
 		if (!client) {
+			console.log("[v0] getNamesFromSupabase: no Supabase client available");
 			return [];
 		}
+		console.log("[v0] getNamesFromSupabase: Supabase client obtained, querying...");
 
 		let query = client
 			.from("cat_name_options")
@@ -61,11 +64,14 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 
 		const { data, error } = await query.order("avg_rating", { ascending: false }).limit(1000);
 		if (error) {
+			console.log("[v0] getNamesFromSupabase: Supabase query error:", error.message);
 			return [];
 		}
 
+		console.log("[v0] getNamesFromSupabase: Got", data?.length ?? 0, "names from Supabase");
 		return (data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow));
-	} catch {
+	} catch (err) {
+		console.log("[v0] getNamesFromSupabase: caught exception:", err);
 		return [];
 	}
 }
@@ -104,10 +110,13 @@ export const coreAPI = {
 
 	getTrendingNames: async (includeHidden: boolean = false) => {
 		try {
+			console.log("[v0] getTrendingNames: trying Express API...");
 			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
+			console.log("[v0] getTrendingNames: Express API returned", data?.length ?? 0, "names");
 			return (data ?? []).map((item) => mapNameRow(item));
-		} catch {
+		} catch (apiErr) {
 			// Fallback when /api is not available (static-only deployments).
+			console.log("[v0] getTrendingNames: Express API failed, falling back to Supabase. Error:", apiErr);
 			return await getNamesFromSupabase(includeHidden);
 		}
 	},
