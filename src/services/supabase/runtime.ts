@@ -24,14 +24,15 @@ declare global {
 }
 
 // Get Supabase credentials from environment variables (publishable/anon keys are safe to embed)
-const getSupabaseCredentials = (): { url: string; key: string } => {
+const getSupabaseCredentials = (): { url: string; key: string } | null => {
 	const url = import.meta.env.VITE_SUPABASE_URL;
 	const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 	if (!url || !key) {
-		throw new Error(
-			"Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.",
+		console.warn(
+			"[Supabase] Credentials not found. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable Supabase features.",
 		);
+		return null;
 	}
 
 	return { url, key };
@@ -42,8 +43,12 @@ let supabaseInstance: SupabaseClient<Database> | null =
 let initializationPromise: Promise<SupabaseClient<Database> | null> | null = null;
 
 const createSupabaseClient = async (): Promise<SupabaseClient<Database> | null> => {
-	// Validate and get credentials (throws if missing)
-	const { url: SupabaseUrl, key: SupabaseAnonKey } = getSupabaseCredentials();
+	// Validate and get credentials (returns null if missing)
+	const credentials = getSupabaseCredentials();
+	if (!credentials) {
+		return null;
+	}
+	const { url: SupabaseUrl, key: SupabaseAnonKey } = credentials;
 
 	try {
 		const { createClient } = await import("@supabase/supabase-js");

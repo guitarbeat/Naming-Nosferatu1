@@ -30,7 +30,7 @@
 		"pnpm": ">=10.26.0"
 	},
 	"scripts": {
-		"dev": "pnpm run dev:server & pnpm run dev:client",
+		"dev": "vite",
 		"dev:server": "tsx server/index.ts",
 		"dev:client": "vite",
 		"build": "vite build",
