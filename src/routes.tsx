@@ -4,7 +4,6 @@
  */
 
 import { lazy, Suspense } from "react";
-import { ProfileSection } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import { Loading, Section } from "@/shared/components/layout";
 import useAppStore from "@/store/appStore";
@@ -37,11 +36,8 @@ function AnalysisPage() {
 
 const routeFallback = <Loading variant="skeleton" height={400} />;
 
-interface HomeRouteProps {
-        onLogin: (name: string) => Promise<boolean | undefined>;
-}
 
-export function HomeRoute({ onLogin }: HomeRouteProps) {
+export function HomeRoute() {
         return (
                 <>
                         <div id="pick" className="absolute -top-20" />
@@ -50,7 +46,6 @@ export function HomeRoute({ onLogin }: HomeRouteProps) {
                                         <TournamentFlow />
                                 </Suspense>
                         </Section>
-                        <ProfileSection onLogin={onLogin} />
                 </>
         );
 }
