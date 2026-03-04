@@ -25,6 +25,21 @@ describe("EloRating", () => {
 	});
 
 	describe("getExpectedScore", () => {
+		it("should return near 1 and 0 for extreme rating differences", () => {
+			const elo = new EloRating();
+			const scoreHigh = elo.getExpectedScore(2300, 1500);
+			const scoreLow = elo.getExpectedScore(1500, 2300);
+			expect(scoreHigh).toBeCloseTo(0.9901, 4);
+			expect(scoreLow).toBeCloseTo(0.0099, 4);
+		});
+
+		it("should handle fractional ratings without breaking", () => {
+			const elo = new EloRating();
+			const score = elo.getExpectedScore(1500.5, 1499.5);
+			expect(score).toBeGreaterThan(0.5);
+			expect(score).toBeCloseTo(0.5014, 4);
+		});
+
 		it("should return 0.5 when ratings are equal", () => {
 			const elo = new EloRating();
 			const score = elo.getExpectedScore(1500, 1500);
@@ -126,6 +141,33 @@ describe("EloRating", () => {
 			const newRating = elo.updateRating(rating, exp, act, 0);
 			expect(newRating).toBe(ELO_RATING.MIN_RATING);
 		});
+
+		it("should handle fractional actual scores", () => {
+			const elo = new EloRating();
+			const rating = 1500;
+			const exp = 0.5;
+			const act = 0.75; // Partial win
+			const games = ELO_RATING.NEW_PLAYER_GAME_THRESHOLD;
+
+			// Expected change: 40 * (0.75 - 0.5) = +10 points
+			const newRating = elo.updateRating(rating, exp, act, games);
+			expect(newRating).toBe(1510);
+		});
+
+		it("should maintain rating exactly when hitting MAX_RATING or MIN_RATING without overshooting", () => {
+			const elo = new EloRating();
+			// Max rating winning against low rating -> should remain max rating
+			const ratingMax = ELO_RATING.MAX_RATING;
+			const expMax = elo.getExpectedScore(ratingMax, 1000);
+			const actMax = 1;
+			expect(elo.updateRating(ratingMax, expMax, actMax, 100)).toBe(ELO_RATING.MAX_RATING);
+
+			// Min rating losing against high rating -> should remain min rating
+			const ratingMin = ELO_RATING.MIN_RATING;
+			const expMin = elo.getExpectedScore(ratingMin, 2000);
+			const actMin = 0;
+			expect(elo.updateRating(ratingMin, expMin, actMin, 100)).toBe(ELO_RATING.MIN_RATING);
+		});
 	});
 
 	describe("calculateNewRatings", () => {
@@ -213,6 +255,19 @@ describe("EloRating", () => {
 			expect(result.lossesA).toBe(0);
 			expect(result.winsB).toBe(0);
 			expect(result.lossesB).toBe(1);
+		});
+
+		it("should handle incomplete stats object correctly", () => {
+			const elo = new EloRating();
+			// Pass a stats object missing some keys
+			const result = elo.calculateNewRatings(1500, 1500, "right", {
+				winsA: 5,
+			} as any);
+
+			expect(result.winsA).toBe(5); // 5 + 0
+			expect(result.lossesA).toBe(1); // 0 + 1
+			expect(result.winsB).toBe(1); // 0 + 1
+			expect(result.lossesB).toBe(0); // 0 + 0
 		});
 	});
 });
