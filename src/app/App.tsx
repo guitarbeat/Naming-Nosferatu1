@@ -7,7 +7,7 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
@@ -52,9 +52,10 @@ function App() {
 		};
 	}, []);
 
-	useAppStoreInitialization((name) => {
+	const handleUserContext = useCallback((name: string) => {
 		updateSupabaseUserContext(name, null);
-	});
+	}, []);
+	useAppStoreInitialization(handleUserContext);
 	useOfflineSync();
 
 	if (!isInitialized) {
