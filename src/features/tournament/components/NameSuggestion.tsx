@@ -81,7 +81,10 @@ function InlineNameSuggestion() {
 
 							<div className="flex flex-col gap-2">
 								<div className="flex items-center justify-between gap-3">
-									<label htmlFor="suggest-description" className="text-sm font-semibold text-white/90">
+									<label
+										htmlFor="suggest-description"
+										className="text-sm font-semibold text-white/90"
+									>
 										Why this name? <span className="text-rose-300">*</span>
 									</label>
 									<span className="text-xs text-white/55">Help voters understand the vibe</span>

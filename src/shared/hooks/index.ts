@@ -4,7 +4,6 @@
  *
  * **Primitives**
  * - {@link useEventListener}  — Type-safe, auto-cleaning event listeners
- * - {@link useMediaQuery}     — Subscribe to CSS media queries
  * - {@link useDebounce}       — Debounce a rapidly-changing value
  * - {@link useThrottle}       — Throttle a rapidly-changing value
  * - {@link useToggle}         — Boolean toggle with setter
@@ -88,35 +87,6 @@ function useEventListener<K extends keyof WindowEventMap>(
 			targetElement.removeEventListener(eventName, eventListener, options);
 		};
 	}, [eventName, element, options]);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// useMediaQuery
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Subscribe to a CSS media query.
- */
-function useMediaQuery(query: string): boolean {
-	const [matches, setMatches] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		const media = window.matchMedia(query);
-		if (media.matches !== matches) {
-			setMatches(media.matches);
-		}
-
-		const listener = () => setMatches(media.matches);
-		media.addEventListener("change", listener);
-
-		return () => media.removeEventListener("change", listener);
-	}, [query, matches]);
-
-	return matches;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
