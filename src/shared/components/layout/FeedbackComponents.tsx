@@ -23,7 +23,8 @@ import { useBrowserState } from "@/shared/hooks";
 import { cn } from "@/shared/lib/basic";
 import { Cat, Copy, Heart, PawPrint } from "@/shared/lib/icons";
 import { GLASS_PRESETS } from "./GlassPresets";
-import { BongoCat, LiquidGlass } from "./LayoutEffects";
+import { BongoCat } from "./LayoutEffects";
+import LiquidGlass from "./LiquidGlass";
 
 /* ==========================================================================
    LOADING COMPONENTS
