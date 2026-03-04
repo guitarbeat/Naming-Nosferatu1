@@ -78,13 +78,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 	// Calculate winning streaks for current contestants
 	const calculateWinStreak = useCallback(
-		(contestantId: string | null | undefined) => {
-			if (!contestantId || matchHistory.length === 0) return 0;
+		(contestantId: string | number | null | undefined) => {
+			if (!contestantId || matchHistory.length === 0) {
+				return 0;
+			}
 
 			let streak = 0;
 			// Iterate from the end (most recent matches) backwards
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
+				if (!record) {
+					continue;
+				}
 				if (record.winner === String(contestantId)) {
 					streak++;
 				} else {
@@ -97,14 +102,19 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	);
 
 	const leftStreak = useMemo(() => {
-		if (!currentMatch) return 0;
+		if (!currentMatch) {
+			return 0;
+		}
 		const leftId = typeof currentMatch.left === "object" ? currentMatch.left.id : currentMatch.left;
 		return calculateWinStreak(leftId);
 	}, [currentMatch, calculateWinStreak]);
 
 	const rightStreak = useMemo(() => {
-		if (!currentMatch) return 0;
-		const rightId = typeof currentMatch.right === "object" ? currentMatch.right.id : currentMatch.right;
+		if (!currentMatch) {
+			return 0;
+		}
+		const rightId =
+			typeof currentMatch.right === "object" ? currentMatch.right.id : currentMatch.right;
 		return calculateWinStreak(rightId);
 	}, [currentMatch, calculateWinStreak]);
 

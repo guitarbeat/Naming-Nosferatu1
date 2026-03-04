@@ -209,7 +209,9 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	// Memoize ID to name mapping for O(1) lookups instead of O(N) array searches
 	const idToNameMap = useMemo(() => {
 		const map = new Map<string, NameItem>();
-		names.forEach((n) => map.set(String(n.id), n));
+		names.forEach((n) => {
+			map.set(String(n.id), n);
+		});
 		return map;
 	}, [names]);
 
@@ -230,7 +232,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 				name: nextMatch.right,
 			},
 		} as Match;
-	}, [sorter, names, _refreshKey, idToNameMap]);
+	}, [sorter, _refreshKey, idToNameMap]);
 
 	const isComplete = currentMatch === null;
 	const totalPairs = (names.length * (names.length - 1)) / 2;

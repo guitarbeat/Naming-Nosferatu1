@@ -57,7 +57,9 @@ function FloatingNavItem({
 			<span className="flex shrink-0 items-center justify-center">
 				{customIcon || <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
 			</span>
-			<span className="hidden whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm">{label}</span>
+			<span className="hidden whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm">
+				{label}
+			</span>
 		</motion.button>
 	);
 }
