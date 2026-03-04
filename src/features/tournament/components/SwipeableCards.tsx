@@ -226,22 +226,22 @@ export const SwipeableCards = memo(
 											</div>
 
 											{/* Text Content */}
-											<div className="text-center pb-4 z-10 w-full">
-												<h3 className="font-whimsical text-2xl lg:text-3xl text-white tracking-wide drop-shadow-lg break-words w-full">
+											<div className="text-center pb-4 z-10 w-full flex flex-col h-28">
+												<h3 className="font-whimsical text-2xl lg:text-3xl text-white tracking-wide drop-shadow-lg break-words w-full line-clamp-2">
 													{card.name}
 												</h3>
 												{typeof card.pronunciation === "string" && card.pronunciation && (
-													<p className="text-white/80 text-sm leading-relaxed max-w-md mt-1 mx-auto font-medium">
+													<p className="text-white/80 text-sm leading-relaxed max-w-md mx-auto font-medium line-clamp-1">
 														[{card.pronunciation}]
 													</p>
 												)}
 												{card.description && (
-													<p className="text-white/60 text-sm leading-relaxed max-w-md mt-2 mx-auto">
+													<p className="text-white/60 text-sm leading-relaxed max-w-md mx-auto line-clamp-2">
 														{card.description}
 													</p>
 												)}
 												{isSelected(card) && (
-													<div className="flex justify-center mt-3">
+													<div className="flex justify-center mt-auto">
 														<div className="px-3 py-1 bg-success/20 backdrop-blur-md border border-success/30 rounded-full flex items-center gap-2">
 															<Check size={14} className="text-success" />
 															<span className="text-success font-bold text-xs tracking-widest uppercase">

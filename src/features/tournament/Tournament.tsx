@@ -53,6 +53,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		etaMinutes = 0,
 		handleVoteWithAnimation,
 		isVoting,
+		matchHistory,
 	} = tournament;
 	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(null);
 	const [voteAnnouncement, setVoteAnnouncement] = useState<string | null>(null);
@@ -74,6 +75,38 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			roundAnnouncementTimeoutRef.current = null;
 		}
 	}, []);
+
+	// Calculate winning streaks for current contestants
+	const calculateWinStreak = useCallback(
+		(contestantId: string | null | undefined) => {
+			if (!contestantId || matchHistory.length === 0) return 0;
+
+			let streak = 0;
+			// Iterate from the end (most recent matches) backwards
+			for (let i = matchHistory.length - 1; i >= 0; i--) {
+				const record = matchHistory[i];
+				if (record.winner === String(contestantId)) {
+					streak++;
+				} else {
+					break;
+				}
+			}
+			return streak;
+		},
+		[matchHistory],
+	);
+
+	const leftStreak = useMemo(() => {
+		if (!currentMatch) return 0;
+		const leftId = typeof currentMatch.left === "object" ? currentMatch.left.id : currentMatch.left;
+		return calculateWinStreak(leftId);
+	}, [currentMatch, calculateWinStreak]);
+
+	const rightStreak = useMemo(() => {
+		if (!currentMatch) return 0;
+		const rightId = typeof currentMatch.right === "object" ? currentMatch.right.id : currentMatch.right;
+		return calculateWinStreak(rightId);
+	}, [currentMatch, calculateWinStreak]);
 
 	useEffect(() => {
 		return () => {
@@ -630,14 +663,25 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 									{/* Name Overlay */}
 									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
-										<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words w-full drop-shadow-md leading-tight">
-											{leftName}
-											{leftPronunciation && (
-												<span className="ml-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
-													[{leftPronunciation}]
-												</span>
+										<div className="flex items-center gap-2 flex-wrap">
+											<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight">
+												{leftName}
+											</h3>
+											{leftStreak >= 2 && (
+												<div className="flex gap-0.5">
+													{Array.from({ length: Math.min(leftStreak, 5) }).map((_, i) => (
+														<span key={i} className="text-lg sm:text-2xl animate-pulse">
+															🔥
+														</span>
+													))}
+												</div>
 											)}
-										</h3>
+										</div>
+										{leftPronunciation && (
+											<span className="ml-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
+												[{leftPronunciation}]
+											</span>
+										)}
 										{leftDescription && (
 											<p className="text-xs sm:text-sm text-white/90 italic line-clamp-2 mt-1 drop-shadow-sm">
 												{leftDescription}
@@ -715,14 +759,25 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 									{/* Name Overlay */}
 									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
-										<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words w-full drop-shadow-md leading-tight text-left sm:text-right">
-											{rightPronunciation && (
-												<span className="mr-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
-													[{rightPronunciation}]
-												</span>
+										<div className="flex items-center gap-2 flex-wrap justify-end sm:justify-end">
+											{rightStreak >= 2 && (
+												<div className="flex gap-0.5">
+													{Array.from({ length: Math.min(rightStreak, 5) }).map((_, i) => (
+														<span key={i} className="text-lg sm:text-2xl animate-pulse">
+															🔥
+														</span>
+													))}
+												</div>
 											)}
-											{rightName}
-										</h3>
+											<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight text-left sm:text-right">
+												{rightName}
+											</h3>
+										</div>
+										{rightPronunciation && (
+											<span className="mr-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
+												[{rightPronunciation}]
+											</span>
+										)}
 										{rightDescription && (
 											<p className="text-xs sm:text-sm text-white/90 italic line-clamp-2 mt-1 drop-shadow-sm text-left sm:text-right">
 												{rightDescription}

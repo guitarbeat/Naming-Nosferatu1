@@ -20,6 +20,7 @@ export interface UseTournamentStateResult {
 	etaMinutes: number;
 	isVoting: boolean;
 	handleVoteWithAnimation: (winnerId: string, loserId: string) => void;
+	matchHistory: MatchRecord[];
 }
 
 const VOTE_COOLDOWN = 300;
@@ -205,6 +206,13 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		ratingsRef.current = ratings;
 	}, [ratings]);
 
+	// Memoize ID to name mapping for O(1) lookups instead of O(N) array searches
+	const idToNameMap = useMemo(() => {
+		const map = new Map<string, NameItem>();
+		names.forEach((n) => map.set(String(n.id), n));
+		return map;
+	}, [names]);
+
 	const currentMatch = useMemo(() => {
 		void _refreshKey;
 		const nextMatch = sorter.getNextMatch();
@@ -213,16 +221,16 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		}
 
 		return {
-			left: names.find((n) => String(n.id) === nextMatch.left) || {
+			left: idToNameMap.get(nextMatch.left) || {
 				id: nextMatch.left,
 				name: nextMatch.left,
 			},
-			right: names.find((n) => String(n.id) === nextMatch.right) || {
+			right: idToNameMap.get(nextMatch.right) || {
 				id: nextMatch.right,
 				name: nextMatch.right,
 			},
 		} as Match;
-	}, [sorter, names, _refreshKey]);
+	}, [sorter, names, _refreshKey, idToNameMap]);
 
 	const isComplete = currentMatch === null;
 	const totalPairs = (names.length * (names.length - 1)) / 2;
@@ -374,5 +382,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		etaMinutes,
 		isVoting,
 		handleVoteWithAnimation,
+		matchHistory: persistentState.matchHistory,
 	};
 }

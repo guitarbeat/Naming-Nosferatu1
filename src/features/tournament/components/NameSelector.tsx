@@ -34,9 +34,33 @@ import {
 } from "@/shared/lib/icons";
 import type { IdType, NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
+import { useRef } from "react";
 
 const SWIPE_OFFSET_THRESHOLD = 100;
 const SWIPE_VELOCITY_THRESHOLD = 500;
+
+// Smart tooltip positioning hook - positions tooltip on the best side
+function useSmartTooltip() {
+	const tooltipRef = useRef<HTMLDivElement>(null);
+	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">("top");
+
+	const measureTooltip = useCallback(() => {
+		if (!tooltipRef.current) return;
+
+		const rect = tooltipRef.current.getBoundingClientRect();
+		const spaceAbove = rect.top;
+		const spaceBelow = window.innerHeight - rect.bottom;
+
+		// If tooltip is off-screen at top and there's more space below, flip it
+		if (spaceAbove < 0 && spaceBelow > -spaceAbove) {
+			setTooltipPosition("bottom");
+		} else {
+			setTooltipPosition("top");
+		}
+	}, []);
+
+	return { tooltipRef, tooltipPosition, measureTooltip };
+}
 
 // Optimized spring physics for smoother interactions
 const SMOOTH_SPRING_CONFIG = {
@@ -97,6 +121,7 @@ export function NameSelector() {
 	const [swipeHistory, setSwipeHistory] = useState<
 		Array<{ id: IdType; direction: "left" | "right"; timestamp: number }>
 	>([]);
+	const { tooltipRef, tooltipPosition, measureTooltip } = useSmartTooltip();
 
 	// Memoize cat images and build an id->image lookup map
 	const { catImages, catImageById } = useMemo(() => {
@@ -329,6 +354,16 @@ export function NameSelector() {
 
 		triggerHaptic();
 	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
+
+	// Handlers for hold-to-expand gesture on hidden names panel
+	const startHiddenExpandTimer = useCallback(() => {
+		// This handler is called when user starts holding the hidden names header
+		// The actual expansion is handled by the onClick handler on the button
+	}, []);
+
+	const clearHiddenExpandTimer = useCallback(() => {
+		// This handler is called when user releases or leaves the hidden names header
+	}, []);
 
 	// Admin handlers for toggling hidden/locked status
 	const requestAdminAction = useCallback(
@@ -709,7 +744,15 @@ export function NameSelector() {
 										</div>
 
 										{(nameItem.description || nameItem.pronunciation) && (
-											<div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 p-3 bg-slate-900 border border-amber-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[100] text-xs text-slate-200 leading-relaxed shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
+											<div
+												ref={tooltipRef}
+												onMouseEnter={measureTooltip}
+												className={`absolute left-1/2 -translate-x-1/2 w-56 p-3 bg-slate-900 border border-amber-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[100] text-xs text-slate-200 leading-relaxed shadow-2xl scale-95 group-hover:scale-100 ${
+													tooltipPosition === "top"
+														? "bottom-full mb-3 origin-bottom"
+														: "top-full mt-3 origin-top"
+												}`}
+											>
 												{nameItem.pronunciation && (
 													<div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
 														<div className="text-[10px] font-black uppercase tracking-widest text-amber-500/70">
@@ -721,7 +764,13 @@ export function NameSelector() {
 													</div>
 												)}
 												<div className="opacity-90">{nameItem.description}</div>
-												<div className="absolute top-[calc(100%-1px)] left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900" />
+												<div
+													className={`absolute left-1/2 -translate-x-1/2 border-8 border-transparent ${
+														tooltipPosition === "top"
+															? "top-[calc(100%-1px)] border-t-slate-900"
+															: "bottom-[calc(100%-1px)] border-b-slate-900"
+													}`}
+												/>
 											</div>
 										)}
 									</motion.div>

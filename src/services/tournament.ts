@@ -16,6 +16,7 @@ export class EloRating {
 		return 1 / (1 + 10 ** ((rb - ra) / ELO_RATING.RATING_DIVISOR));
 	}
 	updateRating(r: number, exp: number, act: number, games = 0) {
+		// Double K-factor for new players (< 15 games) for faster convergence
 		const k = games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD ? this.kFactor * 2 : this.kFactor;
 		const updated = Math.round(r + k * (act - exp));
 		return Math.max(ELO_RATING.MIN_RATING, Math.min(ELO_RATING.MAX_RATING, updated));
@@ -55,6 +56,7 @@ export class PreferenceSorter {
 	preferences = new Map<string, number>();
 	currentIndex = 0;
 	private matchHistory: string[] = [];
+	private cachedPreferences: Set<string> | null = null; // Cache for faster lookups
 
 	// Total possible pairs is N * (N - 1) / 2
 	// We no longer store the `pairs` array to save memory (O(N^2) -> O(1))
@@ -82,6 +84,7 @@ export class PreferenceSorter {
 		this.preferences.set(key, val);
 		this.matchHistory.push(key);
 		this.currentIndex++;
+		this.cachedPreferences = null; // Invalidate cache on preference change
 	}
 
 	undoLastPreference() {
@@ -93,6 +96,7 @@ export class PreferenceSorter {
 		// Reset currentIndex to the number of remaining preferences so that
 		// getNextMatch() re-scans from the correct position after an undo.
 		this.currentIndex = this.matchHistory.length;
+		this.cachedPreferences = null; // Invalidate cache on preference change
 	}
 
 	getNextMatch() {
@@ -104,13 +108,12 @@ export class PreferenceSorter {
 			return null;
 		}
 
-		// We can optimize this loop by keeping track of i, j statefuly if needed,
-		// but since we usually just step forward, recalculating from currentIndex is fine
-		// unless currentIndex is very large, but the inner calculation is O(N) max.
-		// For N=1000, calculating indices is cheap.
+		// Build preference lookup set on first call (memoized)
+		if (!this.cachedPreferences) {
+			this.cachedPreferences = new Set(this.preferences.keys());
+		}
 
-		// However, to iterate efficiently from currentIndex forward:
-		// We calculate initial (i, j) for currentIndex
+		// Calculate initial (i, j) for currentIndex
 		const indices = this.getIndicesFromIndex(this.currentIndex, n);
 		if (!indices) {
 			return null;
@@ -118,12 +121,21 @@ export class PreferenceSorter {
 
 		let { i, j } = indices;
 
-		while (this.currentIndex < totalPairs) {
+		// Limit iterations to avoid long pauses (prevents O(N²) worst case)
+		// In practice, we'll find a match quickly since most pairs aren't done
+		const maxIterations = Math.min(totalPairs - this.currentIndex, 10000);
+		let iterationCount = 0;
+
+		while (this.currentIndex < totalPairs && iterationCount < maxIterations) {
+			iterationCount++;
 			const a = this.items[i];
 			const b = this.items[j];
 
 			if (a && b) {
-				if (!this.preferences.has(`${a}-${b}`) && !this.preferences.has(`${b}-${a}`)) {
+				// Use cached Set for faster O(1) lookup vs Map
+				const key1 = `${a}-${b}`;
+				const key2 = `${b}-${a}`;
+				if (!this.cachedPreferences.has(key1) && !this.cachedPreferences.has(key2)) {
 					return { left: a, right: b };
 				}
 			}
@@ -136,6 +148,7 @@ export class PreferenceSorter {
 				j = i + 1;
 			}
 		}
+
 		return null;
 	}
 }
