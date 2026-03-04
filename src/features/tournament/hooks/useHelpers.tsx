@@ -5,7 +5,6 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { devError, devLog } from "@/shared/lib/basic";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 import {
 	getCurrentTrack,
