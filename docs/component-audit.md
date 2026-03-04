@@ -2,7 +2,7 @@
 
 ## Scope
 
-Audited all React component files under `source/`, grouped by feature area (layout, analytics, tournament, app/providers). Hooks, store modules, and utility-only files were considered out of scope unless they render UI directly. This audit focuses on component responsibilities, accessibility, and potential follow-ups.
+Audited all React component files under `src/`, grouped by feature area (layout, analytics, tournament, app/providers). Hooks, store modules, and utility-only files were considered out of scope unless they render UI directly. This audit focuses on component responsibilities, accessibility, and potential follow-ups.
 
 ## Summary Highlights
 
@@ -35,19 +35,18 @@ Audited all React component files under `source/`, grouped by feature area (layo
 - **Card components (`src/shared/components/layout/Card/Card.tsx`)**: Core card primitives and name/stats variants.
 
 ### Analytics Feature
-- **Dashboard (`source/features/analytics/Dashboard.tsx`)**: Unified analytics dashboard with chart/table/insight views.
-- **PersonalResults (`source/features/analytics/PersonalResults.tsx`)**: User-specific ranking summary.
+- **Dashboard (`src/features/analytics/Dashboard.tsx`)**: Unified analytics dashboard with chart/table/insight views.
+- **PersonalResults (`src/features/analytics/PersonalResults.tsx`)**: User-specific ranking summary.
 - **RandomGenerator (`src/features/tournament/components/RandomGenerator.tsx`)**: Random name generator interface.
-- **RankingAdjustment (`source/features/analytics/RankingAdjustment.tsx`)**: Admin ranking adjustment tools.
+- **RankingAdjustment (`src/features/analytics/RankingAdjustment.tsx`)**: Admin ranking adjustment tools.
 
 ### Tournament Feature
-- **Tournament (`source/features/tournament/Tournament.tsx`)**: Match flow, voting UI, and progress controls.
-- **Modes (`source/features/tournament/modes/*.tsx`)**: Tournament flow, setup, and management modes.
+- **Tournament (`src/features/tournament/Tournament.tsx`)**: Match flow, voting UI, and progress controls.
+- **Modes (`src/features/tournament/modes/*.tsx`)**: Tournament flow, setup, and management modes.
 - **Components**:
   - **NameSelector (`src/features/tournament/components/NameSelector.tsx`)**: Name selection and admin controls.
   - **NameSuggestion (`src/features/tournament/components/NameSuggestion.tsx`)**: Name suggestion forms.
   - **ProfileSection (`src/features/tournament/components/ProfileSection.tsx`)**: Login/profile management area.
 
 ### Providers
-- **AuthProvider (`source/providers/AuthProvider.tsx`)**: Auth state and login flow.
-- **ToastProvider (`source/providers/ToastProvider.tsx`)**: Toast state and helpers.
+- **Providers (`src/app/providers/Providers.tsx`)**: Auth context and toast context providers.

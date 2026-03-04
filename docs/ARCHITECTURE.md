@@ -108,7 +108,7 @@ config/                   # Tool configuration
 | `hooks/` | Shared React hooks for browser state, forms, data fetching |
 | `services/` | API clients, error handling, offline sync |
 | `store/appStore.ts` | Global state management with Zustand |
-| `types/appTypes.ts` | App type definitions |
+| `shared/types/index.ts` | Shared domain type definitions |
 | `shared/lib/` | Pure utilities, constants, cache, metrics, formatting |
 
 ---
@@ -201,7 +201,7 @@ Services are located in `src/services/`:
 All Supabase calls use `withSupabase()` for consistent error handling and offline support.
 
 The Supabase integration is split across:
-- `src/integrations/supabase/client.ts` for the generated client
+- `supabase/client.ts` for the generated client entrypoint
 - `src/services/supabase/runtime.ts` for execution wrappers and runtime behavior
 - `src/services/supabase/api.ts` for domain-specific operations
 
@@ -216,6 +216,6 @@ The Supabase integration is split across:
 5. **Path Aliases** - `@/features/*`, `@/shared/*`, `@/services/*` for clean imports
 6. **Layered Modules** - Shared utilities/components separated from domain features:
    - `src/store/appStore.ts` - Global Zustand state
-   - `src/types/appTypes.ts` + `src/shared/types/` - Type definitions
+   - `src/shared/types/index.ts` - Type definitions
    - `src/shared/components/layout/` - reusable UI and layout primitives
-   - `src/services/supabase/*` + `src/integrations/supabase/*` - runtime + generated client split
+   - `src/services/supabase/*` + `supabase/*` - runtime + generated client split

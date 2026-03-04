@@ -17,7 +17,7 @@ This document provides a comprehensive guide for setting up, developing, maintai
 - **Modernized Routing**: Migrated from custom `useRouting` to React Router DOM v6
   - Improved navigation patterns and URL synchronization
   - Added Router context safety checks
-- **Component Consolidation**: Unified 4 navigation components into single `AdaptiveNav`
+- **Component Consolidation**: Unified navigation flows under the shared layout/navigation primitives
 - **CVA Implementation**: Adopted Class Variance Authority for component variants
 - **Removed Unused Dependencies**: `sharp`, `lovable-tagger` (kept `react-router-dom` as actively used)
 - **Code Quality Report**: Comprehensive post-consolidation assessment (See `docs/archive/specs/css-dry-refactor/analysis/css-analysis-report.md`)
