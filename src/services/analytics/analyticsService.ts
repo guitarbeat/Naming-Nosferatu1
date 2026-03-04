@@ -1,6 +1,6 @@
 import { api } from "@/services/apiClient";
 
-export interface LeaderboardItem {
+interface LeaderboardItem {
 	name_id: string | number;
 	name: string;
 	avg_rating: number;

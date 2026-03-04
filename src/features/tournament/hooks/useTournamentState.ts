@@ -29,7 +29,7 @@ import {
 } from "./tournamentPersistence";
 import { useAudioManager } from "./useHelpers";
 
-export interface UseTournamentStateResult {
+interface UseTournamentStateResult {
 	currentMatch: Match | null;
 	ratings: Record<string, number>;
 	round: number;

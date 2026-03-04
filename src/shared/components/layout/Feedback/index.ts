@@ -1,7 +1,6 @@
 /**
  * @module Feedback
- * @description Barrel export for all feedback components (Loading, Toast, Error, etc.)
- * Provides backward compatibility for existing imports from FeedbackComponents
+ * @description Barrel export for feedback components (Loading, Error, offline status).
  */
 
 export {

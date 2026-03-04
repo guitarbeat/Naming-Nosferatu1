@@ -21,7 +21,7 @@ interface ErrorBoundaryState {
 	errorId: string | null;
 }
 
-export interface ErrorFallbackProps {
+interface ErrorFallbackProps {
 	error: Error | null;
 	errorId: string | null;
 	resetError: () => void;
@@ -161,7 +161,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 	}
 }
 
-export interface AppError {
+interface AppError {
 	message?: string;
 	severity?: string;
 	isRetryable?: boolean;
@@ -176,7 +176,7 @@ export interface AppError {
 	[key: string]: unknown;
 }
 
-export interface ErrorProps {
+interface ErrorProps {
 	variant?: "boundary" | "list" | "inline";
 	error?: AppError | string | unknown;
 	onRetry?: (...args: unknown[]) => void;

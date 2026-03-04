@@ -9,7 +9,7 @@ export interface HistoryEntry {
 	matchNumber: number;
 }
 
-export interface TournamentMetrics {
+interface TournamentMetrics {
 	totalMatches: number;
 	completedMatches: number;
 	matchNumber: number;
@@ -21,7 +21,7 @@ export interface TournamentMetrics {
 	etaMinutes: number;
 }
 
-export interface BracketDerivation {
+interface BracketDerivation {
 	isComplete: boolean;
 	totalMatches: number;
 	completedMatches: number;

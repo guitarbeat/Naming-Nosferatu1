@@ -244,8 +244,7 @@ src/
 ├── shared/             # Shared components, hooks, utils, types
 ├── store/              # Zustand app store
 ├── styles/             # CSS layers/tokens/effects
-├── types/              # App-level types
-└── routes.tsx          # Route definitions
+└── types/              # App-level types
 
 server/                 # Express API routes/auth/validation
 shared/                 # Cross-runtime shared schema

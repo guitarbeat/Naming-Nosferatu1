@@ -84,8 +84,7 @@ src/
 ├── shared/               # Shared UI, hooks, libs, types, service re-exports
 ├── store/                # Zustand store slices and actions
 ├── styles/               # CSS layers and visual effects
-├── types/                # App-level type definitions
-└── routes.tsx            # Route definitions
+└── types/                # App-level type definitions
 
 supabase/                 # Database
 ├── migrations/           # SQL migrations
@@ -155,7 +154,7 @@ config/                   # Tool configuration
 
 | Feature | Key Components |
 |---------|----------------|
-| **Tournament** | `Tournament` (setup/mode/flow), `SwipeableCards`, `RankingAdjustment`, `NameGrid`, `NameManagementView` |
+| **Tournament** | `Tournament` (setup/mode/flow), `TournamentFlow`, `NameSelector`, `NameSuggestion`, `ProfileSection` |
 | **Analytics** | `Dashboard` and analytics components/services |
 | **Admin** | `AdminDashboard` |
 
@@ -196,10 +195,9 @@ Services are located in `src/services/`:
 | Service | Purpose |
 |---------|---------|
 | `errorManager.ts` | Centralized error handling with retry logic |
-| `SyncQueue.ts` | Offline-first queue for failed operations |
 | `supabase/client.ts` | Re-exports runtime/api modules |
 | `supabase/runtime.ts` | Supabase runtime and wrappers (`withSupabase`) |
-| `supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `siteSettingsAPI`) |
+| `supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `statsAPI`) |
 | `apiClient.ts` | Shared HTTP client utilities |
 
 All Supabase calls use `withSupabase()` for consistent error handling and offline support.

@@ -4,7 +4,7 @@
  * Single source of truth for glassmorphism effects across the app.
  */
 
-export interface GlassPreset {
+interface GlassPreset {
 	radius: number;
 	frost: number;
 	saturation: number;

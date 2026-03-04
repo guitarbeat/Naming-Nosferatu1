@@ -385,7 +385,7 @@ function toNormalizedAbsolutePath(filePath: string): string {
 	return path.posix.normalize(path.posix.resolve(cwd, normalizedPath));
 }
 
-export interface RollbackResult {
+interface RollbackResult {
 	restoredFiles: string[];
 	restoredReferenceFiles: string[];
 	errors: Array<{

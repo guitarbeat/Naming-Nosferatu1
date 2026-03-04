@@ -84,11 +84,6 @@ export interface RatingData {
 	losses: number;
 }
 
-/** A named rating entry (for arrays/lists). */
-export interface RatingItem extends RatingData {
-	name: string;
-}
-
 /**
  * Flexible rating input — accepts either a full RatingData object or a
  * bare number (interpreted as rating with 0 wins/losses).
@@ -139,7 +134,7 @@ export interface MatchRecord {
 }
 
 /** A vote participant with outcome metadata. */
-export interface VoteParticipant {
+interface VoteParticipant {
 	name: string;
 	id: IdType | null;
 	description: string;
@@ -174,19 +169,6 @@ export interface TournamentProps {
 	onVote?: (voteData: VoteData) => Promise<void> | void;
 }
 
-/** UI-facing tournament state (for display components). */
-export interface TournamentUIState {
-	currentMatch: Match | null;
-	currentMatchNumber: number;
-	roundNumber: number;
-	totalMatches: number;
-	currentRatings: Record<string, RatingData>;
-	isTransitioning: boolean;
-	isError: boolean;
-	canUndo: boolean;
-	sorter: unknown;
-}
-
 /** Persisted tournament progress (for resume-after-refresh). */
 export interface PersistentTournamentState {
 	matchHistory: MatchRecord[];
@@ -202,19 +184,6 @@ export interface PersistentTournamentState {
 	teamMatches: TeamMatch[];
 	teamMatchIndex: number;
 	bracketEntrants: string[];
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Filter Types
-// ═══════════════════════════════════════════════════════════════════════════════
-
-export interface TournamentFilters {
-	category?: string;
-	filterStatus?: "all" | "visible" | "hidden";
-	userFilter?: "all" | "user" | "other";
-	selectionFilter?: "all" | "selected" | "unselected";
-	dateFilter?: "all" | "today" | "week" | "month";
-	searchTerm?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -240,12 +209,6 @@ export interface UserPreferences {
 	notifications?: boolean;
 	showCatPictures?: boolean;
 	matrixMode?: boolean;
-}
-
-export interface UserBubbleProfile {
-	username: string;
-	display_name?: string;
-	avatar_url?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

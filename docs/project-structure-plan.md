@@ -11,7 +11,6 @@ source/
   app/
     main.tsx
     App.tsx
-    routes.tsx
     providers/
   features/
     tournament/
@@ -43,7 +42,6 @@ source/
 - `source/hooks/useNames.ts` → `source/features/tournament/hooks/useNames.ts` (domain hook)
 - `source/hooks/useValidatedForm.ts` → `source/shared/hooks/useValidatedForm.ts` (generic form hook)
 - `source/services/supabase/*` → `source/shared/services/supabase/*`
-- `source/services/SyncQueue.ts` → `source/shared/services/SyncQueue.ts`
 - `source/services/tournament.ts` → `source/features/tournament/services/tournament.ts`
 - `source/store/appStore.ts` → `source/app/store/appStore.ts` + feature slices in `source/features/*/store/`
 - `source/utils/*` → `source/shared/lib/*`

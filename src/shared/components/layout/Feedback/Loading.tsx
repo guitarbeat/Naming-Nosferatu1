@@ -20,7 +20,7 @@ type CatVariant = "paw" | "tail" | "bounce" | "spin" | "heartbeat" | "orbit";
 type CatColor = "neon" | "pastel" | "warm";
 type CardSkeletonVariant = "name-card" | "elevated-card" | "mosaic-card";
 
-export interface LoadingProps {
+interface LoadingProps {
 	variant?: "spinner" | "cat" | "bongo" | "suspense" | "skeleton" | "card-skeleton";
 	catVariant?: CatVariant;
 	catColor?: CatColor;
