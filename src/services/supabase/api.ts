@@ -50,19 +50,31 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 		}
 		console.log("[v0] getNamesFromSupabase: Supabase client obtained, querying...");
 
-		let query = client
-			.from("cat_name_options")
-			.select(
-				"id, name, description, pronunciation, avg_rating, created_at, is_hidden, is_active, locked_in, is_deleted",
-			)
-			.eq("is_active", true)
-			.eq("is_deleted", false);
+		const selectColumns =
+			"id, name, description, pronunciation, avg_rating, created_at, is_hidden, is_active, locked_in, is_deleted";
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let result: { data: any; error: any };
 		if (!includeHidden) {
-			query = query.eq("is_hidden", false);
+			result = await (client as any)
+				.from("cat_name_options")
+				.select(selectColumns)
+				.eq("is_active", true)
+				.eq("is_deleted", false)
+				.eq("is_hidden", false)
+				.order("avg_rating", { ascending: false })
+				.limit(1000);
+		} else {
+			result = await (client as any)
+				.from("cat_name_options")
+				.select(selectColumns)
+				.eq("is_active", true)
+				.eq("is_deleted", false)
+				.order("avg_rating", { ascending: false })
+				.limit(1000);
 		}
 
-		const { data, error } = await query.order("avg_rating", { ascending: false }).limit(1000);
+		const { data, error } = result;
 		if (error) {
 			console.log("[v0] getNamesFromSupabase: Supabase query error:", error.message);
 			return [];

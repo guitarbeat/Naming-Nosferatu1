@@ -8,8 +8,7 @@ describe("calculatePercentile", () => {
 		});
 
 		it("returns 50 when array has no valid numbers", () => {
-			// @ts-expect-error testing runtime safety
-			expect(calculatePercentile(10, [null, undefined, NaN])).toBe(50);
+			expect(calculatePercentile(10, [null, undefined, NaN] as unknown as number[])).toBe(50);
 		});
 
 		it("calculates percentile correctly for simple case", () => {
@@ -62,8 +61,7 @@ describe("calculatePercentile", () => {
 	describe("Edge Cases", () => {
 		it("ignores null/undefined/NaN values within the array", () => {
 			// [5, 10, 15] effectively. Value 10 -> 33%
-			// @ts-expect-error
-			expect(calculatePercentile(10, [5, null, 10, undefined, 15, NaN])).toBe(33);
+			expect(calculatePercentile(10, [5, null, 10, undefined, 15, NaN] as unknown as number[])).toBe(33);
 		});
 
 		it("returns 0 if value is NaN (invalid input)", () => {

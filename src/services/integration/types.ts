@@ -176,7 +176,7 @@ export class IntegrationError extends Error {
 		message: string,
 		public readonly code: string,
 		public readonly filePath?: string,
-		public override readonly cause?: Error,
+		public readonly integrationCause?: Error,
 	) {
 		super(message);
 		this.name = "IntegrationError";
