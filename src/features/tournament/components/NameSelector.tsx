@@ -330,6 +330,16 @@ export function NameSelector() {
 		triggerHaptic();
 	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
 
+	// Handlers for hold-to-expand gesture on hidden names panel
+	const startHiddenExpandTimer = useCallback(() => {
+		// This handler is called when user starts holding the hidden names header
+		// The actual expansion is handled by the onClick handler on the button
+	}, []);
+
+	const clearHiddenExpandTimer = useCallback(() => {
+		// This handler is called when user releases or leaves the hidden names header
+	}, []);
+
 	// Admin handlers for toggling hidden/locked status
 	const requestAdminAction = useCallback(
 		(action: PendingAdminAction) => {
