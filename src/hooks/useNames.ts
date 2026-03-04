@@ -1,61 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { coreAPI } from "@/services/supabase/client";
 import { useLocalStorage } from "@/shared/hooks";
 import type { NameItem } from "@/shared/types";
-
-/* =========================================================================
-   useNameData - Fetch and manage name data
-   ========================================================================= */
-
-interface UseNameDataProps {
-	userName?: string | null;
-	mode?: "tournament" | "profile";
-}
-
-interface UseNameDataResult {
-	names: NameItem[];
-	isLoading: boolean;
-	error: Error | null;
-	refetch: () => Promise<void>;
-	setNames: (updater: NameItem[] | ((prev: NameItem[]) => NameItem[])) => void;
-}
-
-export function useNameData({ mode = "tournament" }: UseNameDataProps = {}): UseNameDataResult {
-	const [names, setNamesState] = useState<NameItem[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<Error | null>(null);
-
-	const setNames = useCallback((updater: NameItem[] | ((prev: NameItem[]) => NameItem[])) => {
-		setNamesState((previous) => (typeof updater === "function" ? updater(previous) : updater));
-	}, []);
-
-	const refetch = useCallback(async () => {
-		setIsLoading(true);
-		setError(null);
-		try {
-			const includeHidden = mode !== "tournament";
-			const result = await coreAPI.getTrendingNames(includeHidden);
-			setNamesState(Array.isArray(result) ? result : []);
-		} catch (fetchError) {
-			setError(fetchError instanceof Error ? fetchError : new Error(String(fetchError)));
-			setNamesState([]);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [mode]);
-
-	useEffect(() => {
-		void refetch();
-	}, [refetch]);
-
-	return {
-		names,
-		isLoading,
-		error,
-		refetch,
-		setNames,
-	};
-}
 
 /* =========================================================================
    useNameSelection - Selection state management for names
