@@ -160,7 +160,7 @@ export const updateSupabaseUserContext = (
 
 const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
 
-export const isSupabaseAvailable = async () => {
+const isSupabaseAvailable = async () => {
 	const client = await resolveSupabaseClient();
 	if (!client) {
 		if (isDev) {
@@ -194,6 +194,3 @@ export async function withSupabase<T>(
 		return fallback;
 	}
 }
-
-// Re-export client for modern usage
-export { resolveSupabaseClient as supabase };

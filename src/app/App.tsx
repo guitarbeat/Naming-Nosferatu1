@@ -16,6 +16,7 @@ import { ProfileSection } from "@/features/tournament/components/ProfileSection"
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
+import { updateSupabaseUserContext } from "@/services/supabase/runtime";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { useOfflineSync } from "@/shared/hooks";
 import { cn } from "@/shared/lib/basic";
@@ -39,6 +40,7 @@ function App() {
 		if (authUser) {
 			userActions.setAdminStatus(Boolean(authUser.isAdmin));
 		}
+		updateSupabaseUserContext(authUser?.name ?? null, authUser?.id ?? null);
 	}, [authUser, userActions]);
 
 	useEffect(() => {
@@ -50,7 +52,9 @@ function App() {
 		};
 	}, []);
 
-	useAppStoreInitialization();
+	useAppStoreInitialization((name) => {
+		updateSupabaseUserContext(name, null);
+	});
 	useOfflineSync();
 
 	if (!isInitialized) {

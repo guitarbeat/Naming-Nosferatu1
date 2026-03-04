@@ -13,7 +13,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { queryClient } from "@/services/supabase/client";
 import type { NameItem } from "@/shared/types";
-import { CAT_IMAGES, STORAGE_KEYS } from "./constants";
+import { CAT_IMAGES, FILTER_OPTIONS, STORAGE_KEYS } from "./constants";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
@@ -149,13 +149,13 @@ export function getVisibleNames(names: NameItem[] | null | undefined): NameItem[
  * Map filterStatus to visibility string
  */
 export function mapFilterStatusToVisibility(filterStatus: string): "hidden" | "all" | "visible" {
-	if (filterStatus === "hidden") {
-		return "hidden";
+	if (filterStatus === FILTER_OPTIONS.VISIBILITY.HIDDEN) {
+		return FILTER_OPTIONS.VISIBILITY.HIDDEN;
 	}
-	if (filterStatus === "all") {
-		return "all";
+	if (filterStatus === FILTER_OPTIONS.VISIBILITY.ALL) {
+		return FILTER_OPTIONS.VISIBILITY.ALL;
 	}
-	return "visible";
+	return FILTER_OPTIONS.VISIBILITY.VISIBLE;
 }
 
 /**

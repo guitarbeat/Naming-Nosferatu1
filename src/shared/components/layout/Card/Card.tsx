@@ -269,7 +269,7 @@ const CardBase = memo(
 					{...props}
 				>
 					<div
-						className="relative z-10" // Ensure content is above glow
+						className="relative z-10 h-full" // Ensure content is above glow and can fill card height
 						style={
 							enableTilt
 								? {

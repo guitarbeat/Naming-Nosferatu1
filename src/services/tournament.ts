@@ -257,4 +257,21 @@ export function calculateBracketRound(totalNames: number, currentMatch: number):
 	return Math.ceil(currentMatch / matchesPerRound);
 }
 
+export function getBracketStageLabel(round: number, totalRounds: number): string {
+	const safeRound = Math.max(1, round);
+	const safeTotal = Math.max(1, totalRounds);
+	const remaining = safeTotal - safeRound;
+
+	if (remaining <= 0) {
+		return "Final";
+	}
+	if (remaining === 1) {
+		return "Semifinal";
+	}
+	if (remaining === 2) {
+		return "Quarterfinal";
+	}
+	return `Round ${safeRound}`;
+}
+
 export { CAT_IMAGES };

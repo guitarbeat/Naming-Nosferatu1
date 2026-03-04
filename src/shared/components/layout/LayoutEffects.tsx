@@ -757,8 +757,6 @@ function CatBackground() {
 	);
 }
 
-export default CatBackground;
-
 /* ==========================================================================
    FLOATING BUBBLES COMPONENT
    ========================================================================== */
@@ -1065,4 +1063,5 @@ export const FloatingBubblesContainer: React.FC<FloatingBubblesContainerProps> =
 	);
 };
 
+export default CatBackground;
 export { LiquidGlass };

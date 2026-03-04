@@ -79,16 +79,16 @@ export const PersonalResults = ({
 				onCancel={onStartNew}
 			/>
 
-				<div className="flex flex-wrap gap-3 justify-end">
-					<HeroButton
-						onClick={onStartNew}
-						variant="flat"
-						className="bg-purple-500/20 hover:bg-purple-500/30 text-white"
-						startContent={<Plus size={18} />}
-					>
-						New Tournament
-					</HeroButton>
-				</div>
+			<div className="flex flex-wrap gap-3 justify-end">
+				<HeroButton
+					onClick={onStartNew}
+					variant="flat"
+					className="bg-purple-500/20 hover:bg-purple-500/30 text-white"
+					startContent={<Plus size={18} />}
+				>
+					New Tournament
+				</HeroButton>
 			</div>
-		);
-	};
+		</div>
+	);
+};

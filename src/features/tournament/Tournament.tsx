@@ -24,7 +24,8 @@ import {
 } from "@/shared/lib/icons";
 import type { Match, NameItem, TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
-import { useAudioManager, useTournamentState } from "./hooks";
+import { useAudioManager } from "./hooks";
+import { useTournamentState } from "./hooks/useTournamentState";
 
 type HeatLevel = "warm" | "hot" | "blazing";
 
@@ -208,7 +209,10 @@ function MatchSideCard({
 							{isRight && streak >= STREAK_THRESHOLDS.warm && (
 								<div className="flex gap-0.5">
 									{Array.from({ length: Math.min(streak, 6) }).map((_, i) => (
-										<span key={`${side}-pre-title-streak-${i}`} className="text-lg sm:text-2xl animate-pulse">
+										<span
+											key={`${side}-pre-title-streak-${i}`}
+											className="text-lg sm:text-2xl animate-pulse"
+										>
 											🔥
 										</span>
 									))}
@@ -222,7 +226,10 @@ function MatchSideCard({
 							{!isRight && streak >= STREAK_THRESHOLDS.warm && (
 								<div className="flex gap-0.5">
 									{Array.from({ length: Math.min(streak, 6) }).map((_, i) => (
-										<span key={`${side}-post-title-streak-${i}`} className="text-lg sm:text-2xl animate-pulse">
+										<span
+											key={`${side}-post-title-streak-${i}`}
+											className="text-lg sm:text-2xl animate-pulse"
+										>
 											🔥
 										</span>
 									))}
@@ -230,7 +237,9 @@ function MatchSideCard({
 							)}
 						</div>
 						{pronunciation && (
-							<span className={`${pronunciationClass} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}>
+							<span
+								className={`${pronunciationClass} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}
+							>
 								[{pronunciation}]
 							</span>
 						)}
@@ -259,6 +268,71 @@ function MatchSideCard({
 	);
 }
 
+function BracketTree({ round, totalRounds }: { round: number; totalRounds: number }) {
+	const rounds = useMemo(
+		() => Array.from({ length: Math.max(1, totalRounds) }, (_, index) => index + 1),
+		[totalRounds],
+	);
+	const stageFlavor = useMemo(() => {
+		if (round >= totalRounds) {
+			return "Crown Fight";
+		}
+		if (totalRounds - round === 1) {
+			return "Final Four Chaos";
+		}
+		if (round <= 2) {
+			return "Chaos Ladder";
+		}
+		return "Bracket Grind";
+	}, [round, totalRounds]);
+
+	return (
+		<div className="rounded-xl border border-white/15 bg-white/[0.03] px-3 py-2">
+			<div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-white/60">
+				<span>Bracket Path</span>
+				<span>{stageFlavor}</span>
+			</div>
+			<div className="flex items-center gap-1 overflow-x-auto pb-1">
+				{rounds.map((stageRound, index) => {
+					const isDone = stageRound < round;
+					const isActive = stageRound === round;
+					const tone = isActive
+						? "border-primary/70 bg-primary/20 text-primary shadow-[0_0_18px_rgba(166,94,237,0.45)]"
+						: isDone
+							? "border-emerald-400/45 bg-emerald-500/10 text-emerald-300"
+							: "border-white/20 bg-white/5 text-white/65";
+					const caption =
+						stageRound === totalRounds
+							? "Final"
+							: stageRound === totalRounds - 1
+								? "Semi"
+								: stageRound === totalRounds - 2
+									? "Quarter"
+									: `R${stageRound}`;
+
+					return (
+						<div key={`bracket-tree-round-${stageRound}`} className="flex items-center gap-1">
+							<div
+								className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}
+							>
+								{caption}
+								{isActive ? " ✦" : ""}
+							</div>
+							{index < rounds.length - 1 && (
+								<div
+									className={`h-[1px] w-4 sm:w-6 ${
+										isDone ? "bg-emerald-300/70" : isActive ? "bg-primary/70" : "bg-white/20"
+									}`}
+								/>
+							)}
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
+}
+
 function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	// Optimization: Only select user.name to avoid re-renders on other store changes
 	const navigate = useNavigate();
@@ -275,6 +349,8 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		isComplete,
 		tournamentMode,
 		round: roundNumber,
+		totalRounds,
+		bracketStage,
 		matchNumber: currentMatchNumber,
 		totalMatches,
 		handleUndo,
@@ -706,7 +782,6 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			: rightStreak >= STREAK_THRESHOLDS.warm
 				? { name: rightName, streak: rightStreak, heatLevel: rightHeatLevel ?? "warm" }
 				: null;
-
 	return (
 		<div className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col font-display text-white selection:bg-primary/30">
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
@@ -715,7 +790,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20">
 							<Gamepad2 className="text-primary size-3.5" />
 							<span className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-white/90">
-								{isComplete ? "Tournament Complete!" : `Round ${roundNumber}`}
+								{isComplete
+									? "Tournament Complete!"
+									: `Round ${roundNumber} / ${totalRounds} · ${bracketStage}`}
 							</span>
 						</div>
 						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20">
@@ -760,9 +837,12 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						{isComplete ? (
 							<span className="text-green-400 font-bold">🎉 Tournament Complete! 🎉</span>
 						) : (
-							<>{progress}% Complete</>
+							<>
+								{progress}% Complete · {bracketStage}
+							</>
 						)}
 					</div>
+					<BracketTree round={roundNumber} totalRounds={totalRounds} />
 					{dominantStreak && (
 						<div className="text-center text-[11px] sm:text-xs">
 							<span

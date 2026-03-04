@@ -1,30 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { EloRating, PreferenceSorter, buildTeamMatches, generateRandomTeams, resolveTournamentMode } from "@/services/tournament";
+import { EloRating, generateRandomTeams, resolveTournamentMode } from "@/services/tournament";
 import { useLocalStorage } from "@/shared/hooks";
-import type { Match, MatchRecord, NameItem, PersistentTournamentState, TournamentMode } from "@/shared/types";
-import { useAudioManager } from "./useHelpers";
+import type {
+	Match,
+	MatchRecord,
+	NameItem,
+	PersistentTournamentState,
+	TournamentMode,
+} from "@/shared/types";
 import {
 	calculateTournamentMetrics,
 	computeUpdatedRatings,
 	createIdToNameMap,
 	createMatchRecord,
 	createTeamsById,
-	resolveCurrentMatch,
+	deriveBracketState,
 	type HistoryEntry,
+	resolveCurrentMatch,
 } from "./tournamentEngine";
 import {
 	buildInitialRatings,
+	createBracketEntrants,
 	createDefaultPersistentState,
 	createNamesKey,
 	createTournamentId,
 	sanitizePersistentState,
 } from "./tournamentPersistence";
+import { useAudioManager } from "./useHelpers";
 
 export interface UseTournamentStateResult {
 	currentMatch: Match | null;
 	ratings: Record<string, number>;
 	round: number;
+	totalRounds: number;
+	bracketStage: string;
 	matchNumber: number;
 	totalMatches: number;
 	isComplete: boolean;
@@ -41,6 +51,15 @@ export interface UseTournamentStateResult {
 }
 
 const VOTE_COOLDOWN = 300;
+
+function haveSameIds(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) {
+		return false;
+	}
+	const left = [...a].sort();
+	const right = [...b].sort();
+	return left.every((id, index) => id === right[index]);
+}
 
 export function useTournamentState(names: NameItem[], userName?: string): UseTournamentStateResult {
 	const toast = useToast();
@@ -91,7 +110,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		[setPersistentState, userName],
 	);
 
-	const sorter = useMemo(() => new PreferenceSorter(names.map((n) => String(n.id))), [names]);
 	const ratingsRef = useRef(ratings);
 	const initializedRef = useRef(false);
 	const lastNamesKeyRef = useRef("");
@@ -117,107 +135,102 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
 		const hasValidPersistence =
 			persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
+		const initialRatings = buildInitialRatings(names);
+
+		let teams = persistentState.teams;
+		if (tournamentMode === "2v2" && teams.length < 2) {
+			teams = generateRandomTeams(names.map((name) => ({ id: String(name.id), name: name.name })));
+		}
+
+		const participantIds =
+			tournamentMode === "2v2"
+				? teams.map((team) => team.id)
+				: names.map((name) => String(name.id));
+		const shouldResetBracket =
+			!hasValidPersistence ||
+			persistentState.bracketEntrants.length === 0 ||
+			!haveSameIds(
+				persistentState.bracketEntrants.filter((id) => !id.startsWith("__BYE__")),
+				participantIds,
+			);
+		const bracketEntrants = shouldResetBracket
+			? createBracketEntrants(participantIds)
+			: persistentState.bracketEntrants;
 
 		if (hasValidPersistence) {
-			if (tournamentMode === "1v1" && sorter.currentIndex === 0 && persistentState.matchHistory.length > 0) {
-				for (const record of persistentState.matchHistory) {
-					if (record.winner && record.loser) {
-						sorter.addPreference(record.winner, record.loser, 1);
-					}
-				}
-			}
-
 			if (persistentState.ratings && Object.keys(persistentState.ratings).length > 0) {
 				setRatings(persistentState.ratings);
 			} else {
-				setRatings(buildInitialRatings(names));
+				setRatings(initialRatings);
 			}
 
-			if (tournamentMode === "2v2") {
-				const shouldRebuildTeams = persistentState.teams.length < 2;
-				const shouldRebuildMatches = persistentState.teamMatches.length === 0;
-				if (shouldRebuildTeams || shouldRebuildMatches) {
-					const generatedTeams = generateRandomTeams(
-						names.map((name) => ({ id: String(name.id), name: name.name })),
-					);
-					const generatedMatches = buildTeamMatches(generatedTeams);
-					updatePersistentState({
-						teams: generatedTeams,
-						teamMatches: generatedMatches,
-						totalMatches: generatedMatches.length,
-						teamMatchIndex: Math.min(persistentState.teamMatchIndex, generatedMatches.length),
-					});
-				}
+			if (shouldResetBracket || (tournamentMode === "2v2" && teams !== persistentState.teams)) {
+				updatePersistentState({
+					matchHistory: shouldResetBracket ? [] : persistentState.matchHistory,
+					currentRound: 1,
+					currentMatch: 1,
+					totalMatches: Math.max(0, participantIds.length - 1),
+					ratings: shouldResetBracket ? initialRatings : persistentState.ratings,
+					teams,
+					bracketEntrants,
+				});
 			}
 		} else {
-			const initialRatings = buildInitialRatings(names);
-
-			if (tournamentMode === "2v2") {
-				const generatedTeams = generateRandomTeams(
-					names.map((name) => ({ id: String(name.id), name: name.name })),
-				);
-				const generatedMatches = buildTeamMatches(generatedTeams);
-				setRatings(initialRatings);
-				updatePersistentState({
-					matchHistory: [],
-					currentRound: 1,
-					currentMatch: 1,
-					totalMatches: generatedMatches.length,
-					namesKey,
-					ratings: initialRatings,
-					mode: "2v2",
-					teams: generatedTeams,
-					teamMatches: generatedMatches,
-					teamMatchIndex: 0,
-				});
-			} else {
-				const estimatedMatches = (names.length * (names.length - 1)) / 2;
-				setRatings(initialRatings);
-				updatePersistentState({
-					matchHistory: [],
-					currentRound: 1,
-					currentMatch: 1,
-					totalMatches: estimatedMatches,
-					namesKey,
-					ratings: initialRatings,
-					mode: "1v1",
-					teams: [],
-					teamMatches: [],
-					teamMatchIndex: 0,
-				});
-			}
+			setRatings(initialRatings);
+			updatePersistentState({
+				matchHistory: [],
+				currentRound: 1,
+				currentMatch: 1,
+				totalMatches: Math.max(0, participantIds.length - 1),
+				namesKey,
+				ratings: initialRatings,
+				mode: tournamentMode,
+				teams: tournamentMode === "2v2" ? teams : [],
+				teamMatches: [],
+				teamMatchIndex: 0,
+				bracketEntrants,
+			});
 		}
 
 		initializedRef.current = true;
 		setRefreshKey((k) => k + 1);
-	}, [namesKey, persistentState, sorter, names, updatePersistentState, tournamentMode]);
+	}, [namesKey, persistentState, names, updatePersistentState, tournamentMode]);
 
 	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
 	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
+	const bracketDerived = useMemo(
+		() => deriveBracketState(persistentState.bracketEntrants, persistentState.matchHistory),
+		[persistentState.bracketEntrants, persistentState.matchHistory],
+	);
 
 	const currentMatch = useMemo(() => {
 		void refreshKey;
 		return resolveCurrentMatch({
 			tournamentMode,
-			persistentState,
+			pendingMatchIds: bracketDerived.pendingMatchIds,
 			teamsById,
 			idToNameMap,
-			sorter,
 		});
-	}, [sorter, refreshKey, idToNameMap, tournamentMode, persistentState.teamMatches, persistentState.teamMatchIndex, teamsById]);
+	}, [refreshKey, idToNameMap, tournamentMode, bracketDerived.pendingMatchIds, teamsById]);
 
-	const isComplete = currentMatch === null;
+	const isComplete = bracketDerived.isComplete;
 	const metrics = useMemo(
 		() =>
 			calculateTournamentMetrics({
-				currentMatch,
-				tournamentMode,
-				persistentState,
-				namesLength: names.length,
+				derived: bracketDerived,
 			}),
-		[currentMatch, tournamentMode, persistentState, names.length],
+		[bracketDerived],
 	);
-	const { totalMatches, matchNumber, round, roundSize, progress, etaMinutes } = metrics;
+	const {
+		totalMatches,
+		matchNumber,
+		round,
+		totalRounds,
+		stageLabel,
+		roundSize,
+		progress,
+		etaMinutes,
+	} = metrics;
 
 	const handleVote = useCallback(
 		(winnerId: string, loserId: string) => {
@@ -259,18 +272,12 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 				matchHistory: [...(prev.matchHistory || []), matchRecord],
 				currentMatch: matchNumber + 1,
 				currentRound: round,
-				teamMatchIndex:
-					tournamentMode === "2v2" ? Math.min(prev.teamMatchIndex + 1, prev.teamMatches.length) : prev.teamMatchIndex,
 				ratings: newRatings,
 			}));
 
-			if (tournamentMode === "1v1") {
-				sorter.addPreference(winnerId, loserId, 1);
-			}
-
 			setRefreshKey((k) => k + 1);
 		},
-		[currentMatch, elo, matchNumber, round, sorter, updatePersistentState, tournamentMode],
+		[currentMatch, elo, matchNumber, round, updatePersistentState, tournamentMode],
 	);
 
 	const handleVoteWithAnimation = useCallback(
@@ -302,9 +309,6 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		audioManager.playUndoSound();
 		setRatings(lastEntry.ratings);
 		setHistory((prev) => prev.slice(0, -1));
-		if (tournamentMode === "1v1") {
-			sorter.undoLastPreference();
-		}
 		setRefreshKey((k) => k + 1);
 
 		updatePersistentState((prev) => {
@@ -312,13 +316,14 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			return {
 				matchHistory: newHistory,
 				currentMatch: Math.max(1, prev.currentMatch - 1),
-				currentRound: Math.max(1, prev.currentRound - (prev.currentMatch % roundSize === 0 ? 1 : 0)),
-				teamMatchIndex:
-					tournamentMode === "2v2" ? Math.max(0, prev.teamMatchIndex - 1) : prev.teamMatchIndex,
+				currentRound: Math.max(
+					1,
+					prev.currentRound - (prev.currentMatch % roundSize === 0 ? 1 : 0),
+				),
 				ratings: lastEntry.ratings,
 			};
 		});
-	}, [audioManager, history, sorter, toast, updatePersistentState, tournamentMode, roundSize]);
+	}, [audioManager, history, toast, updatePersistentState, roundSize]);
 
 	const handleQuit = useCallback(() => {
 		updatePersistentState({
@@ -332,6 +337,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			teams: [],
 			teamMatches: [],
 			teamMatchIndex: 0,
+			bracketEntrants: [],
 		});
 		setHistory([]);
 		setRatings({});
@@ -342,6 +348,8 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		currentMatch,
 		ratings,
 		round,
+		totalRounds,
+		bracketStage: stageLabel,
 		matchNumber,
 		totalMatches,
 		isComplete,

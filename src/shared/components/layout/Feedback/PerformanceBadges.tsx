@@ -72,7 +72,7 @@ interface PerformanceBadgesProps {
 	className?: string;
 }
 
-export function PerformanceBadges({ types = [], className = "" }: PerformanceBadgesProps) {
+function PerformanceBadges({ types = [], className = "" }: PerformanceBadgesProps) {
 	if (!types || types.length === 0) {
 		return null;
 	}

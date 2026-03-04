@@ -5,10 +5,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useToast } from "@/app/providers/Providers";
-import { Toast } from "@/shared/components/layout";
 import { devError, devLog } from "@/shared/lib/basic";
-import { NOTIFICATION, STORAGE_KEYS } from "@/shared/lib/constants";
+import { STORAGE_KEYS } from "@/shared/lib/constants";
 import {
 	getCurrentTrack,
 	playBackgroundMusic,
@@ -27,7 +25,7 @@ import {
    AUDIO MANAGER HOOK
    ========================================================================= */
 
-export interface UseAudioManagerResult {
+interface UseAudioManagerResult {
 	isMuted: boolean;
 	handleToggleMute: () => void;
 	playVoteSound: () => void;
@@ -272,72 +270,5 @@ export function useAudioManager(): UseAudioManagerResult {
 		playWowSound: playWowEffect,
 		playSurpriseSound: playSurpriseEffect,
 		primeAudioExperience,
-	};
-}
-
-/* =========================================================================
-   PROFILE NOTIFICATIONS HOOK
-   ========================================================================= */
-
-/**
- * Hook for profile notification functions with toast UI
- * @returns {Object} Notification functions and Toast component
- */
-export function useProfileNotifications() {
-	const {
-		toasts,
-		showSuccess: showSuccessToast,
-		showError: showErrorToast,
-		showToast: showToastMessage,
-		hideToast,
-	} = useToast();
-
-	const showSuccess = useCallback(
-		(message: string) => {
-			devLog("✅", message);
-			showSuccessToast(message, { duration: 5000 });
-		},
-		[showSuccessToast],
-	);
-
-	const showError = useCallback(
-		(message: string) => {
-			devError("❌", message);
-			showErrorToast(message, { duration: NOTIFICATION.ERROR_DURATION_MS });
-		},
-		[showErrorToast],
-	);
-
-	const showToast = useCallback(
-		(message: string, type: "success" | "error" | "info" | "warning" = "info") => {
-			devLog(`📢 [${type}]`, message);
-			showToastMessage(message, type, {
-				duration: type === "error" ? 7000 : 5000,
-			});
-		},
-		[showToastMessage],
-	);
-
-	const ToastContainer = useCallback(() => {
-		return (
-			<Toast
-				variant="container"
-				toasts={toasts}
-				removeToast={hideToast}
-				position="top-right"
-				maxToasts={NOTIFICATION.MAX_TOASTS}
-				onDismiss={() => {
-					// Intentional no-op: dismiss handled by component
-				}}
-				message=""
-			/>
-		);
-	}, [toasts, hideToast]);
-
-	return {
-		showSuccess,
-		showError,
-		showToast,
-		ToastContainer,
 	};
 }

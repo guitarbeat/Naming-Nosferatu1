@@ -1535,5 +1535,3 @@ export function NameSelector() {
 		</Card>
 	);
 }
-
-export default NameSelector;

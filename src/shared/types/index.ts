@@ -201,6 +201,7 @@ export interface PersistentTournamentState {
 	teams: Team[];
 	teamMatches: TeamMatch[];
 	teamMatchIndex: number;
+	bracketEntrants: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

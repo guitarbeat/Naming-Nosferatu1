@@ -1,3 +1,4 @@
+import { shuffleArray } from "@/shared/lib/basic";
 import { ELO_RATING } from "@/shared/lib/constants";
 import type {
 	NameItem,
@@ -21,6 +22,7 @@ export function createDefaultPersistentState(userName: string): PersistentTourna
 		teams: [],
 		teamMatches: [],
 		teamMatchIndex: 0,
+		bracketEntrants: [],
 	};
 }
 
@@ -48,6 +50,10 @@ export function createTournamentId(names: NameItem[], userName?: string): string
 		.join("-");
 	const prefix = userName || "anonymous";
 	return `tournament-${prefix}-${sortedNames}`;
+}
+
+export function createBracketEntrants(participantIds: string[]): string[] {
+	return shuffleArray(participantIds);
 }
 
 function isValidTeam(value: unknown): value is Team {
@@ -107,5 +113,8 @@ export function sanitizePersistentState(
 			typeof merged.teamMatchIndex === "number" && merged.teamMatchIndex >= 0
 				? merged.teamMatchIndex
 				: 0,
+		bracketEntrants: Array.isArray(merged.bracketEntrants)
+			? merged.bracketEntrants.map(String)
+			: [],
 	} as PersistentTournamentState;
 }

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ELO_RATING } from "@/shared/lib/constants";
 import {
-	EloRating,
 	applyTeamMatchElo,
 	buildTeamMatches,
+	EloRating,
 	generateRandomTeams,
+	getBracketStageLabel,
 	resolveTournamentMode,
 } from "./tournament";
 
@@ -314,5 +315,18 @@ describe("team utilities", () => {
 		expect(updated["2"]).toBeLessThanOrEqual(ELO_RATING.MAX_RATING);
 		expect(updated["3"]).toBeGreaterThanOrEqual(ELO_RATING.MIN_RATING);
 		expect(updated["4"]).toBeGreaterThanOrEqual(ELO_RATING.MIN_RATING);
+	});
+});
+
+describe("getBracketStageLabel", () => {
+	it("maps late rounds to named stages", () => {
+		expect(getBracketStageLabel(4, 4)).toBe("Final");
+		expect(getBracketStageLabel(3, 4)).toBe("Semifinal");
+		expect(getBracketStageLabel(2, 4)).toBe("Quarterfinal");
+	});
+
+	it("uses generic round label for early rounds", () => {
+		expect(getBracketStageLabel(1, 6)).toBe("Round 1");
+		expect(getBracketStageLabel(2, 6)).toBe("Round 2");
 	});
 });

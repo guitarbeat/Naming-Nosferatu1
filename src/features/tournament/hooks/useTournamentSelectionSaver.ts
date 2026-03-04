@@ -18,72 +18,53 @@ function saveSelectionHash(selectedNames: NameItem[]): string {
 		.join(",");
 }
 
+function isBrowser(): boolean {
+	return typeof window !== "undefined";
+}
+
 function isSaverOptions(value: NameItem[] | SaverOptions): value is SaverOptions {
 	return !Array.isArray(value);
 }
 
-function useTournamentSelectionSaverLegacy(selectedNames: NameItem[]) {
-	const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+export function useTournamentSelectionSaver(options: SaverOptions): SaverApiResult;
+export function useTournamentSelectionSaver(selectedNames: NameItem[]): undefined;
+export function useTournamentSelectionSaver(
+	input: NameItem[] | SaverOptions,
+): SaverApiResult | undefined {
+	const options = isSaverOptions(input) ? input : null;
+	const selectedNames = Array.isArray(input) ? input : null;
+	const userName = options?.userName ?? null;
+	const enableAutoSave = options?.enableAutoSave ?? true;
+
+	const saveTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
 	const lastSavedRef = useRef<string>("");
 
-	useEffect(() => {
-		// Clear any pending save
-		if (saveTimeoutRef.current) {
-			clearTimeout(saveTimeoutRef.current);
+	const clearPendingSave = useCallback(() => {
+		if (!saveTimeoutRef.current) {
+			return;
 		}
-
-		// Optimization: Move hash calculation inside the debounce timeout.
-		// This ensures expensive operations (map/sort/join) are not performed
-		// synchronously on every render, but only after the user has stopped interacting.
-		saveTimeoutRef.current = setTimeout(() => {
-			const selectionHash = saveSelectionHash(selectedNames);
-
-			if (selectionHash === lastSavedRef.current) {
-				return;
-			}
-
-			// Simulate save
-			// console.log("Saving selection:", selectionHash);
-			lastSavedRef.current = selectionHash;
-		}, 1000);
-
-		return () => {
-			if (saveTimeoutRef.current) {
-				clearTimeout(saveTimeoutRef.current);
-			}
-		};
-	}, [selectedNames]);
-
-	return undefined;
-}
-
-function useTournamentSelectionSaverWithApi({
-	userName,
-	enableAutoSave = true,
-}: SaverOptions): SaverApiResult {
-	const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-	const lastSavedRef = useRef<string>("");
+		clearTimeout(saveTimeoutRef.current);
+		saveTimeoutRef.current = null;
+	}, []);
 
 	const scheduleSave = useCallback(
-		(selectedNames: NameItem[]) => {
-			if (!userName || !enableAutoSave) {
+		(names: NameItem[]) => {
+			if (!userName || !enableAutoSave || !isBrowser()) {
 				return;
 			}
 
-			if (saveTimeoutRef.current) {
-				clearTimeout(saveTimeoutRef.current);
-			}
+			clearPendingSave();
 
-			const selectionHash = saveSelectionHash(selectedNames);
+			const selectionHash = saveSelectionHash(names);
 			if (selectionHash === lastSavedRef.current) {
 				return;
 			}
 
-			saveTimeoutRef.current = setTimeout(async () => {
+			saveTimeoutRef.current = globalThis.setTimeout(() => {
 				try {
 					localStorage.setItem(
 						`tournament_selection_${userName}`,
-						JSON.stringify(selectedNames.map((n) => n.id)),
+						JSON.stringify(names.map((n) => n.id)),
 					);
 					lastSavedRef.current = selectionHash;
 				} catch (error) {
@@ -91,11 +72,11 @@ function useTournamentSelectionSaverWithApi({
 				}
 			}, 1000);
 		},
-		[userName, enableAutoSave],
+		[clearPendingSave, userName, enableAutoSave],
 	);
 
 	const loadSavedSelection = useCallback(() => {
-		if (!userName) {
+		if (!userName || !isBrowser()) {
 			return [];
 		}
 		try {
@@ -106,25 +87,32 @@ function useTournamentSelectionSaverWithApi({
 		}
 	}, [userName]);
 
+	useEffect(() => clearPendingSave, [clearPendingSave]);
+
 	useEffect(() => {
-		return () => {
-			if (saveTimeoutRef.current) {
-				clearTimeout(saveTimeoutRef.current);
+		if (!selectedNames) {
+			return;
+		}
+
+		clearPendingSave();
+
+		saveTimeoutRef.current = globalThis.setTimeout(() => {
+			const selectionHash = saveSelectionHash(selectedNames);
+			if (selectionHash === lastSavedRef.current) {
+				return;
 			}
-		};
-	}, []);
+			lastSavedRef.current = selectionHash;
+		}, 1000);
+
+		return clearPendingSave;
+	}, [clearPendingSave, selectedNames]);
+
+	if (!options) {
+		return undefined;
+	}
 
 	return {
 		scheduleSave,
 		loadSavedSelection,
 	};
-}
-
-export function useTournamentSelectionSaver(options: SaverOptions): SaverApiResult;
-export function useTournamentSelectionSaver(selectedNames: NameItem[]): void;
-export function useTournamentSelectionSaver(input: NameItem[] | SaverOptions): SaverApiResult | void {
-	if (isSaverOptions(input)) {
-		return useTournamentSelectionSaverWithApi(input);
-	}
-	return useTournamentSelectionSaverLegacy(input);
 }

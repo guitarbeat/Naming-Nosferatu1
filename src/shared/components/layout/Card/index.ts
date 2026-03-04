@@ -1,6 +1,6 @@
-import { Card, CardName, CardStats } from "./Card";
+import { Card } from "./Card";
 
-export { Card, CardName, CardStats };
+export { Card };
 export type {
 	CardBackground,
 	CardNameProps,
@@ -11,7 +11,3 @@ export type {
 	CardVariant,
 	GlassConfig,
 } from "./Card";
-
-const CardWithStats = Object.assign(Card, { Stats: CardStats, Name: CardName });
-
-export default CardWithStats;
