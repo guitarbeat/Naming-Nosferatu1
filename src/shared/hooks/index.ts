@@ -97,7 +97,7 @@ function useEventListener<K extends keyof WindowEventMap>(
 /**
  * Subscribe to a CSS media query.
  */
-function useMediaQuery(query: string): boolean {
+export function useMediaQuery(query: string): boolean {
 	const [matches, setMatches] = useState(false);
 
 	useEffect(() => {

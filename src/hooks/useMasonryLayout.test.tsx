@@ -1,5 +1,5 @@
-import { render, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { act, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMasonryLayout } from "./useMasonryLayout";
 
 // Mock ResizeObserver
@@ -17,8 +17,12 @@ class MockResizeObserver {
 		};
 	}
 
-	unobserve() {}
-	disconnect() {}
+	unobserve() {
+		/* noop */
+	}
+	disconnect() {
+		/* noop */
+	}
 }
 
 describe("useMasonryLayout", () => {
@@ -162,7 +166,7 @@ describe("useMasonryLayout", () => {
 		const container = getByTestId("container");
 
 		Object.defineProperty(container, "offsetWidth", { value: 210, configurable: true });
-		Array.from(container.children).forEach(child => {
+		Array.from(container.children).forEach((child) => {
 			Object.defineProperty(child, "offsetHeight", { value: 50 });
 		});
 
@@ -177,7 +181,7 @@ describe("useMasonryLayout", () => {
 		Object.defineProperty(container, "offsetWidth", { value: 100, configurable: true });
 
 		act(() => {
-			if (typeof (container as any)._triggerResize === 'function') {
+			if (typeof (container as any)._triggerResize === "function") {
 				(container as any)._triggerResize();
 			}
 			vi.advanceTimersByTime(200); // Allow rAF mock to complete
@@ -212,7 +216,7 @@ describe("useMasonryLayout", () => {
 		const container = getByTestId("container");
 
 		Object.defineProperty(container, "offsetWidth", { value: 320, configurable: true });
-		Array.from(container.children).forEach(child => {
+		Array.from(container.children).forEach((child) => {
 			Object.defineProperty(child, "offsetHeight", { value: 50 });
 		});
 

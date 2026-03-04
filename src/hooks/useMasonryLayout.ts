@@ -132,7 +132,7 @@ export function useMasonryLayout<T extends HTMLElement>(
 	}, [calculateLayout]);
 
 	// Batch layout updates to prevent thrashing
-	const layoutTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const layoutTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
 	// Cache for stable ref callbacks to prevent unnecessary re-renders
 	const refCallbacks = useRef<Map<number, (el: HTMLDivElement | null) => void>>(new Map());
