@@ -60,7 +60,7 @@ function App() {
 
 	if (!isInitialized) {
 		return (
-			<div className="fixed inset-0 flex items-center justify-center bg-black">
+			<div className="fixed inset-0 flex items-center justify-center bg-background">
 				<Loading variant="spinner" text="Preparing the tournament..." />
 			</div>
 		);
@@ -69,7 +69,7 @@ function App() {
 	return (
 		<div
 			className={cn(
-				"min-h-screen w-full bg-transparent text-white font-sans selection:bg-purple-500/30",
+				"min-h-screen w-full bg-transparent text-foreground font-sans selection:bg-primary/30",
 			)}
 		>
 			<AppLayout>
@@ -140,12 +140,12 @@ function TournamentContent() {
 						onComplete={handleTournamentComplete as any}
 					/>
 				) : (
-					<div className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-black/30 px-6 py-10 text-center">
-						<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent uppercase tracking-tighter">
-							No contenders yet
-						</h2>
-						<p className="text-white/75 mb-6">
-							Choose at least two names in the picker to start your tournament bracket.
+				<div className="mx-auto max-w-xl rounded-2xl border border-border/10 bg-background/30 px-6 py-10 text-center">
+					<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
+						No contenders yet
+					</h2>
+					<p className="text-muted-foreground mb-6">
+						Choose at least two names in the picker to start your tournament bracket.
 						</p>
 						<div className="flex flex-wrap items-center justify-center gap-3">
 							<Button variant="glass" onClick={() => navigate("/")}>
@@ -171,7 +171,7 @@ function AnalysisContent() {
 
 	return (
 		<Section id="analysis" variant="minimal" padding="none" maxWidth="full">
-			<h2 className="text-3xl md:text-5xl font-bold mb-12 text-center bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent uppercase tracking-tighter">
+			<h2 className="text-3xl md:text-5xl font-bold mb-12 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
 				The Victors Emerge
 			</h2>
 			<Suspense fallback={<Loading variant="skeleton" height={600} />}>
@@ -197,8 +197,8 @@ function AdminContent() {
 		return (
 			<Section id="admin" variant="minimal" padding="none" maxWidth="full">
 				<div className="text-center py-20">
-					<h2 className="text-3xl font-bold mb-4 text-red-400">Access Denied</h2>
-					<p className="text-white/60">Admin access required to view this page.</p>
+				<h2 className="text-3xl font-bold mb-4 text-destructive">Access Denied</h2>
+				<p className="text-muted-foreground">Admin access required to view this page.</p>
 				</div>
 			</Section>
 		);
