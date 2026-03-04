@@ -133,22 +133,20 @@ config/                   # Tool configuration
 |-----------|-------------|
 | `Button` | Primary button with CVA variants |
 | `Card` | Container component with variants |
-| `Error` | Error boundary with fallback UI |
+| `ErrorBoundary` | Error boundary with fallback UI |
 | `FormPrimitives` | Input, Select, Label components |
 | `LiquidGlass` | Glassmorphism effect |
-| `StatusIndicators` | Loading spinners, badges |
-| `Toast` | Notification system |
-| `Charts` | Data visualization components |
+| `Loading` | Loading states and skeletons |
+| `OfflineIndicator` | Online/offline status indicator |
 
 #### Layout Components (`shared/components/layout/`)
 
 | Component | Description |
 |-----------|-------------|
 | `AppLayout` | Main app shell and structure |
-| `AdaptiveNav` | Responsive navigation (mobile/desktop) |
-| `CollapsibleHeader` | Collapsible section headers |
-| `CatBackground` | Animated cat background |
-| `FloatingBubbles` | User bubble animations |
+| `FloatingNavbar` | Primary bottom navigation and quick actions |
+| `CollapsibleContent` | Collapsible content wrapper |
+| `Lightbox` | Fullscreen image viewer |
 
 #### Feature Components
 
