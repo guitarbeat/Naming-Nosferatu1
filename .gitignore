@@ -124,7 +124,10 @@ jscpd-report.html
 *.m4a
 *.aac
 # Allow small sound effects (under 1MB) - adjust threshold as needed
-!public/assets/sounds/*.{mp3,wav,ogg}  # Remove this line if you want to track all sounds
+!public/assets/sounds/
+!public/assets/sounds/*.mp3
+!public/assets/sounds/*.wav
+!public/assets/sounds/*.ogg
 
 # Large image files (prevent uncompressed originals)
 *.psd

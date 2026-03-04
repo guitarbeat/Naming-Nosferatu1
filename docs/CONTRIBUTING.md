@@ -175,7 +175,7 @@ To maintain long-term maintainability, follow these principles:
 ### Writing Guidelines
 
 - **Capitalization**: Use Sentence case for headings and buttons (e.g., "Start tournament").
-- **Buttons**: Use action verbs (e.g., "Vote," "Skip," "Export CSV").
+- **Buttons**: Use action verbs (e.g., "Vote," "Skip," "Start tournament").
 - **Dates**: Use relative dates ("2 days ago") for recent events, absolute ("Jan 15, 2026") for history.
 - **Placeholders**: Use `{variableName}` format consistently.
 

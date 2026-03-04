@@ -24,6 +24,27 @@
 	animation: float 15s ease-in-out infinite;
 }
 
+@keyframes flame-rise {
+	0% {
+		opacity: 0.35;
+		transform: translateY(8px) scale(0.85);
+	}
+
+	50% {
+		opacity: 1;
+		transform: translateY(-6px) scale(1.08);
+	}
+
+	100% {
+		opacity: 0.45;
+		transform: translateY(-14px) scale(0.9);
+	}
+}
+
+.animate-flame {
+	animation: flame-rise 1.25s ease-in-out infinite;
+}
+
 /* App layout */
 .cat-background {
 	position: fixed;

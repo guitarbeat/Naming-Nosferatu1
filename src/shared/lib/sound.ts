@@ -26,8 +26,7 @@ class SoundManager {
 	private defaultVolume = 0.3;
 	private backgroundMusicVolume = 0.1;
 	private currentTrackIndex = 0;
-	private readonly isBrowser =
-		typeof window !== "undefined" && typeof localStorage !== "undefined";
+	private readonly isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined";
 
 	// Songs (large files, >1MB) - for background music
 	private backgroundTracks = [
@@ -130,10 +129,11 @@ class SoundManager {
 			return null;
 		}
 
-		const browserWindow = window as Window & {
+		const browserGlobal = globalThis as typeof globalThis & {
+			AudioContext?: typeof AudioContext;
 			webkitAudioContext?: typeof AudioContext;
 		};
-		const AudioContextConstructor = browserWindow.AudioContext || browserWindow.webkitAudioContext;
+		const AudioContextConstructor = browserGlobal.AudioContext || browserGlobal.webkitAudioContext;
 		if (!AudioContextConstructor) {
 			return null;
 		}
@@ -142,13 +142,18 @@ class SoundManager {
 			this.audioContext = new AudioContextConstructor();
 		}
 
-		if (this.audioContext.state === "suspended") {
-			this.audioContext.resume().catch(() => {
+		const context = this.audioContext;
+		if (!context) {
+			return null;
+		}
+
+		if (context.state === "suspended") {
+			context.resume().catch(() => {
 				/* ignore browser policy errors */
 			});
 		}
 
-		return this.audioContext;
+		return context;
 	}
 
 	private scheduleSynthNote(
@@ -268,7 +273,11 @@ class SoundManager {
 			}
 
 			const pattern =
-				this.fallbackMusicPatterns[this.currentTrackIndex % this.fallbackMusicPatterns.length];
+				this.fallbackMusicPatterns[this.currentTrackIndex % this.fallbackMusicPatterns.length] ??
+				this.fallbackMusicPatterns[0];
+			if (!pattern) {
+				return;
+			}
 			const leadDuration = this.playSynthSequence(
 				pattern,
 				Math.max(0.04, this.backgroundMusicVolume * 0.7),
@@ -387,7 +396,7 @@ class SoundManager {
 			}
 
 			// Try to get from cache first
-			let audio = this.audioCache.get(soundName);
+			let audio: HTMLAudioElement | null = this.audioCache.get(soundName) ?? null;
 
 			// If not in cache, try to create it on-demand
 			if (!audio) {

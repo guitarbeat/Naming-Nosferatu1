@@ -4,11 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
 import { ErrorComponent } from "@/shared/components/layout/Feedback";
-import {
-	exportTournamentResultsToCSV,
-	getRandomCatImage,
-	getVisibleNames,
-} from "@/shared/lib/basic";
+import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import {
 	Clock,
@@ -30,6 +26,63 @@ import type { NameItem, TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 import { useAudioManager, useTournamentState } from "./hooks";
 
+type HeatLevel = "warm" | "hot" | "blazing";
+
+const STREAK_THRESHOLDS = {
+	warm: 3,
+	hot: 5,
+	blazing: 7,
+} as const;
+
+interface StreakBurst {
+	key: number;
+	side: "left" | "right";
+	winnerName: string;
+	streak: number;
+	heatLevel: HeatLevel;
+}
+
+const getHeatLevel = (streak: number): HeatLevel | null => {
+	if (streak >= STREAK_THRESHOLDS.blazing) {
+		return "blazing";
+	}
+	if (streak >= STREAK_THRESHOLDS.hot) {
+		return "hot";
+	}
+	if (streak >= STREAK_THRESHOLDS.warm) {
+		return "warm";
+	}
+	return null;
+};
+
+const getHeatCardClasses = (heatLevel: HeatLevel | null): string => {
+	switch (heatLevel) {
+		case "blazing":
+			return "ring-2 ring-orange-100/85 shadow-[0_0_105px_rgba(249,115,22,0.52)]";
+		case "hot":
+			return "ring-2 ring-amber-200/65 shadow-[0_0_78px_rgba(251,191,36,0.42)]";
+		case "warm":
+			return "ring-1 ring-orange-200/30 shadow-[0_0_35px_rgba(249,115,22,0.24)]";
+		default:
+			return "";
+	}
+};
+
+const getHeatTextClasses = (heatLevel: HeatLevel): string => {
+	switch (heatLevel) {
+		case "blazing":
+			return "text-orange-200 border-orange-300/45 bg-orange-500/15";
+		case "hot":
+			return "text-amber-200 border-amber-300/45 bg-amber-500/15";
+		default:
+			return "text-orange-100 border-orange-300/35 bg-orange-500/10";
+	}
+};
+
+const getFlameCount = (streak: number, max = 8): number => {
+	return Math.min(max, Math.max(3, Math.round(streak * 1.2)));
+};
+
 function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	// Optimization: Only select user.name to avoid re-renders on other store changes
 	const navigate = useNavigate();
@@ -48,6 +101,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		matchNumber: currentMatchNumber,
 		totalMatches,
 		handleUndo,
+		canUndo,
 		handleQuit,
 		progress,
 		etaMinutes = 0,
@@ -58,9 +112,11 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(null);
 	const [voteAnnouncement, setVoteAnnouncement] = useState<string | null>(null);
 	const [roundAnnouncement, setRoundAnnouncement] = useState<number | null>(null);
+	const [streakBurst, setStreakBurst] = useState<StreakBurst | null>(null);
 	const previousRoundRef = useRef(roundNumber);
 	const voteAnnouncementTimeoutRef = useRef<number | null>(null);
 	const roundAnnouncementTimeoutRef = useRef<number | null>(null);
+	const streakBurstTimeoutRef = useRef<number | null>(null);
 
 	const clearVoteAnnouncementTimeout = useCallback(() => {
 		if (voteAnnouncementTimeoutRef.current !== null) {
@@ -76,6 +132,13 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		}
 	}, []);
 
+	const clearStreakBurstTimeout = useCallback(() => {
+		if (streakBurstTimeoutRef.current !== null) {
+			window.clearTimeout(streakBurstTimeoutRef.current);
+			streakBurstTimeoutRef.current = null;
+		}
+	}, []);
+
 	// Calculate winning streaks for current contestants
 	const calculateWinStreak = useCallback(
 		(contestantId: string | number | null | undefined) => {
@@ -83,14 +146,30 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				return 0;
 			}
 
+			const targetId = String(contestantId);
 			let streak = 0;
-			// Iterate from the end (most recent matches) backwards
+
+			// Iterate from most-recent backward; only stop when this contestant appears and loses.
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
 				if (!record) {
 					continue;
 				}
-				if (record.winner === String(contestantId)) {
+				const leftId =
+					typeof record.match.left === "object"
+						? String(record.match.left.id)
+						: String(record?.match.left ?? "");
+				const rightId =
+					typeof record.match.right === "object"
+						? String(record.match.right.id)
+						: String(record?.match.right ?? "");
+
+				const isInMatch = leftId === targetId || rightId === targetId;
+				if (!isInMatch) {
+					continue;
+				}
+
+				if (record.winner === targetId) {
 					streak++;
 				} else {
 					break;
@@ -118,12 +197,16 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		return calculateWinStreak(rightId);
 	}, [currentMatch, calculateWinStreak]);
 
+	const leftHeatLevel = useMemo(() => getHeatLevel(leftStreak), [leftStreak]);
+	const rightHeatLevel = useMemo(() => getHeatLevel(rightStreak), [rightStreak]);
+
 	useEffect(() => {
 		return () => {
 			clearVoteAnnouncementTimeout();
 			clearRoundAnnouncementTimeout();
+			clearStreakBurstTimeout();
 		};
-	}, [clearVoteAnnouncementTimeout, clearRoundAnnouncementTimeout]);
+	}, [clearVoteAnnouncementTimeout, clearRoundAnnouncementTimeout, clearStreakBurstTimeout]);
 
 	// Adapter to convert VoteData to winnerId/loserId for the hook
 	const handleVoteAdapter = useCallback(
@@ -178,25 +261,11 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			setTimeout(() => audioManager.playWowSound(), 500);
 
 			const results: Record<string, { rating: number; wins: number; losses: number }> = {};
-			const nameItems: NameItem[] = [];
 
 			for (const [id, rating] of Object.entries(ratings)) {
 				const name = idToName.get(id) ?? id;
 				results[name] = { rating, wins: 0, losses: 0 };
-				nameItems.push({
-					id,
-					name,
-					rating,
-					wins: 0,
-					losses: 0,
-				} as NameItem);
 			}
-
-			// Auto-export results to CSV
-			exportTournamentResultsToCSV(
-				nameItems,
-				`tournament_results_${new Date().toISOString().slice(0, 10)}.csv`,
-			);
 
 			onComplete(results);
 		}
@@ -236,15 +305,11 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 					: undefined,
 		};
 	}, [currentMatch]);
-	selectedSide === "left"
-		? (matchData?.leftName ?? null)
-		: selectedSide === "right"
-			? (matchData?.rightName ?? null)
-			: null;
 
 	useEffect(() => {
 		if (!currentMatch) {
 			setSelectedSide(null);
+			setStreakBurst(null);
 			return;
 		}
 		setSelectedSide(null);
@@ -287,9 +352,29 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				return;
 			}
 
+			audioManager.primeAudioExperience();
+
 			const winnerId = side === "left" ? matchData.leftId : matchData.rightId;
 			const loserId = side === "left" ? matchData.rightId : matchData.leftId;
 			const winnerName = side === "left" ? matchData.leftName : matchData.rightName;
+			const expectedStreak = (side === "left" ? leftStreak : rightStreak) + 1;
+			const heatLevel = getHeatLevel(expectedStreak);
+
+			if (heatLevel) {
+				setStreakBurst({
+					key: Date.now(),
+					side,
+					winnerName,
+					streak: expectedStreak,
+					heatLevel,
+				});
+				audioManager.playStreakSound(expectedStreak);
+				clearStreakBurstTimeout();
+				streakBurstTimeoutRef.current = window.setTimeout(
+					() => setStreakBurst(null),
+					prefersReducedMotion ? 280 : 950,
+				);
+			}
 
 			triggerVoteFeedback(winnerName, side);
 			handleVoteWithAnimation(winnerId, loserId);
@@ -298,7 +383,19 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				handleVoteAdapter(winnerId, loserId);
 			}
 		},
-		[isVoting, matchData, triggerVoteFeedback, handleVoteWithAnimation, onVote, handleVoteAdapter],
+		[
+			isVoting,
+			matchData,
+			audioManager,
+			leftStreak,
+			rightStreak,
+			clearStreakBurstTimeout,
+			prefersReducedMotion,
+			triggerVoteFeedback,
+			handleVoteWithAnimation,
+			onVote,
+			handleVoteAdapter,
+		],
 	);
 
 	const handleKeyDown = useCallback(
@@ -348,7 +445,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							Tournament Complete!
 						</h1>
 						<p className="text-white/80 mb-6">
-							Congratulations! Your tournament results have been downloaded as a CSV file.
+							Congratulations! Your tournament results are ready to review.
 						</p>
 
 						<div className="space-y-4">
@@ -406,6 +503,15 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		rightPronunciation,
 	} = matchData;
 
+	const dominantStreak =
+		leftStreak >= rightStreak
+			? leftStreak >= STREAK_THRESHOLDS.warm
+				? { name: leftName, streak: leftStreak, heatLevel: leftHeatLevel ?? "warm" }
+				: null
+			: rightStreak >= STREAK_THRESHOLDS.warm
+				? { name: rightName, streak: rightStreak, heatLevel: rightHeatLevel ?? "warm" }
+				: null;
+
 	return (
 		<div className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col font-display text-white selection:bg-primary/30">
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
@@ -457,6 +563,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							<>{progress}% Complete</>
 						)}
 					</div>
+					{dominantStreak && (
+						<div className="text-center text-[11px] sm:text-xs">
+							<span
+								className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+							>
+								<span>🔥</span>
+								<span>
+									Hot streak: {dominantStreak.name} ({dominantStreak.streak} wins)
+								</span>
+							</span>
+						</div>
+					)}
 				</div>
 			</header>
 
@@ -561,6 +679,8 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				<div className="sr-only" aria-live="polite">
 					{roundAnnouncement !== null && `Round ${roundAnnouncement} begins.`}
 					{voteAnnouncement && `${voteAnnouncement} advances.`}
+					{streakBurst &&
+						`${streakBurst.winnerName} is on a ${streakBurst.streak} win streak. Heat is rising.`}
 				</div>
 
 				<AnimatePresence>
@@ -579,6 +699,43 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 									<span className="text-xs sm:text-sm font-bold tracking-wide truncate">
 										{voteAnnouncement} advances
 									</span>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				<AnimatePresence>
+					{streakBurst && (
+						<motion.div
+							key={`streak-burst-${streakBurst.key}`}
+							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.94 }}
+							animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 1.03 }}
+							transition={{ duration: prefersReducedMotion ? 0.01 : 0.28 }}
+							className={`pointer-events-none absolute z-30 top-[20%] ${
+								streakBurst.side === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6 text-right"
+							}`}
+						>
+							<div
+								className={`rounded-2xl border px-4 py-3 backdrop-blur-lg shadow-[0_0_40px_rgba(249,115,22,0.35)] ${getHeatTextClasses(streakBurst.heatLevel)}`}
+							>
+								<p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] opacity-80">
+									Streak Ignited
+								</p>
+								<p className="text-base sm:text-lg font-black tracking-tight">
+									{streakBurst.winnerName} x{streakBurst.streak}
+								</p>
+								<div className="flex gap-1 mt-1">
+									{Array.from({ length: getFlameCount(streakBurst.streak, 9) }).map((_, i) => (
+										<span
+											key={`streak-flame-${streakBurst.key}-${i}`}
+											className="text-sm sm:text-base animate-flame"
+											style={{ animationDelay: `${i * 80}ms` }}
+										>
+											🔥
+										</span>
+									))}
 								</div>
 							</div>
 						</motion.div>
@@ -641,7 +798,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 								padding="none"
 								className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
 									isVoting ? "pointer-events-none" : ""
-								} ${
+								} ${getHeatCardClasses(leftHeatLevel)} ${
 									leftSelected
 										? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
 										: hasSelectionFeedback
@@ -671,15 +828,40 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 										</span>
 									)}
 
+									{leftHeatLevel && (
+										<div className="pointer-events-none absolute inset-0 z-10">
+											<div
+												className={`absolute inset-0 ${
+													leftHeatLevel === "blazing"
+														? "bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent"
+														: leftHeatLevel === "hot"
+															? "bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent"
+															: "bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent"
+												}`}
+											/>
+											<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
+												{Array.from({ length: getFlameCount(leftStreak) }).map((_, i) => (
+													<span
+														key={`left-heat-${leftName}-${leftStreak}-${i}`}
+														className="text-sm sm:text-base animate-flame"
+														style={{ animationDelay: `${i * 60}ms` }}
+													>
+														🔥
+													</span>
+												))}
+											</div>
+										</div>
+									)}
+
 									{/* Name Overlay */}
 									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
 										<div className="flex items-center gap-2 flex-wrap">
 											<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight">
 												{leftName}
 											</h3>
-											{leftStreak >= 2 && (
+											{leftStreak >= STREAK_THRESHOLDS.warm && (
 												<div className="flex gap-0.5">
-													{Array.from({ length: Math.min(leftStreak, 5) }).map((_, i) => (
+													{Array.from({ length: Math.min(leftStreak, 6) }).map((_, i) => (
 														<span key={i} className="text-lg sm:text-2xl animate-pulse">
 															🔥
 														</span>
@@ -707,13 +889,23 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							<div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-white/30 bg-primary/20 backdrop-blur-md shadow-lg flex-shrink-0">
 								<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">VS</span>
 							</div>
+							{dominantStreak && (
+								<div
+									className={`rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-black tracking-wider uppercase ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+								>
+									🔥 x{dominantStreak.streak}
+								</div>
+							)}
 							<div className="flex flex-row sm:flex-col gap-1.5 w-auto sm:w-full">
 								<button
 									type="button"
 									onClick={() => handleUndo()}
-									className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-primary/20 cursor-pointer hover:bg-white/5 transition-colors"
+									className={`glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-primary/20 transition-colors ${
+										canUndo ? "cursor-pointer hover:bg-white/5" : "cursor-not-allowed opacity-40"
+									}`}
 									aria-label="Undo last vote"
 									title="Undo last vote"
+									disabled={!canUndo}
 								>
 									<Undo2 className="size-3.5 text-primary" />
 								</button>
@@ -736,7 +928,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 								padding="none"
 								className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
 									isVoting ? "pointer-events-none" : ""
-								} ${
+								} ${getHeatCardClasses(rightHeatLevel)} ${
 									rightSelected
 										? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
 										: hasSelectionFeedback
@@ -767,12 +959,37 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 										</span>
 									)}
 
+									{rightHeatLevel && (
+										<div className="pointer-events-none absolute inset-0 z-10">
+											<div
+												className={`absolute inset-0 ${
+													rightHeatLevel === "blazing"
+														? "bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent"
+														: rightHeatLevel === "hot"
+															? "bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent"
+															: "bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent"
+												}`}
+											/>
+											<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
+												{Array.from({ length: getFlameCount(rightStreak) }).map((_, i) => (
+													<span
+														key={`right-heat-${rightName}-${rightStreak}-${i}`}
+														className="text-sm sm:text-base animate-flame"
+														style={{ animationDelay: `${i * 60}ms` }}
+													>
+														🔥
+													</span>
+												))}
+											</div>
+										</div>
+									)}
+
 									{/* Name Overlay */}
 									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
 										<div className="flex items-center gap-2 flex-wrap justify-end sm:justify-end">
-											{rightStreak >= 2 && (
+											{rightStreak >= STREAK_THRESHOLDS.warm && (
 												<div className="flex gap-0.5">
-													{Array.from({ length: Math.min(rightStreak, 5) }).map((_, i) => (
+													{Array.from({ length: Math.min(rightStreak, 6) }).map((_, i) => (
 														<span key={i} className="text-lg sm:text-2xl animate-pulse">
 															🔥
 														</span>

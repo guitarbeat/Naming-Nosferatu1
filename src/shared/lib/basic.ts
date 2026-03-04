@@ -1,7 +1,7 @@
 /**
  * @module basic
  * @description Consolidated utility functions: arrays, dates, logging, display,
- * names/filtering, ratings, cat images, CSV export, caching, image compression,
+ * names/filtering, ratings, cat images, caching, image compression,
  * haptics, sound, and className merging.
  *
  * All types that were previously imported from external modules are defined
@@ -455,51 +455,6 @@ export async function compressImageFile(
 	} catch {
 		return file;
 	}
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CSV Export
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Trigger a file download in the browser. */
-function downloadBlob(blob: Blob, filename: string): void {
-	const url = URL.createObjectURL(blob);
-	const link = Object.assign(document.createElement("a"), {
-		href: url,
-		download: filename,
-		style: "display:none",
-	});
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-	URL.revokeObjectURL(url);
-}
-
-/**
- * Export tournament rankings as a CSV file.
- *
- * @example
- * exportTournamentResultsToCSV(rankings, "finals-2024.csv");
- */
-export function exportTournamentResultsToCSV(rankings: NameItem[], filename?: string): void {
-	if (rankings.length === 0) {
-		return;
-	}
-
-	const headers = ["Name", "Rating", "Wins", "Losses"];
-	const rows = rankings.map((r) =>
-		[
-			`"${(r.name ?? "").replace(/"/g, '""')}"`, // escape embedded quotes
-			Math.round(Number(r.rating ?? 1500)),
-			r.wins ?? 0,
-			r.losses ?? 0,
-		].join(","),
-	);
-
-	const csv = [headers.join(","), ...rows].join("\n");
-	const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-	const name = filename ?? `cat_names_${new Date().toISOString().slice(0, 10)}.csv`;
-	downloadBlob(blob, name);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
