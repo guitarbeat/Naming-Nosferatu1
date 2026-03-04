@@ -27,3 +27,18 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
 
 	next();
 };
+
+export const requireUserAuth = (req: Request, res: Response, next: NextFunction) => {
+	const headerUserId = req.headers["x-user-id"];
+	const bodyUserId = req.body?.userId;
+
+	if (!headerUserId || typeof headerUserId !== "string") {
+		return res.status(401).json({ error: "Unauthorized: Missing or invalid user ID header" });
+	}
+
+	if (bodyUserId && headerUserId !== bodyUserId) {
+		return res.status(403).json({ error: "Forbidden: User ID mismatch" });
+	}
+
+	next();
+};

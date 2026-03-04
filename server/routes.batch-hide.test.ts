@@ -49,6 +49,7 @@ app.use(express.json());
 // Mock requireAdmin middleware to pass through
 vi.mock("./auth", () => ({
 	requireAdmin: (_req: any, _res: any, next: any) => next(),
+	requireUserAuth: (_req: any, _res: any, next: any) => next(),
 }));
 app.use(router);
 

@@ -67,10 +67,16 @@ export const tournamentsAPI = {
 			if (!userId || !ratings?.length) {
 				return { success: false, error: "Missing data" };
 			}
-			return await api.post<RatingSaveResult>("/ratings", {
-				userId,
-				ratings,
-			});
+			return await api.post<RatingSaveResult>(
+				"/ratings",
+				{
+					userId,
+					ratings,
+				},
+				{
+					headers: { "x-user-id": userId },
+				},
+			);
 		} catch (error: any) {
 			return { success: false, error: error.message || "Failed to save ratings" };
 		}

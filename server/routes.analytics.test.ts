@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock requireAdmin to allow access
 vi.mock("./auth", () => ({
 	requireAdmin: (_req: any, _res: any, next: any) => next(),
+	requireUserAuth: (_req: any, _res: any, next: any) => next(),
 }));
 
 // Hoist mock factory

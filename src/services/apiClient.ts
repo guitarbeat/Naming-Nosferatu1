@@ -28,10 +28,11 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-	get: <T>(url: string) => fetchJSON<T>(url),
-	post: <T>(url: string, body: unknown) =>
-		fetchJSON<T>(url, { method: "POST", body: JSON.stringify(body) }),
-	patch: <T>(url: string, body: unknown) =>
-		fetchJSON<T>(url, { method: "PATCH", body: JSON.stringify(body) }),
-	delete: <T>(url: string) => fetchJSON<T>(url, { method: "DELETE" }),
+	get: <T>(url: string, options?: RequestInit) => fetchJSON<T>(url, options),
+	post: <T>(url: string, body: unknown, options?: RequestInit) =>
+		fetchJSON<T>(url, { method: "POST", body: JSON.stringify(body), ...options }),
+	patch: <T>(url: string, body: unknown, options?: RequestInit) =>
+		fetchJSON<T>(url, { method: "PATCH", body: JSON.stringify(body), ...options }),
+	delete: <T>(url: string, options?: RequestInit) =>
+		fetchJSON<T>(url, { method: "DELETE", ...options }),
 };

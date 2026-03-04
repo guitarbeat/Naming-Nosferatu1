@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock requireAdmin to allow access
 vi.mock("./auth", () => ({
 	requireAdmin: (_req: any, _res: any, next: any) => next(),
+	requireUserAuth: (_req: any, _res: any, next: any) => next(),
 }));
 
 // Hoist mocks to be available in vi.mock
@@ -14,8 +15,10 @@ const { dbMocks } = vi.hoisted(() => {
 	const limitMock = vi.fn().mockResolvedValue([]);
 	const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
 	const groupByMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
-	const innerJoinMock = vi.fn().mockReturnValue({ groupBy: groupByMock });
-	const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock, limit: limitMock });
+	const whereMock = vi
+		.fn()
+		.mockReturnValue({ orderBy: orderByMock, limit: limitMock, groupBy: groupByMock });
+	const innerJoinMock = vi.fn().mockReturnValue({ groupBy: groupByMock, where: whereMock });
 	const fromMock = vi.fn().mockReturnValue({
 		where: whereMock,
 		orderBy: orderByMock,
