@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { defineConfig } from "vite";
 import { consoleForwardPlugin } from "./scripts/vite-console-forward-plugin";
+import dyadComponentTagger from '@dyad-sh/react-vite-component-tagger';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ export default defineConfig({
 			},
 		},
 	},
-	plugins: [
+	plugins: [dyadComponentTagger(), 
 		react(),
 		tailwindcss(),
 		consoleForwardPlugin({
