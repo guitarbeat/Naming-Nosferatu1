@@ -4,7 +4,7 @@
  */
 
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
 import { useNamesCache } from "@/hooks/useNamesCache.ts";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
@@ -19,7 +19,6 @@ import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible } from "@/shared/hooks";
 import { getRandomCatImage } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
-
 import {
 	Check,
 	CheckCircle,
@@ -34,7 +33,6 @@ import {
 } from "@/shared/lib/icons";
 import type { IdType, NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
-import { useRef } from "react";
 
 const SWIPE_OFFSET_THRESHOLD = 100;
 const SWIPE_VELOCITY_THRESHOLD = 500;
@@ -45,7 +43,9 @@ function useSmartTooltip() {
 	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">("top");
 
 	const measureTooltip = useCallback(() => {
-		if (!tooltipRef.current) return;
+		if (!tooltipRef.current) {
+			return;
+		}
 
 		const rect = tooltipRef.current.getBoundingClientRect();
 		const spaceAbove = rect.top;
@@ -354,16 +354,6 @@ export function NameSelector() {
 
 		triggerHaptic();
 	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
-
-	// Handlers for hold-to-expand gesture on hidden names panel
-	const startHiddenExpandTimer = useCallback(() => {
-		// This handler is called when user starts holding the hidden names header
-		// The actual expansion is handled by the onClick handler on the button
-	}, []);
-
-	const clearHiddenExpandTimer = useCallback(() => {
-		// This handler is called when user releases or leaves the hidden names header
-	}, []);
 
 	// Admin handlers for toggling hidden/locked status
 	const requestAdminAction = useCallback(
