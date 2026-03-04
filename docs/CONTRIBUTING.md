@@ -231,6 +231,13 @@ Use these tools to keep the codebase clean:
 - **`pnpm run lint`** - Biome linting catches unused variables
 - Review `// ts-prune-ignore-next` comments periodically
 
+Removal-first policy (default):
+
+1. If code has no runtime or test consumer, remove it.
+2. Do not keep unused code as "maybe later" unless there is a tracked issue, named owner, and target release.
+3. Treat `pnpm run lint` and `pnpm run check:deps` as required release gates.
+4. Re-adding removed code requires a new explicit product requirement.
+
 ---
 
 ## 📂 Directory Structure
