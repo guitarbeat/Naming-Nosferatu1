@@ -22,7 +22,7 @@ import {
 	VolumeX,
 	X,
 } from "@/shared/lib/icons";
-import type { NameItem, TournamentProps } from "@/shared/types";
+import type { Match, NameItem, TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 import { useAudioManager, useTournamentState } from "./hooks";
 
@@ -82,6 +82,182 @@ const getHeatTextClasses = (heatLevel: HeatLevel): string => {
 const getFlameCount = (streak: number, max = 8): number => {
 	return Math.min(max, Math.max(3, Math.round(streak * 1.2)));
 };
+
+function getMatchSideId(match: Match, side: "left" | "right"): string {
+	const participant = match[side];
+	return typeof participant === "object" ? String(participant.id) : String(participant);
+}
+
+function getMatchSideName(match: Match, side: "left" | "right"): string {
+	if (match.mode === "2v2") {
+		const team = side === "left" ? match.left : match.right;
+		return team.memberNames.join(" + ");
+	}
+	const participant = match[side];
+	return typeof participant === "object" ? participant.name : String(participant);
+}
+
+interface MatchSideCardProps {
+	side: "left" | "right";
+	name: string;
+	img: string | null;
+	heatLevel: HeatLevel | null;
+	streak: number;
+	isVoting: boolean;
+	isSelected: boolean;
+	hasSelectionFeedback: boolean;
+	isTeam: boolean;
+	members: string[];
+	description?: string;
+	pronunciation?: string;
+	onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
+	onVote: () => void;
+	animationDelay?: string;
+}
+
+function MatchSideCard({
+	side,
+	name,
+	img,
+	heatLevel,
+	streak,
+	isVoting,
+	isSelected,
+	hasSelectionFeedback,
+	isTeam,
+	members,
+	description,
+	pronunciation,
+	onKeyDown,
+	onVote,
+	animationDelay,
+}: MatchSideCardProps) {
+	const isRight = side === "right";
+	const overlayTextAlign = isRight ? "text-left sm:text-right" : "";
+	const headingWrapClass = isRight ? "justify-end sm:justify-end" : "";
+	const headingTextClass = isRight ? "text-left sm:text-right" : "";
+	const pronunciationClass = isRight ? "mr-2" : "ml-2";
+	const memberWrapClass = isRight ? "justify-start sm:justify-end" : "";
+	const selectionClass = isSelected
+		? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
+		: hasSelectionFeedback
+			? "opacity-[0.55] scale-[0.98]"
+			: "";
+
+	return (
+		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
+			<Card
+				interactive={true}
+				padding="none"
+				className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
+					isVoting ? "pointer-events-none" : ""
+				} ${getHeatCardClasses(heatLevel)} ${selectionClass}`}
+				style={animationDelay ? { animationDelay } : undefined}
+				variant="default"
+				role="button"
+				tabIndex={isVoting ? -1 : 0}
+				aria-label={`Vote for ${isTeam ? "team" : "name"} ${name}`}
+				aria-disabled={isVoting}
+				onKeyDown={onKeyDown}
+				onClick={onVote}
+			>
+				<div className="relative w-full h-full flex items-center justify-center bg-white/10">
+					{img ? (
+						<CatImage
+							src={img}
+							alt={name}
+							objectFit="cover"
+							containerClassName="w-full h-full"
+							imageClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+						/>
+					) : (
+						<span className="text-white/20 text-6xl font-bold select-none">
+							{name[0]?.toUpperCase() || "?"}
+						</span>
+					)}
+
+					{heatLevel && (
+						<div className="pointer-events-none absolute inset-0 z-10">
+							<div
+								className={`absolute inset-0 ${
+									heatLevel === "blazing"
+										? "bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent"
+										: heatLevel === "hot"
+											? "bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent"
+											: "bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent"
+								}`}
+							/>
+							<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
+								{Array.from({ length: getFlameCount(streak) }).map((_, i) => (
+									<span
+										key={`${side}-heat-${name}-${streak}-${i}`}
+										className="text-sm sm:text-base animate-flame"
+										style={{ animationDelay: `${i * 60}ms` }}
+									>
+										🔥
+									</span>
+								))}
+							</div>
+						</div>
+					)}
+
+					<div
+						className={`absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none ${overlayTextAlign}`}
+					>
+						<div className={`flex items-center gap-2 flex-wrap ${headingWrapClass}`}>
+							{isRight && streak >= STREAK_THRESHOLDS.warm && (
+								<div className="flex gap-0.5">
+									{Array.from({ length: Math.min(streak, 6) }).map((_, i) => (
+										<span key={`${side}-pre-title-streak-${i}`} className="text-lg sm:text-2xl animate-pulse">
+											🔥
+										</span>
+									))}
+								</div>
+							)}
+							<h3
+								className={`font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight ${headingTextClass}`}
+							>
+								{name}
+							</h3>
+							{!isRight && streak >= STREAK_THRESHOLDS.warm && (
+								<div className="flex gap-0.5">
+									{Array.from({ length: Math.min(streak, 6) }).map((_, i) => (
+										<span key={`${side}-post-title-streak-${i}`} className="text-lg sm:text-2xl animate-pulse">
+											🔥
+										</span>
+									))}
+								</div>
+							)}
+						</div>
+						{pronunciation && (
+							<span className={`${pronunciationClass} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}>
+								[{pronunciation}]
+							</span>
+						)}
+						{isTeam ? (
+							<div className={`mt-2 flex flex-wrap gap-1.5 ${memberWrapClass}`}>
+								{members.map((member) => (
+									<span
+										key={`${side}-member-${member}`}
+										className="rounded-full border border-white/30 bg-black/35 px-2 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide"
+									>
+										{member}
+									</span>
+								))}
+							</div>
+						) : description ? (
+							<p
+								className={`text-xs sm:text-sm text-white/90 italic line-clamp-2 mt-1 drop-shadow-sm ${overlayTextAlign}`}
+							>
+								{description}
+							</p>
+						) : null}
+					</div>
+				</div>
+			</Card>
+		</div>
+	);
+}
 
 function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	// Optimization: Only select user.name to avoid re-renders on other store changes
@@ -156,14 +332,8 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				if (!record) {
 					continue;
 				}
-				const leftId =
-					typeof record.match.left === "object"
-						? String(record.match.left.id)
-						: String(record?.match.left ?? "");
-				const rightId =
-					typeof record.match.right === "object"
-						? String(record.match.right.id)
-						: String(record?.match.right ?? "");
+				const leftId = getMatchSideId(record.match, "left");
+				const rightId = getMatchSideId(record.match, "right");
 
 				const isInMatch = leftId === targetId || rightId === targetId;
 				if (!isInMatch) {
@@ -185,17 +355,14 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		if (!currentMatch) {
 			return 0;
 		}
-		const leftId = typeof currentMatch.left === "object" ? currentMatch.left.id : currentMatch.left;
-		return calculateWinStreak(leftId);
+		return calculateWinStreak(getMatchSideId(currentMatch, "left"));
 	}, [currentMatch, calculateWinStreak]);
 
 	const rightStreak = useMemo(() => {
 		if (!currentMatch) {
 			return 0;
 		}
-		const rightId =
-			typeof currentMatch.right === "object" ? currentMatch.right.id : currentMatch.right;
-		return calculateWinStreak(rightId);
+		return calculateWinStreak(getMatchSideId(currentMatch, "right"));
 	}, [currentMatch, calculateWinStreak]);
 
 	const leftHeatLevel = useMemo(() => getHeatLevel(leftStreak), [leftStreak]);
@@ -213,26 +380,10 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const handleVoteAdapter = useCallback(
 		(winnerId: string, _loserId: string) => {
 			if (onVote && currentMatch) {
-				const leftId =
-					typeof currentMatch.left === "object"
-						? String(currentMatch.left.id)
-						: String(currentMatch.left);
-				const rightId =
-					typeof currentMatch.right === "object"
-						? String(currentMatch.right.id)
-						: String(currentMatch.right);
-				const leftName =
-					currentMatch.mode === "2v2"
-						? currentMatch.left.memberNames.join(" + ")
-						: typeof currentMatch.left === "object"
-							? currentMatch.left.name
-							: String(currentMatch.left);
-				const rightName =
-					currentMatch.mode === "2v2"
-						? currentMatch.right.memberNames.join(" + ")
-						: typeof currentMatch.right === "object"
-							? currentMatch.right.name
-							: String(currentMatch.right);
+				const leftId = getMatchSideId(currentMatch, "left");
+				const rightId = getMatchSideId(currentMatch, "right");
+				const leftName = getMatchSideName(currentMatch, "left");
+				const rightName = getMatchSideName(currentMatch, "right");
 
 				const voteData = {
 					match: {
@@ -841,108 +992,22 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						className="relative flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-4 w-full max-w-5xl mx-auto z-10 items-stretch h-full min-h-0"
 					>
 						{/* Left Card */}
-						<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
-							<Card
-								interactive={true}
-								padding="none"
-								className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
-									isVoting ? "pointer-events-none" : ""
-								} ${getHeatCardClasses(leftHeatLevel)} ${
-									leftSelected
-										? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
-										: hasSelectionFeedback
-											? "opacity-[0.55] scale-[0.98]"
-											: ""
-								}`}
-								variant="default"
-								role="button"
-								tabIndex={isVoting ? -1 : 0}
-								aria-label={`Vote for ${leftIsTeam ? "team" : "name"} ${leftName}`}
-								aria-disabled={isVoting}
-								onKeyDown={(e) => handleKeyDown(e, "left")}
-								onClick={() => handleVoteForSide("left")}
-							>
-								<div className="relative w-full h-full flex items-center justify-center bg-white/10">
-									{leftImg ? (
-										<CatImage
-											src={leftImg}
-											alt={leftName}
-											objectFit="cover"
-											containerClassName="w-full h-full"
-											imageClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-										/>
-									) : (
-										<span className="text-white/20 text-6xl font-bold select-none">
-											{leftName[0]?.toUpperCase() || "?"}
-										</span>
-									)}
-
-									{leftHeatLevel && (
-										<div className="pointer-events-none absolute inset-0 z-10">
-											<div
-												className={`absolute inset-0 ${
-													leftHeatLevel === "blazing"
-														? "bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent"
-														: leftHeatLevel === "hot"
-															? "bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent"
-															: "bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent"
-												}`}
-											/>
-											<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
-												{Array.from({ length: getFlameCount(leftStreak) }).map((_, i) => (
-													<span
-														key={`left-heat-${leftName}-${leftStreak}-${i}`}
-														className="text-sm sm:text-base animate-flame"
-														style={{ animationDelay: `${i * 60}ms` }}
-													>
-														🔥
-													</span>
-												))}
-											</div>
-										</div>
-									)}
-
-									{/* Name Overlay */}
-									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
-										<div className="flex items-center gap-2 flex-wrap">
-											<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight">
-												{leftName}
-											</h3>
-											{leftStreak >= STREAK_THRESHOLDS.warm && (
-												<div className="flex gap-0.5">
-													{Array.from({ length: Math.min(leftStreak, 6) }).map((_, i) => (
-														<span key={i} className="text-lg sm:text-2xl animate-pulse">
-															🔥
-														</span>
-													))}
-												</div>
-											)}
-										</div>
-										{leftPronunciation && (
-											<span className="ml-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
-												[{leftPronunciation}]
-											</span>
-										)}
-										{leftIsTeam ? (
-											<div className="mt-2 flex flex-wrap gap-1.5">
-												{leftMembers.map((member) => (
-													<span
-														key={`left-member-${member}`}
-														className="rounded-full border border-white/30 bg-black/35 px-2 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide"
-													>
-														{member}
-													</span>
-												))}
-											</div>
-										) : leftDescription && (
-											<p className="text-xs sm:text-sm text-white/90 italic line-clamp-2 mt-1 drop-shadow-sm">
-												{leftDescription}
-											</p>
-										)}
-									</div>
-								</div>
-							</Card>
-						</div>
+						<MatchSideCard
+							side="left"
+							name={leftName}
+							img={leftImg}
+							heatLevel={leftHeatLevel}
+							streak={leftStreak}
+							isVoting={isVoting}
+							isSelected={leftSelected}
+							hasSelectionFeedback={hasSelectionFeedback}
+							isTeam={leftIsTeam}
+							members={leftMembers}
+							description={leftDescription}
+							pronunciation={leftPronunciation}
+							onKeyDown={(e) => handleKeyDown(e, "left")}
+							onVote={() => handleVoteForSide("left")}
+						/>
 
 						{/* VS Indicator */}
 						<div className="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 py-1 w-full sm:w-20">
@@ -982,109 +1047,23 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						</div>
 
 						{/* Right Card */}
-						<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
-							<Card
-								interactive={true}
-								padding="none"
-								className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
-									isVoting ? "pointer-events-none" : ""
-								} ${getHeatCardClasses(rightHeatLevel)} ${
-									rightSelected
-										? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
-										: hasSelectionFeedback
-											? "opacity-[0.55] scale-[0.98]"
-											: ""
-								}`}
-								style={{ animationDelay: "2s" }}
-								variant="default"
-								role="button"
-								tabIndex={isVoting ? -1 : 0}
-								aria-label={`Vote for ${rightIsTeam ? "team" : "name"} ${rightName}`}
-								aria-disabled={isVoting}
-								onKeyDown={(e) => handleKeyDown(e, "right")}
-								onClick={() => handleVoteForSide("right")}
-							>
-								<div className="relative w-full h-full flex items-center justify-center bg-white/10">
-									{rightImg ? (
-										<CatImage
-											src={rightImg}
-											alt={rightName}
-											objectFit="cover"
-											containerClassName="w-full h-full"
-											imageClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-										/>
-									) : (
-										<span className="text-white/20 text-6xl font-bold select-none">
-											{rightName[0]?.toUpperCase() || "?"}
-										</span>
-									)}
-
-									{rightHeatLevel && (
-										<div className="pointer-events-none absolute inset-0 z-10">
-											<div
-												className={`absolute inset-0 ${
-													rightHeatLevel === "blazing"
-														? "bg-gradient-to-t from-orange-500/45 via-amber-400/25 to-transparent"
-														: rightHeatLevel === "hot"
-															? "bg-gradient-to-t from-orange-500/35 via-amber-300/20 to-transparent"
-															: "bg-gradient-to-t from-orange-500/20 via-amber-200/10 to-transparent"
-												}`}
-											/>
-											<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
-												{Array.from({ length: getFlameCount(rightStreak) }).map((_, i) => (
-													<span
-														key={`right-heat-${rightName}-${rightStreak}-${i}`}
-														className="text-sm sm:text-base animate-flame"
-														style={{ animationDelay: `${i * 60}ms` }}
-													>
-														🔥
-													</span>
-												))}
-											</div>
-										</div>
-									)}
-
-									{/* Name Overlay */}
-									<div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 flex flex-col justify-end pointer-events-none">
-										<div className="flex items-center gap-2 flex-wrap justify-end sm:justify-end">
-											{rightStreak >= STREAK_THRESHOLDS.warm && (
-												<div className="flex gap-0.5">
-													{Array.from({ length: Math.min(rightStreak, 6) }).map((_, i) => (
-														<span key={i} className="text-lg sm:text-2xl animate-pulse">
-															🔥
-														</span>
-													))}
-												</div>
-											)}
-											<h3 className="font-whimsical text-2xl sm:text-3xl text-white tracking-wide break-words drop-shadow-md leading-tight text-left sm:text-right">
-												{rightName}
-											</h3>
-										</div>
-										{rightPronunciation && (
-											<span className="mr-2 text-amber-400 text-lg sm:text-xl font-bold italic opacity-90">
-												[{rightPronunciation}]
-											</span>
-										)}
-										{rightIsTeam ? (
-											<div className="mt-2 flex flex-wrap gap-1.5 justify-start sm:justify-end">
-												{rightMembers.map((member) => (
-													<span
-														key={`right-member-${member}`}
-														className="rounded-full border border-white/30 bg-black/35 px-2 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide"
-													>
-														{member}
-													</span>
-												))}
-											</div>
-										) : rightDescription && (
-											<p className="text-xs sm:text-sm text-white/90 italic line-clamp-2 mt-1 drop-shadow-sm text-left sm:text-right">
-												{rightDescription}
-											</p>
-										)}
-									</div>
-								</div>
-							</Card>
-						</div>
+						<MatchSideCard
+							side="right"
+							name={rightName}
+							img={rightImg}
+							heatLevel={rightHeatLevel}
+							streak={rightStreak}
+							isVoting={isVoting}
+							isSelected={rightSelected}
+							hasSelectionFeedback={hasSelectionFeedback}
+							isTeam={rightIsTeam}
+							members={rightMembers}
+							description={rightDescription}
+							pronunciation={rightPronunciation}
+							onKeyDown={(e) => handleKeyDown(e, "right")}
+							onVote={() => handleVoteForSide("right")}
+							animationDelay="2s"
+						/>
 					</motion.div>
 				</AnimatePresence>
 			</main>

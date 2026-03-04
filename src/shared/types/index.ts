@@ -196,6 +196,7 @@ export interface PersistentTournamentState {
 	userName: string;
 	lastUpdated: number;
 	namesKey: string;
+	ratings: Record<string, number>;
 	mode: TournamentMode;
 	teams: Team[];
 	teamMatches: TeamMatch[];
