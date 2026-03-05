@@ -16,7 +16,7 @@ import { ProfileSection } from "@/features/tournament/components/ProfileSection"
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
-import { updateSupabaseUserContext } from "@/services/supabase/runtime";
+import { updateSupabaseUserContext } from "@/services/supabase";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { useOfflineSync } from "@/shared/hooks";
 import { cn } from "@/shared/lib/basic";

@@ -1,5 +1,20 @@
 # Project Structure Scalability Plan
 
+## Completion Status (Last Updated: 2026-03-05)
+
+### ✅ Completed Tasks
+- **Consolidate Supabase API Surface**: Removed duplicate entry points (`supabase/client.ts`, `src/integrations/supabase/`). Canonical import: `@/services/supabase`
+- **Migrate Domain Hooks**: Moved tournament-specific hooks from `src/hooks/` to `src/features/tournament/hooks/`
+  - `useNames.ts`, `useNamesCache.ts`, `useNameSelection` now in tournament hooks
+  - Updated all imports across codebase to use new location
+- **Directory Clarity**: Top-level `shared/` (DB schema only) vs `src/shared/` (frontend code) - structure confirmed
+- **Import Consistency**: All imports now use canonical paths
+
+### 🔄 In Progress / Pending
+- Extract store slices to feature-level directories (appStore structure already follows slice pattern)
+- Add lint rules to enforce dependency direction
+- Move remaining generic hooks to `src/shared/hooks/` as needed
+
 ## Goals
 - Improve discoverability by grouping code by feature and shared domains.
 - Reduce coupling by enforcing a one-way dependency flow: `app -> features -> shared`.

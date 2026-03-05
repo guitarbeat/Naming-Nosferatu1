@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useId, useRef } from "react";
-import { useNameSuggestion } from "@/hooks/useNames";
+import { useNameSuggestion } from "../hooks";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";

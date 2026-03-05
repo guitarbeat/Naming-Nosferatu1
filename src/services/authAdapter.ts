@@ -9,7 +9,7 @@
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { api } from "@/services/apiClient";
-import { resolveSupabaseClient } from "@/services/supabase/runtime";
+import { resolveSupabaseClient } from "@/services/supabase";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 // Simple admin usernames - can be expanded as needed

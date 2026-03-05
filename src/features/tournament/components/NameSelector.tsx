@@ -6,9 +6,8 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { useNamesCache } from "@/hooks/useNamesCache.ts";
-import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
-import { withSupabase } from "@/services/supabase/runtime";
+import { useNamesCache } from "../hooks";
+import { coreAPI, hiddenNamesAPI, withSupabase } from "@/services/supabase";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";

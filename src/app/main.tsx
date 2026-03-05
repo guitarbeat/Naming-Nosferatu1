@@ -5,7 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { authAdapter } from "@/services/authAdapter";
-import { queryClient } from "@/services/supabase/client";
+import { queryClient } from "@/services/supabase";
 import App from "./App";
 import { Providers } from "./providers/Providers";
 import "../index.css";
