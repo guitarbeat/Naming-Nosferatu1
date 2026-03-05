@@ -24,10 +24,10 @@ const buttonVariants = cva(
 				outline:
 					"border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
 				link: "text-primary underline-offset-4 hover:underline",
-			gradient:
-				"rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 active:scale-95 disabled:active:scale-100",
-			secondaryGradient:
-				"rounded-xl bg-gradient-to-r from-chart-2 to-chart-3 hover:from-chart-2/90 hover:to-chart-3/90 text-primary-foreground font-bold shadow-lg shadow-chart-2/20 active:scale-95 disabled:active:scale-100",
+				gradient:
+					"rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 active:scale-95 disabled:active:scale-100",
+				secondaryGradient:
+					"rounded-xl bg-gradient-to-r from-chart-2 to-chart-3 hover:from-chart-2/90 hover:to-chart-3/90 text-primary-foreground font-bold shadow-lg shadow-chart-2/20 active:scale-95 disabled:active:scale-100",
 				glass: "",
 			},
 			size: {

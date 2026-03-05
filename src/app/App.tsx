@@ -140,12 +140,12 @@ function TournamentContent() {
 						onComplete={handleTournamentComplete as any}
 					/>
 				) : (
-				<div className="mx-auto max-w-xl rounded-2xl border border-border/10 bg-background/30 px-6 py-10 text-center">
-					<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
-						No contenders yet
-					</h2>
-					<p className="text-muted-foreground mb-6">
-						Choose at least two names in the picker to start your tournament bracket.
+					<div className="mx-auto max-w-xl rounded-2xl border border-border/10 bg-background/30 px-6 py-10 text-center">
+						<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
+							No contenders yet
+						</h2>
+						<p className="text-muted-foreground mb-6">
+							Choose at least two names in the picker to start your tournament bracket.
 						</p>
 						<div className="flex flex-wrap items-center justify-center gap-3">
 							<Button variant="glass" onClick={() => navigate("/")}>
@@ -197,8 +197,8 @@ function AdminContent() {
 		return (
 			<Section id="admin" variant="minimal" padding="none" maxWidth="full">
 				<div className="text-center py-20">
-				<h2 className="text-3xl font-bold mb-4 text-destructive">Access Denied</h2>
-				<p className="text-muted-foreground">Admin access required to view this page.</p>
+					<h2 className="text-3xl font-bold mb-4 text-destructive">Access Denied</h2>
+					<p className="text-muted-foreground">Admin access required to view this page.</p>
 				</div>
 			</Section>
 		);

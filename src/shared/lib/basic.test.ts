@@ -61,7 +61,9 @@ describe("calculatePercentile", () => {
 	describe("Edge Cases", () => {
 		it("ignores null/undefined/NaN values within the array", () => {
 			// [5, 10, 15] effectively. Value 10 -> 33%
-			expect(calculatePercentile(10, [5, null, 10, undefined, 15, NaN] as unknown as number[])).toBe(33);
+			expect(
+				calculatePercentile(10, [5, null, 10, undefined, 15, NaN] as unknown as number[]),
+			).toBe(33);
 		});
 
 		it("returns 0 if value is NaN (invalid input)", () => {

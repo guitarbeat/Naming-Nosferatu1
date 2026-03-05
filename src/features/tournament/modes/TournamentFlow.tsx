@@ -39,33 +39,33 @@ export default function TournamentFlow() {
 							className="w-full flex justify-center py-0"
 						>
 							<Card padding="xl" shadow="xl" className="text-center max-w-2xl">
-							<h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
-								A victor emerges from the eternal tournament
-							</h2>
-							<div className="flex justify-center mb-8">
-								<div className="text-6xl p-6 bg-primary/10 rounded-full border border-primary/20">
-									🏆
+								<h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
+									A victor emerges from the eternal tournament
+								</h2>
+								<div className="flex justify-center mb-8">
+									<div className="text-6xl p-6 bg-primary/10 rounded-full border border-primary/20">
+										🏆
+									</div>
 								</div>
-							</div>
-							<p className="text-lg text-muted-foreground mb-10">
-								Your personal rankings have been updated. Head over to the{" "}
-								<strong className="text-primary">Analyze</strong> section to see the full
-								breakdown and compare results!
-							</p>
-							<div className="flex gap-4 justify-center">
-								<button
-									onClick={() => navigate("/analysis")}
-									className="px-6 py-3 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors"
-								>
-									Analyze Results
-								</button>
-								<button
-									onClick={handleStartNewTournament}
-									className="px-6 py-3 bg-secondary hover:bg-secondary/80 rounded-lg font-semibold transition-colors"
-								>
-									Start New Tournament
-								</button>
-							</div>
+								<p className="text-lg text-muted-foreground mb-10">
+									Your personal rankings have been updated. Head over to the{" "}
+									<strong className="text-primary">Analyze</strong> section to see the full
+									breakdown and compare results!
+								</p>
+								<div className="flex gap-4 justify-center">
+									<button
+										onClick={() => navigate("/analysis")}
+										className="px-6 py-3 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors"
+									>
+										Analyze Results
+									</button>
+									<button
+										onClick={handleStartNewTournament}
+										className="px-6 py-3 bg-secondary hover:bg-secondary/80 rounded-lg font-semibold transition-colors"
+									>
+										Start New Tournament
+									</button>
+								</div>
 							</Card>
 						</motion.div>
 					) : (

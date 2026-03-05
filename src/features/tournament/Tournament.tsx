@@ -202,7 +202,7 @@ function MatchSideCard({
 						</div>
 					)}
 
-				<div
+					<div
 						className={`absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-20 flex flex-col justify-end pointer-events-none ${overlayTextAlign}`}
 					>
 						<div className={`flex items-center gap-2 flex-wrap ${headingWrapClass}`}>
@@ -218,7 +218,7 @@ function MatchSideCard({
 									))}
 								</div>
 							)}
-						<h3
+							<h3
 								className={`font-whimsical text-2xl sm:text-3xl text-foreground tracking-wide break-words drop-shadow-md leading-tight ${headingTextClass}`}
 							>
 								{name}
@@ -708,7 +708,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						<div className="mb-6 flex justify-center">
 							<Trophy className="size-16 text-green-400" />
 						</div>
-			<h1 className="font-whimsical text-4xl text-foreground tracking-wide mb-4">
+						<h1 className="font-whimsical text-4xl text-foreground tracking-wide mb-4">
 							Tournament Complete!
 						</h1>
 						<p className="text-foreground/80 mb-6">
@@ -787,7 +787,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-wrap items-center gap-2 sm:gap-4">
-					<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
+						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
 							<Gamepad2 className="text-primary size-3.5" />
 							<span className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-foreground/90">
 								{isComplete
@@ -795,7 +795,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 									: `Round ${roundNumber} / ${totalRounds} · ${bracketStage}`}
 							</span>
 						</div>
-					<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
+						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
 							<span className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-foreground/90">
 								Mode: {tournamentMode === "2v2" ? "2v2 Teams" : "1v1"}
 							</span>
@@ -810,9 +810,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						)}
 					</div>
 					<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-					<div className="flex items-center gap-2">
-						<Medal className="text-accent" />
-						<span className="text-[11px] sm:text-xs font-bold">
+						<div className="flex items-center gap-2">
+							<Medal className="text-accent" />
+							<span className="text-[11px] sm:text-xs font-bold">
 								{currentMatchNumber} / {totalMatches}
 							</span>
 						</div>

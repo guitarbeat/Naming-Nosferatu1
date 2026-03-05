@@ -310,7 +310,7 @@ export function AdminDashboard() {
 							</div>
 
 							<div className="flex gap-2">
-					<select
+								<select
 									value={filterStatus}
 									onChange={(e) => setFilterStatus(e.target.value as any)}
 									className="px-4 py-2 bg-foreground/10 border border-border/20 rounded-lg text-foreground"
@@ -374,7 +374,7 @@ export function AdminDashboard() {
 											/>
 
 											<div>
-									<h3 className="font-semibold text-foreground">{name.name}</h3>
+												<h3 className="font-semibold text-foreground">{name.name}</h3>
 												{name.description && (
 													<p className="text-sm text-muted-foreground">{name.description}</p>
 												)}
@@ -444,12 +444,12 @@ export function AdminDashboard() {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Image Upload</h3>
-								<input
-									type="file"
-									accept="image/*"
-									onChange={handleImageUpload}
-									className="w-full p-2 bg-foreground/10 border border-border/20 rounded"
-								/>
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleImageUpload}
+										className="w-full p-2 bg-foreground/10 border border-border/20 rounded"
+									/>
 								</div>
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Recent Activity</h3>

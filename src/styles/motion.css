@@ -11,107 +11,219 @@
    ========================================================================== */
 
 @keyframes bounce {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-10px); }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
 }
 
 @keyframes bounce-subtle {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-4px); }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
 }
 
 @keyframes float {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-6px); }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
 }
 
 @keyframes pulse-glow {
-	0%, 100% { box-shadow: 0 0 5px var(--color-primary); }
-	50% { box-shadow: 0 0 20px var(--color-primary); }
+	0%,
+	100% {
+		box-shadow: 0 0 5px var(--color-primary);
+	}
+	50% {
+		box-shadow: 0 0 20px var(--color-primary);
+	}
 }
 
 @keyframes pulse-opacity {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.7; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
 }
 
 @keyframes shake {
-	0%, 100% { transform: translateX(0); }
-	10%, 30%, 50% { transform: translateX(-4px); }
-	20%, 40% { transform: translateX(4px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	10%,
+	30%,
+	50% {
+		transform: translateX(-4px);
+	}
+	20%,
+	40% {
+		transform: translateX(4px);
+	}
 }
 
 @keyframes gradient-shift {
-	0% { background-position: 0% 50%; }
-	50% { background-position: 100% 50%; }
-	100% { background-position: 0% 50%; }
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }
 
 @keyframes twinkle {
-	0%, 100% { opacity: 0.3; }
-	50% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 @keyframes cosmic-float {
-	0%, 100% { transform: translateY(0) rotate(0); }
-	50% { transform: translateY(-8px) rotate(1deg); }
+	0%,
+	100% {
+		transform: translateY(0) rotate(0);
+	}
+	50% {
+		transform: translateY(-8px) rotate(1deg);
+	}
 }
 
 @keyframes cat-bounce {
-	0%, 100% { transform: translateY(0) scaleY(1); }
-	50% { transform: translateY(-15px) scaleY(0.9); }
+	0%,
+	100% {
+		transform: translateY(0) scaleY(1);
+	}
+	50% {
+		transform: translateY(-15px) scaleY(0.9);
+	}
 }
 
 @keyframes fadeIn {
-	from { opacity: 0; }
-	to { opacity: 1; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes fadeOut {
-	from { opacity: 1; }
-	to { opacity: 0; }
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
 }
 
 @keyframes glowPulse {
-	0%, 100% { box-shadow: 0 0 5px var(--color-primary); }
-	50% { box-shadow: 0 0 20px var(--color-primary); }
+	0%,
+	100% {
+		box-shadow: 0 0 5px var(--color-primary);
+	}
+	50% {
+		box-shadow: 0 0 20px var(--color-primary);
+	}
 }
 
 @keyframes cosmicFloat {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-10px); }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
 }
 
 @keyframes spin {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(360deg); }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 @keyframes input-shake {
-	0%, 100% { transform: translateX(0); }
-	10%, 30%, 50% { transform: translateX(-4px); }
-	20%, 40% { transform: translateX(4px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	10%,
+	30%,
+	50% {
+		transform: translateX(-4px);
+	}
+	20%,
+	40% {
+		transform: translateX(4px);
+	}
 }
 
 @keyframes trend-pulse {
-	0%, 100% { opacity: 1; transform: scale(1); }
-	50% { opacity: 0.8; transform: scale(0.95); }
+	0%,
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.8;
+		transform: scale(0.95);
+	}
 }
 
 @keyframes analysis-panel-fade-in {
-	from { opacity: 0; transform: translateY(10px); }
-	to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 @keyframes analysis-pulse {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.7; }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
 }
 
 @keyframes analysis-selection-pulse {
-	0% { box-shadow: 0 0 0 0 var(--analysis-accent-muted); }
-	70% { box-shadow: 0 0 0 10px transparent; }
-	100% { box-shadow: 0 0 0 0 transparent; }
+	0% {
+		box-shadow: 0 0 0 0 var(--analysis-accent-muted);
+	}
+	70% {
+		box-shadow: 0 0 0 10px transparent;
+	}
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
 }
 
 /* ==========================================================================

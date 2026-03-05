@@ -73,8 +73,8 @@ function IconButton({
 
 function FavoriteChip({ name, onRemove }: { name: string; onRemove: () => void }) {
 	return (
-	<div className="flex items-center gap-1 rounded-full border border-border bg-foreground/5 py-1 pl-3 pr-1">
-		<span className="text-sm text-foreground/80">{name}</span>
+		<div className="flex items-center gap-1 rounded-full border border-border bg-foreground/5 py-1 pl-3 pr-1">
+			<span className="text-sm text-foreground/80">{name}</span>
 			<button
 				type="button"
 				onClick={onRemove}
@@ -151,8 +151,10 @@ export function RandomGenerator({
 	return (
 		<div className="mx-auto flex w-full max-w-2xl flex-col">
 			{/* Header */}
-		<h2 className="mb-2 text-center text-2xl font-bold text-foreground">Random Name Generator</h2>
-		<p className="mb-8 text-center text-muted-foreground">Can&apos;t decide? Let fate decide for you.</p>
+			<h2 className="mb-2 text-center text-2xl font-bold text-foreground">Random Name Generator</h2>
+			<p className="mb-8 text-center text-muted-foreground">
+				Can&apos;t decide? Let fate decide for you.
+			</p>
 
 			{/* Generator Card */}
 			<div className="random-generator-card relative flex min-h-[240px] w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-2xl border border-border bg-foreground/10 px-6 py-12 backdrop-blur-sm">

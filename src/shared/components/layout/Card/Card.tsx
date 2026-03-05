@@ -532,9 +532,9 @@ const CardNameBase = memo(function CardName({
 					"w-full h-full relative flex flex-col items-center gap-1 text-center font-inherit cursor-pointer overflow-visible transition-all duration-300",
 					"backdrop-blur-md rounded-xl border",
 					size === "small" ? "p-2 min-h-24" : "p-4 min-h-32",
-				isSelected
-					? "border-primary bg-gradient-to-br from-primary/20 to-primary/10 shadow-[0_0_30px_rgba(168,85,247,0.2)]"
-					: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
+					isSelected
+						? "border-primary bg-gradient-to-br from-primary/20 to-primary/10 shadow-[0_0_30px_rgba(168,85,247,0.2)]"
+						: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
 					disabled && "opacity-50 cursor-not-allowed filter grayscale",
 					isHidden && "opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
 					image && "min-h-[220px]",

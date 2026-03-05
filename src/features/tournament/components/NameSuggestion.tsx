@@ -44,8 +44,8 @@ function InlineNameSuggestion() {
 		>
 			<form onSubmit={handleLocalSubmit} className="w-full max-w-3xl mx-auto">
 				<div className="relative overflow-hidden rounded-[28px] border border-border bg-background/50 p-6 sm:p-8 shadow-2xl shadow-background/40">
-				<div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent-color/15 blur-3xl" />
-				<div className="pointer-events-none absolute -left-14 bottom-0 h-48 w-48 rounded-full bg-chart-4/10 blur-3xl" />
+					<div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent-color/15 blur-3xl" />
+					<div className="pointer-events-none absolute -left-14 bottom-0 h-48 w-48 rounded-full bg-chart-4/10 blur-3xl" />
 
 					<div className="relative flex flex-col gap-6">
 						<div className="text-center flex flex-col gap-3">
@@ -64,8 +64,8 @@ function InlineNameSuggestion() {
 
 						<div className="grid gap-5">
 							<div className="flex flex-col gap-2">
-							<label htmlFor="suggest-name" className="text-sm font-semibold text-foreground/90">
-								Name suggestion <span className="text-destructive">*</span>
+								<label htmlFor="suggest-name" className="text-sm font-semibold text-foreground/90">
+									Name suggestion <span className="text-destructive">*</span>
 								</label>
 								<Input
 									id="suggest-name"
@@ -81,10 +81,15 @@ function InlineNameSuggestion() {
 
 							<div className="flex flex-col gap-2">
 								<div className="flex items-center justify-between gap-3">
-								<label htmlFor="suggest-description" className="text-sm font-semibold text-foreground/90">
-									Why this name? <span className="text-destructive">*</span>
+									<label
+										htmlFor="suggest-description"
+										className="text-sm font-semibold text-foreground/90"
+									>
+										Why this name? <span className="text-destructive">*</span>
 									</label>
-									<span className="text-xs text-muted-foreground">Help voters understand the vibe</span>
+									<span className="text-xs text-muted-foreground">
+										Help voters understand the vibe
+									</span>
 								</div>
 								<Textarea
 									id="suggest-description"

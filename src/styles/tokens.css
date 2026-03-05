@@ -320,6 +320,32 @@
 	--pw-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 	--pw-transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
+	/* Background effects (fixed medium intensity) */
+	--pw-fx-moire-opacity: 0.2;
+	--pw-fx-moire-opacity-mobile: 0.15;
+	--pw-fx-moire-opacity-reduced: 0.14;
+	--pw-fx-moire-scale: 1.055;
+	--pw-fx-moire-duration: 24s;
+
+	--pw-fx-blur-opacity: 0.44;
+	--pw-fx-blur-opacity-mobile: 0.34;
+	--pw-fx-blur-opacity-reduced: 0.32;
+	--pw-fx-blur-radius: 52px;
+	--pw-fx-blur-radius-mobile: 42px;
+	--pw-fx-blur-saturation: 1.06;
+	--pw-fx-blur-saturation-mobile: 1.03;
+	--pw-fx-blur-duration: 21s;
+	--pw-fx-blur-scale-base: 1;
+	--pw-fx-blur-scale-peak: 1.04;
+
+	--pw-fx-vignette-inner-stop: 38%;
+	--pw-fx-vignette-mid-stop: 70%;
+	--pw-fx-vignette-outer-stop: 100%;
+	--pw-fx-vignette-mid-rgb: 0 0 0;
+	--pw-fx-vignette-outer-rgb: 0 0 0;
+	--pw-fx-vignette-mid-alpha: 0.2;
+	--pw-fx-vignette-outer-alpha: 0.44;
+
 	/* Heading treatment (hybrid typography: body untouched, headings tuned) */
 	--pw-heading-1-size: clamp(2.15rem, 4.4vw, 3.65rem);
 	--pw-heading-2-size: clamp(1.7rem, 3vw, 2.55rem);
@@ -494,6 +520,27 @@
 	--pw-shadow-lg: 0 24px 48px rgb(15 23 42 / 16%);
 	--pw-analysis-accent: hsl(190deg 58% 34%);
 	--pw-analysis-accent-rgb: 36, 117, 137;
+
+	/* Background effects (fixed medium intensity, light-tuned) */
+	--pw-fx-moire-opacity: 0.11;
+	--pw-fx-moire-opacity-mobile: 0.09;
+	--pw-fx-moire-opacity-reduced: 0.09;
+
+	--pw-fx-blur-opacity: 0.24;
+	--pw-fx-blur-opacity-mobile: 0.2;
+	--pw-fx-blur-opacity-reduced: 0.18;
+	--pw-fx-blur-radius: 44px;
+	--pw-fx-blur-radius-mobile: 40px;
+	--pw-fx-blur-saturation: 0.96;
+	--pw-fx-blur-saturation-mobile: 0.94;
+
+	--pw-fx-vignette-inner-stop: 44%;
+	--pw-fx-vignette-mid-stop: 74%;
+	--pw-fx-vignette-outer-stop: 100%;
+	--pw-fx-vignette-mid-rgb: 148 163 184;
+	--pw-fx-vignette-outer-rgb: 15 23 42;
+	--pw-fx-vignette-mid-alpha: 0.08;
+	--pw-fx-vignette-outer-alpha: 0.16;
 
 	/* Keep semantic tokens coherent with light mode contrast */
 	--button-secondary-bg: color-mix(in srgb, var(--pw-text-strong) 8%, transparent);

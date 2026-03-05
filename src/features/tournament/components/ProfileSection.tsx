@@ -62,18 +62,20 @@ export function ProfileSection({ onLogin }: ProfileSectionProps) {
 					{/* Section Header - Only show when editing/logging in */}
 					{isEditing && !user.isLoggedIn && (
 						<div className="text-center space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
-						<h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-							Join the Council
-						</h2>
-						<p className="text-sm text-muted-foreground">Enter your name to track your rankings</p>
+							<h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+								Join the Council
+							</h2>
+							<p className="text-sm text-muted-foreground">
+								Enter your name to track your rankings
+							</p>
 						</div>
 					)}
 
 					<div className="flex flex-col md:flex-row gap-6 items-center">
 						{/* Avatar with glow */}
 						<div className="relative shrink-0">
-						<div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-xl animate-pulse" />
-						<div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/20 bg-muted">
+							<div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-xl animate-pulse" />
+							<div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/20 bg-muted">
 								<img
 									src={avatarSrc}
 									alt="Profile"
@@ -88,9 +90,11 @@ export function ProfileSection({ onLogin }: ProfileSectionProps) {
 							{isEditing ? (
 								<div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 									<div className="space-y-2">
-									<label className="text-sm font-medium text-foreground/80 block">Your Name</label>
-									<div className="relative">
-										<User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/50" />
+										<label className="text-sm font-medium text-foreground/80 block">
+											Your Name
+										</label>
+										<div className="relative">
+											<User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/50" />
 											<Input
 												type="text"
 												value={editedName}

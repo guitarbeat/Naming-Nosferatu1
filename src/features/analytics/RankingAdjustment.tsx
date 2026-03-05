@@ -47,7 +47,9 @@ const RankingItemContent = memo(({ item, index }: { item: NameItem; index: numbe
 			<div className="flex items-center gap-3 text-sm">
 				<span className="text-muted-foreground">
 					Rating:{" "}
-					<span className="text-foreground/90 font-medium">{Math.round(item.rating as number)}</span>
+					<span className="text-foreground/90 font-medium">
+						{Math.round(item.rating as number)}
+					</span>
 				</span>
 			</div>
 		</div>
@@ -154,7 +156,8 @@ export const RankingAdjustment = memo(
 									saveStatus === "saving" &&
 										"bg-chart-5/20 border-chart-5/30 text-chart-5 animate-pulse",
 									saveStatus === "success" && "bg-chart-2/20 border-chart-2/30 text-chart-2",
-									saveStatus === "error" && "bg-destructive/20 border-destructive/30 text-destructive",
+									saveStatus === "error" &&
+										"bg-destructive/20 border-destructive/30 text-destructive",
 								)}
 								variant="flat"
 								startContent={
@@ -173,7 +176,9 @@ export const RankingAdjustment = memo(
 							</Chip>
 						)}
 					</div>
-					<p className="text-muted-foreground text-sm">Drag and drop to reorder your favorite cat names</p>
+					<p className="text-muted-foreground text-sm">
+						Drag and drop to reorder your favorite cat names
+					</p>
 				</CardHeader>
 
 				<Divider className="bg-border/10" />
@@ -203,14 +208,14 @@ export const RankingAdjustment = memo(
 														initial={{ opacity: 0, y: 10 }}
 														animate={{ opacity: 1, y: 0 }}
 														exit={{ opacity: 0, scale: 0.95 }}
-													className={cn(
-														"p-4 rounded-xl transition-all duration-200",
-														"bg-gradient-to-br from-foreground/5 to-foreground/[0.02]",
-														"border border-border/10",
-														"hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10",
-														snapshot.isDragging &&
-															"shadow-2xl shadow-primary/30 border-primary/50 scale-105 rotate-2",
-													)}
+														className={cn(
+															"p-4 rounded-xl transition-all duration-200",
+															"bg-gradient-to-br from-foreground/5 to-foreground/[0.02]",
+															"border border-border/10",
+															"hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10",
+															snapshot.isDragging &&
+																"shadow-2xl shadow-primary/30 border-primary/50 scale-105 rotate-2",
+														)}
 													>
 														<RankingItemContent item={item} index={index} />
 													</motion.div>

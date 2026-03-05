@@ -945,7 +945,7 @@ export function NameSelector() {
 															)}
 
 															{/* Name and Info Overlay */}
-														<div className="relative z-10 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent flex flex-col justify-end pointer-events-none">
+															<div className="relative z-10 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent flex flex-col justify-end pointer-events-none">
 																<h3 className="font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full">
 																	{nameItem.name}
 																	{nameItem.pronunciation && (
@@ -1017,8 +1017,10 @@ export function NameSelector() {
 								) : (
 									<div className="absolute inset-0 flex items-center justify-center">
 										<div className="text-center space-y-4">
-										<p className="text-2xl font-bold text-foreground">All done!</p>
-											<p className="text-muted-foreground">You've reviewed all names. Ready to start?</p>
+											<p className="text-2xl font-bold text-foreground">All done!</p>
+											<p className="text-muted-foreground">
+												You've reviewed all names. Ready to start?
+											</p>
 										</div>
 									</div>
 								)}
@@ -1089,7 +1091,7 @@ export function NameSelector() {
 													whileHover={{ scale: 1.02 }}
 													whileTap={{ scale: 0.98 }}
 													transition={{ type: "spring", stiffness: 400, damping: 25 }}
-												className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 overflow-hidden cursor-pointer ${
+													className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 overflow-hidden cursor-pointer ${
 														isSelected
 															? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
 															: "border-border/10 bg-foreground/5 hover:border-border/20 hover:bg-foreground/10 hover:shadow-lg"
@@ -1105,7 +1107,7 @@ export function NameSelector() {
 														/>
 
 														{/* Grid Name Overlay */}
-													<div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 bg-gradient-to-t from-background/95 via-background/65 to-transparent flex flex-col justify-end pointer-events-none">
+														<div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 bg-gradient-to-t from-background/95 via-background/65 to-transparent flex flex-col justify-end pointer-events-none">
 															<div className="flex flex-col gap-0.5">
 																<div className="flex items-center justify-between gap-2">
 																	<span className="mobile-readable-title font-bold text-foreground text-[13px] sm:text-base leading-tight drop-shadow-md truncate">
@@ -1127,7 +1129,7 @@ export function NameSelector() {
 																	</span>
 																)}
 																{nameItem.description && (
-																<p className="mobile-readable-description text-foreground/95 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
+																	<p className="mobile-readable-description text-foreground/95 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
 																		{nameItem.description}
 																	</p>
 																)}
@@ -1304,7 +1306,9 @@ export function NameSelector() {
 																imageClassName="w-full h-full object-cover opacity-20"
 															/>
 															<div className="absolute inset-0 flex items-center justify-center">
-																<span className="text-muted-foreground/50 text-sm font-bold">?</span>
+																<span className="text-muted-foreground/50 text-sm font-bold">
+																	?
+																</span>
 															</div>
 														</div>
 													);
@@ -1341,11 +1345,11 @@ export function NameSelector() {
 													<button
 														type="button"
 														onClick={() => setHiddenShowSelectedOnly((v) => !v)}
-													className={`px-3 py-2 border text-xs font-medium ${
-														hiddenShowSelectedOnly
-															? "bg-primary/20 border-primary/40 text-foreground"
-															: "bg-foreground/5 border-border/10 text-foreground/80"
-													}`}
+														className={`px-3 py-2 border text-xs font-medium ${
+															hiddenShowSelectedOnly
+																? "bg-primary/20 border-primary/40 text-foreground"
+																: "bg-foreground/5 border-border/10 text-foreground/80"
+														}`}
 													>
 														Selected only
 													</button>
@@ -1373,7 +1377,7 @@ export function NameSelector() {
 															}}
 															role="button"
 															tabIndex={0}
-														className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 transition-all overflow-hidden group transform hover:scale-105 active:scale-95 cursor-pointer ${
+															className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 transition-all overflow-hidden group transform hover:scale-105 active:scale-95 cursor-pointer ${
 																isSelected
 																	? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
 																	: "border-border/10 bg-foreground/5 hover:border-border/20 hover:bg-foreground/10 hover:shadow-lg"

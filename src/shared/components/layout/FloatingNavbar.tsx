@@ -46,8 +46,8 @@ function FloatingNavItem({
 			type="button"
 			whileTap={{ scale: 0.97 }}
 			className={cn(
-			"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
-			isActive && "bg-foreground/15 text-foreground",
+				"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
+				isActive && "bg-foreground/15 text-foreground",
 				className,
 			)}
 			onClick={onClick}
@@ -288,8 +288,8 @@ export function FloatingNavbar() {
 						<User
 							className={cn(
 								"h-6 w-6",
-							isLoggedIn && isAdmin && "text-chart-4",
-							isLoggedIn && !isAdmin && "text-primary",
+								isLoggedIn && isAdmin && "text-chart-4",
+								isLoggedIn && !isAdmin && "text-primary",
 							)}
 						/>
 					)

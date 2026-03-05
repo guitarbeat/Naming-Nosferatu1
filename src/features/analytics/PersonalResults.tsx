@@ -46,16 +46,18 @@ export const PersonalResults = ({
 				<Card variant="primary" className="backdrop-blur-sm">
 					<CardBody className="flex flex-col items-center justify-center gap-2 p-6">
 						<span className="text-4xl select-none">⭐</span>
-					<h3 className="text-sm font-medium text-muted-foreground">Highest Rated</h3>
-					<p className="text-xl font-bold text-foreground">{String(rankings[0]?.rating || 1500)}</p>
+						<h3 className="text-sm font-medium text-muted-foreground">Highest Rated</h3>
+						<p className="text-xl font-bold text-foreground">
+							{String(rankings[0]?.rating || 1500)}
+						</p>
 					</CardBody>
 				</Card>
 
 				<Card variant="info" className="backdrop-blur-sm">
 					<CardBody className="flex flex-col items-center justify-center gap-2 p-6">
 						<span className="text-4xl select-none">📝</span>
-					<h3 className="text-sm font-medium text-muted-foreground">Names Ranked</h3>
-					<p className="text-xl font-bold text-foreground">{rankings.length}</p>
+						<h3 className="text-sm font-medium text-muted-foreground">Names Ranked</h3>
+						<p className="text-xl font-bold text-foreground">{rankings.length}</p>
 					</CardBody>
 				</Card>
 			</div>

@@ -243,16 +243,16 @@ export function Dashboard({
 									</p>
 								</div>
 								<div className="text-right">
-									<p className="text-lg font-bold text-primary">
-										{Math.round(entry.avg_rating)}
-									</p>
+									<p className="text-lg font-bold text-primary">{Math.round(entry.avg_rating)}</p>
 									<p className="text-xs text-muted-foreground">rating</p>
 								</div>
 							</div>
 						))}
 					</div>
 				) : (
-					<p className="text-center text-muted-foreground py-8">No ratings yet. Start a tournament!</p>
+					<p className="text-center text-muted-foreground py-8">
+						No ratings yet. Start a tournament!
+					</p>
 				)}
 			</Card>
 
@@ -275,7 +275,9 @@ export function Dashboard({
 						</div>
 						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
 							<p className="text-sm text-muted-foreground mb-1">Avg Rating</p>
-							<p className="text-2xl font-bold text-foreground">{Math.round(siteStats.avgRating)}</p>
+							<p className="text-2xl font-bold text-foreground">
+								{Math.round(siteStats.avgRating)}
+							</p>
 						</div>
 						{isAdmin && (
 							<div className="bg-chart-4/20 rounded-lg p-4 border border-chart-4/30">

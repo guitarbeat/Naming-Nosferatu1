@@ -8,9 +8,15 @@
    LAYOUT PRIMITIVES
    ========================================================================== */
 
-.z-10 { z-index: var(--z-10); }
-.z-20 { z-index: var(--z-20); }
-.z-toast { z-index: var(--z-toast); }
+.z-10 {
+	z-index: var(--z-10);
+}
+.z-20 {
+	z-index: var(--z-20);
+}
+.z-toast {
+	z-index: var(--z-toast);
+}
 
 .stack {
 	display: flex;
@@ -41,8 +47,12 @@
    APP LAYOUT
    ========================================================================== */
 
-.app--login .navbar { display: flex; }
-.app { min-height: 100dvh; }
+.app--login .navbar {
+	display: flex;
+}
+.app {
+	min-height: 100dvh;
+}
 
 .app-main-wrapper {
 	position: relative;
@@ -98,15 +108,29 @@
 }
 
 @media (max-width: calc(768px - 1px)) {
-	.mobile-only { display: block; }
-	.desktop-only { display: none; }
-	.mobile-stack > * + * { margin-top: var(--space-4); }
-	.mobile-full-width { width: 100%; margin-left: 0; margin-right: 0; }
+	.mobile-only {
+		display: block;
+	}
+	.desktop-only {
+		display: none;
+	}
+	.mobile-stack > * + * {
+		margin-top: var(--space-4);
+	}
+	.mobile-full-width {
+		width: 100%;
+		margin-left: 0;
+		margin-right: 0;
+	}
 }
 
 @media (min-width: 768px) {
-	.mobile-only { display: none; }
-	.desktop-only { display: block; }
+	.mobile-only {
+		display: none;
+	}
+	.desktop-only {
+		display: block;
+	}
 	.desktop-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -115,7 +139,9 @@
 }
 
 @media (min-width: 769px) {
-	.mobile-nav-safe-bottom { padding-bottom: 0; }
+	.mobile-nav-safe-bottom {
+		padding-bottom: 0;
+	}
 }
 
 /* ==========================================================================
@@ -143,12 +169,16 @@
 		border-bottom: 2px solid var(--header-border);
 	}
 
-	h1, h2, h3 {
+	h1,
+	h2,
+	h3 {
 		color: var(--mobile-text-primary, var(--text-primary));
 		text-shadow: 0 1px 2px var(--shadow-color-light);
 	}
 
-	p, span, label {
+	p,
+	span,
+	label {
 		color: var(--mobile-text-primary, var(--text-primary));
 	}
 
@@ -215,8 +245,14 @@
 		font-size: var(--text-base);
 	}
 
-	.card, .name-card { margin-bottom: var(--space-3); }
-	ul, ol { padding-left: var(--space-4); }
+	.card,
+	.name-card {
+		margin-bottom: var(--space-3);
+	}
+	ul,
+	ol {
+		padding-left: var(--space-4);
+	}
 }
 
 /* ==========================================================================
@@ -224,20 +260,34 @@
    ========================================================================== */
 
 @media (width <= 430px) {
-	h1 { font-size: var(--text-2xl); }
-	h2 { font-size: var(--text-xl); }
-	h3 { font-size: var(--text-lg); }
+	h1 {
+		font-size: var(--text-2xl);
+	}
+	h2 {
+		font-size: var(--text-xl);
+	}
+	h3 {
+		font-size: var(--text-lg);
+	}
 
-	.container { padding: 0 var(--space-3); }
+	.container {
+		padding: 0 var(--space-3);
+	}
 
 	.scroll-to-top {
 		right: var(--mobile-safe-spacing-small);
 		bottom: var(--mobile-safe-spacing-small);
 	}
 
-	.mobile-readable-card .mobile-readable-title { line-height: 1.15; }
-	.mobile-readable-card .mobile-readable-meta { line-height: 1.2; }
-	.mobile-readable-card .mobile-readable-description { line-height: 1.3; }
+	.mobile-readable-card .mobile-readable-title {
+		line-height: 1.15;
+	}
+	.mobile-readable-card .mobile-readable-meta {
+		line-height: 1.2;
+	}
+	.mobile-readable-card .mobile-readable-description {
+		line-height: 1.3;
+	}
 }
 
 /* ==========================================================================
@@ -257,7 +307,11 @@
 		}
 
 		.scroll-to-top {
-			right: max(var(--mobile-safe-spacing), env(safe-area-inset-right) + var(--mobile-safe-spacing));
+			right: max(
+				var(--mobile-safe-spacing),
+				env(safe-area-inset-right) +
+				var(--mobile-safe-spacing)
+			);
 			bottom: max(5.5rem, calc(90px + env(safe-area-inset-bottom) + var(--mobile-safe-spacing)));
 		}
 	}
@@ -289,13 +343,23 @@
 
 @media (prefers-contrast: more) {
 	@media (width <= 768px) {
-		button, .btn { border-width: 2px; }
+		button,
+		.btn {
+			border-width: 2px;
+		}
 	}
 }
 
 /* Print */
 @media print {
-	.no-print { display: none; }
-	.print-only { display: block; }
-	* { color: black; background: white; }
+	.no-print {
+		display: none;
+	}
+	.print-only {
+		display: block;
+	}
+	* {
+		color: black;
+		background: white;
+	}
 }

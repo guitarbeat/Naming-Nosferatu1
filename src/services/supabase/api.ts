@@ -55,13 +55,12 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let result: { data: any; error: any };
-		if (!includeHidden) {
+		if (includeHidden) {
 			result = await (client as any)
 				.from("cat_name_options")
 				.select(selectColumns)
 				.eq("is_active", true)
 				.eq("is_deleted", false)
-				.eq("is_hidden", false)
 				.order("avg_rating", { ascending: false })
 				.limit(1000);
 		} else {
@@ -70,6 +69,7 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 				.select(selectColumns)
 				.eq("is_active", true)
 				.eq("is_deleted", false)
+				.eq("is_hidden", false)
 				.order("avg_rating", { ascending: false })
 				.limit(1000);
 		}
