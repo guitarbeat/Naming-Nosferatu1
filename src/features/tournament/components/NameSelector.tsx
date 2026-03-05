@@ -6,7 +6,6 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { useNamesCache } from "../hooks";
 import { coreAPI, hiddenNamesAPI, withSupabase } from "@/services/supabase";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
@@ -32,6 +31,7 @@ import {
 } from "@/shared/lib/icons";
 import type { IdType, NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
+import { useNamesCache } from "../hooks";
 
 const SWIPE_OFFSET_THRESHOLD = 100;
 const SWIPE_VELOCITY_THRESHOLD = 500;
@@ -386,9 +386,7 @@ export function NameSelector() {
 				// Ensure user context is set
 				await withSupabase(async (_client) => {
 					try {
-						const client = await (
-							await import("@/services/supabase/client")
-						).resolveSupabaseClient();
+						const client = await (await import("@/services/supabase")).resolveSupabaseClient();
 						if (client) {
 							await client.rpc("set_user_context", { user_name_param: userName.trim() });
 						}
