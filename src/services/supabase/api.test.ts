@@ -69,7 +69,7 @@ describe("Supabase Service API", () => {
 			expect(result[0]?.name).toBe("Cat 1");
 		});
 
-		it("should fallback to Supabase client on API error", async () => {
+		it("should fallback to Supabase client on API error (includeHidden=true)", async () => {
 			(api.get as any).mockRejectedValue(new Error("API Down"));
 
 			// Mock Supabase client
@@ -88,8 +88,32 @@ describe("Supabase Service API", () => {
 			const result = await coreAPI.getTrendingNames(true);
 
 			expect(resolveSupabaseClient).toHaveBeenCalled();
+			expect(mockQuery.eq).not.toHaveBeenCalledWith("is_hidden", false);
 			expect(result).toHaveLength(1);
 			expect(result[0]?.name).toBe("Cat 2");
+		});
+
+		it("should apply hidden filter in Supabase fallback when includeHidden=false", async () => {
+			(api.get as any).mockRejectedValue(new Error("API Down"));
+
+			const mockData = [{ id: 3, name: "Cat 3", avg_rating: 1490 }];
+			const mockQuery = {
+				select: vi.fn().mockReturnThis(),
+				eq: vi.fn().mockReturnThis(),
+				order: vi.fn().mockReturnThis(),
+				limit: vi.fn().mockResolvedValue({ data: mockData, error: null }),
+			};
+			const mockClient = {
+				from: vi.fn().mockReturnValue(mockQuery),
+			};
+			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+
+			const result = await coreAPI.getTrendingNames(false);
+
+			expect(resolveSupabaseClient).toHaveBeenCalled();
+			expect(mockQuery.eq).toHaveBeenCalledWith("is_hidden", false);
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Cat 3");
 		});
 
 		it("should return empty array if both API and Supabase fail", async () => {

@@ -51,6 +51,18 @@ const IS_BROWSER = typeof window !== "undefined";
  * Defined here once to avoid `any` casts scattered throughout the file.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation
  */
+interface NetworkInformation extends EventTarget {
+	effectiveType?: string;
+	rtt?: number;
+	downlink?: number;
+	saveData?: boolean;
+}
+
+type NavigatorWithConnection = Navigator & {
+	connection?: NetworkInformation;
+	mozConnection?: NetworkInformation;
+	webkitConnection?: NetworkInformation;
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // useEventListener
@@ -94,27 +106,23 @@ function useEventListener<K extends keyof WindowEventMap>(
 // useMediaQuery
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/**
- * Subscribe to a CSS media query.
- */
-function _useMediaQuery(query: string): boolean {
+/** Subscribe to a CSS media query. */
+export function useMediaQuery(query: string): boolean {
 	const [matches, setMatches] = useState(false);
 
 	useEffect(() => {
-		if (typeof window === "undefined") {
+		if (!IS_BROWSER) {
 			return;
 		}
 
 		const media = window.matchMedia(query);
-		if (media.matches !== matches) {
-			setMatches(media.matches);
-		}
+		setMatches(media.matches);
 
 		const listener = () => setMatches(media.matches);
 		media.addEventListener("change", listener);
 
 		return () => media.removeEventListener("change", listener);
-	}, [query, matches]);
+	}, [query]);
 
 	return matches;
 }
@@ -131,14 +139,89 @@ function _useMediaQuery(query: string): boolean {
  * const { isMobile, isOnline, prefersReducedMotion } = useBrowserState();
  * const browser = useBrowserState({ mobile: 640, tablet: 1280 });
  */
+function getConnectionInfo(): NetworkInformation | null {
+	if (!IS_BROWSER) {
+		return null;
+	}
+	const nav = navigator as NavigatorWithConnection;
+	return nav.connection ?? nav.mozConnection ?? nav.webkitConnection ?? null;
+}
+
+function isSlowNetwork(connection: NetworkInformation | null): boolean {
+	if (!connection) {
+		return false;
+	}
+	const type = connection.effectiveType ?? "";
+	const saveData = Boolean(connection.saveData);
+	const rtt = connection.rtt ?? 0;
+	const downlink = connection.downlink ?? 10;
+	return type === "slow-2g" || type === "2g" || saveData || rtt > 300 || downlink < 1.5;
+}
+
 export function useBrowserState() {
+	const isOnline = useOnlineStatus();
+	const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+	const readViewport = useCallback(() => {
+		if (!IS_BROWSER) {
+			return {
+				isMobile: false,
+				isTablet: false,
+				isDesktop: true,
+			};
+		}
+		const width = window.innerWidth;
+		return {
+			isMobile: width < 768,
+			isTablet: width >= 768 && width < 1024,
+			isDesktop: width >= 1024,
+		};
+	}, []);
+	const [viewport, setViewport] = useState(readViewport);
+	const [isSlowConnection, setIsSlowConnection] = useState(() =>
+		isSlowNetwork(getConnectionInfo()),
+	);
+
+	useEffect(() => {
+		if (!IS_BROWSER) {
+			return;
+		}
+		let rafId = 0;
+		const handleResize = () => {
+			if (rafId) {
+				return;
+			}
+			rafId = window.requestAnimationFrame(() => {
+				rafId = 0;
+				setViewport(readViewport());
+			});
+		};
+		window.addEventListener("resize", handleResize, { passive: true });
+		window.addEventListener("orientationchange", handleResize, { passive: true });
+		return () => {
+			if (rafId) {
+				window.cancelAnimationFrame(rafId);
+			}
+			window.removeEventListener("resize", handleResize);
+			window.removeEventListener("orientationchange", handleResize);
+		};
+	}, [readViewport]);
+
+	useEffect(() => {
+		const connection = getConnectionInfo();
+		if (!connection) {
+			return;
+		}
+		const onChange = () => setIsSlowConnection(isSlowNetwork(connection));
+		onChange();
+		connection.addEventListener("change", onChange);
+		return () => connection.removeEventListener("change", onChange);
+	}, []);
+
 	return {
-		isMobile: false,
-		isTablet: false,
-		isDesktop: true,
-		isOnline: true,
-		prefersReducedMotion: false,
-		isSlowConnection: false,
+		...viewport,
+		isOnline,
+		prefersReducedMotion,
+		isSlowConnection,
 	};
 }
 

@@ -329,8 +329,10 @@ function transformImportPath(
 	const normalizedNewFilePath = toNormalizedAbsolutePath(newFilePath);
 
 	// Resolve the absolute path that the import currently points to
-	const oldFileDir = path.posix.dirname(normalizedOldFilePath);
-	const absoluteImportPath = path.posix.resolve(oldFileDir, normalizedImportPath);
+	const oldFileDir = path.dirname(normalizedOldFilePath);
+	const absoluteImportPath = toNormalizedAbsolutePath(
+		path.resolve(oldFileDir, normalizedImportPath),
+	);
 
 	// Check if this import points to a file that has been moved (using referenceMap)
 	let targetPath = absoluteImportPath;
@@ -355,8 +357,8 @@ function transformImportPath(
 	}
 
 	// Calculate the new relative path from the new file location to the target
-	const newFileDir = path.posix.dirname(normalizedNewFilePath);
-	let newRelativePath = path.posix.relative(newFileDir, targetPath);
+	const newFileDir = path.dirname(normalizedNewFilePath);
+	let newRelativePath = normalizePathForComparison(path.relative(newFileDir, targetPath));
 
 	// Ensure the path starts with ./ or ../
 	if (!newRelativePath.startsWith(".")) {
@@ -377,12 +379,18 @@ function normalizePathForComparison(filePath: string): string {
 
 function toNormalizedAbsolutePath(filePath: string): string {
 	const normalizedPath = normalizePathForComparison(filePath);
-	if (path.posix.isAbsolute(normalizedPath)) {
+	const isWindowsAbsolute = /^[a-zA-Z]:\//.test(normalizedPath) || normalizedPath.startsWith("//");
+
+	// `path.posix.isAbsolute` does not recognize Windows drive-letter absolutes (`C:/...`).
+	if (
+		path.posix.isAbsolute(normalizedPath) ||
+		isWindowsAbsolute ||
+		path.win32.isAbsolute(filePath)
+	) {
 		return path.posix.normalize(normalizedPath);
 	}
 
-	const cwd = normalizePathForComparison(process.cwd());
-	return path.posix.normalize(path.posix.resolve(cwd, normalizedPath));
+	return normalizePathForComparison(path.resolve(filePath));
 }
 
 interface RollbackResult {
