@@ -9,28 +9,26 @@
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { api } from "@/services/apiClient";
-import { resolveSupabaseClient } from "@/services/supabase/runtime";
+import { supabase } from "@/integrations/supabase/client";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {
-		const client = await resolveSupabaseClient();
-		if (!client) {
-			return false;
-		}
+		// Query cat_user_roles directly using the always-available integrations client.
+		// This avoids cross-transaction issues with set_user_context + is_admin RPCs,
+		// and avoids the VITE_SUPABASE_ANON_KEY env var mismatch in runtime.ts.
+		const { data, error } = await (supabase as any)
+			.from("cat_user_roles")
+			.select("role")
+			.ilike("user_name", userName)
+			.eq("role", "admin")
+			.limit(1);
 
-		try {
-			await client.rpc("set_user_context", { user_name_param: userName });
-		} catch {
-			/* ignore */
-		}
-
-		const { data, error } = await client.rpc("is_admin");
 		if (error) {
 			return false;
 		}
 
-		return Boolean(data);
+		return Array.isArray(data) && data.length > 0;
 	} catch {
 		return false;
 	}
