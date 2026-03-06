@@ -47,7 +47,7 @@
 		"format": "biome format --write src server",
 		"fix": "pnpm run lint:fix",
 		"check": "pnpm run lint && pnpm run check:deps",
-		"check:deps": "DATABASE_URL=${DATABASE_URL:-postgres://user:pass@localhost:5432/db} knip --dependencies --no-config-hints",
+		"check:deps": "node scripts/check-deps.mjs",
 		"check:deps:fix": "knip --fix",
 		"clean": "rm -rf build dist node_modules/.vite",
 		"test": "vitest --run",

@@ -2,6 +2,11 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"entry": ["src/app/main.tsx"],
 	"project": ["src/**/*.{js,jsx,ts,tsx}"],
+	"ignoreDependencies": [
+		"@capacitor/android",
+		"@capacitor/core",
+		"@capacitor/ios"
+	],
 	"ignore": [
 		"**/*.md",
 		"**/README.md",
