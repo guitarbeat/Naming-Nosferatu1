@@ -58,15 +58,17 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 	const selectColumns =
 		"id, name, description, pronunciation, avg_rating, created_at, is_hidden, is_active, locked_in, is_deleted";
 
-	const baseQuery = client
-		.from("cat_name_options")
-		.select(selectColumns)
-		.eq("is_active", true)
-		.eq("is_deleted", false)
-		.order("avg_rating", { ascending: false })
-		.limit(1000);
+	// @ts-ignore - Supabase type instantiation too deep with chained .eq()
+	const filters: Record<string, any> = { is_active: true, is_deleted: false };
+	if (!includeHidden) {
+		filters.is_hidden = false;
+	}
 
-	const result = includeHidden ? await baseQuery : await baseQuery.eq("is_hidden", false);
+	let query: any = client.from("cat_name_options").select(selectColumns);
+	for (const [key, value] of Object.entries(filters)) {
+		query = query.eq(key, value);
+	}
+	const result = await query.order("avg_rating", { ascending: false }).limit(1000);
 	if (result.error) {
 		throw new Error(result.error.message || "Supabase query failed.");
 	}

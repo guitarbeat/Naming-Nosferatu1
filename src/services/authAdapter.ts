@@ -12,18 +12,11 @@ import { api } from "@/services/apiClient";
 import { resolveSupabaseClient } from "@/services/supabase/runtime";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 
-// Simple admin usernames - can be expanded as needed
-const ADMIN_USERNAMES = ["Aaron", "admin", "administrator"];
-
-function isKnownAdminUser(userName: string): boolean {
-	return ADMIN_USERNAMES.some((admin) => admin.toLowerCase() === userName.toLowerCase());
-}
-
-async function getSupabaseAdminStatus(userName: string): Promise<boolean | null> {
+async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {
 		const client = await resolveSupabaseClient();
 		if (!client) {
-			return null;
+			return false;
 		}
 
 		try {
@@ -34,12 +27,12 @@ async function getSupabaseAdminStatus(userName: string): Promise<boolean | null>
 
 		const { data, error } = await client.rpc("is_admin");
 		if (error) {
-			return null;
+			return false;
 		}
 
 		return Boolean(data);
 	} catch {
-		return null;
+		return false;
 	}
 }
 
@@ -59,14 +52,7 @@ export const authAdapter: AuthAdapter = {
 			return null;
 		}
 
-		const supabaseIsAdmin = await getSupabaseAdminStatus(userName);
-		// Use OR logic: admin if Supabase says so OR if in the local admin list.
-		// Previously used ?? which only fell through on null, meaning a Supabase
-		// "false" (user_roles row missing) would override the local admin list.
-		const isAdmin = supabaseIsAdmin === true || isKnownAdminUser(userName);
-		console.log(
-			`[AuthAdapter] User: ${userName}, SupabaseAdmin: ${supabaseIsAdmin}, LocalAdmin: ${isKnownAdminUser(userName)}, Final: ${isAdmin}`,
-		);
+		const isAdmin = await getSupabaseAdminStatus(userName);
 
 		return {
 			id: userId || userName,
@@ -130,7 +116,6 @@ export const authAdapter: AuthAdapter = {
 			return false;
 		}
 
-		const supabaseIsAdmin = await getSupabaseAdminStatus(normalized);
-		return supabaseIsAdmin === true || isKnownAdminUser(normalized);
+		return getSupabaseAdminStatus(normalized);
 	},
 };
