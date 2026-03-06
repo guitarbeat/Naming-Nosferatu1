@@ -72,7 +72,6 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 	const selectColumns =
 		"id, name, description, pronunciation, avg_rating, created_at, is_hidden, is_active, locked_in, is_deleted";
 
-	// @ts-ignore - Supabase type instantiation too deep with chained .eq()
 	const filters: Record<string, any> = { is_active: true, is_deleted: false };
 	if (!includeHidden) {
 		filters.is_hidden = false;
