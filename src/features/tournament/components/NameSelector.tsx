@@ -613,26 +613,30 @@ export function NameSelector() {
 
 	if (isLoading) {
 		return (
-			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
-				<div className="flex items-center justify-center py-20">
-					<Loading variant="spinner" text="Loading cat names..." />
-				</div>
+			<Card
+				padding="small"
+				shadow="xl"
+				className="max-w-full mx-auto flex items-center justify-center py-20"
+			>
+				<Loading variant="spinner" text="Loading cat names..." />
 			</Card>
 		);
 	}
 
 	if (error) {
 		return (
-			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
-				<div className="flex flex-col items-center justify-center py-20 space-y-4">
-					<div className="text-destructive text-center">
-						<p className="text-lg font-medium">Failed to load names</p>
-						<p className="text-sm opacity-75 mt-1">{error}</p>
-					</div>
-					<Button onClick={() => setRetryCount((prev) => prev + 1)} variant="glass" size="small">
-						Try Again
-					</Button>
+			<Card
+				padding="small"
+				shadow="xl"
+				className="max-w-full mx-auto flex flex-col items-center justify-center py-20 space-y-4"
+			>
+				<div className="text-destructive text-center">
+					<p className="text-lg font-medium">Failed to load names</p>
+					<p className="text-sm opacity-75 mt-1">{error}</p>
 				</div>
+				<Button onClick={() => setRetryCount((prev) => prev + 1)} variant="glass" size="small">
+					Try Again
+				</Button>
 			</Card>
 		);
 	}
