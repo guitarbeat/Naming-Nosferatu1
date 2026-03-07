@@ -19,7 +19,7 @@ import { ErrorManager } from "@/services/errorManager";
 import { updateSupabaseUserContext } from "@/services/supabase/runtime";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { useOfflineSync } from "@/shared/hooks";
-import { cn } from "@/shared/lib/basic";
+
 import {
 	cleanupPerformanceMonitoring,
 	initializePerformanceMonitoring,
