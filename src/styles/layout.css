@@ -52,6 +52,9 @@
 }
 .app {
 	min-height: 100dvh;
+	width: 100%;
+	color: var(--foreground);
+	font-family: var(--font-sans);
 }
 
 .app-main-wrapper {
