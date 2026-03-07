@@ -15,7 +15,7 @@ import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import type { NameItem, TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
-import { useAudioManager } from "./hooks";
+import { useAudioManager } from "./hooks/useHelpers";
 import { useTournamentState } from "./hooks/useTournamentState";
 
 interface StreakBurst {

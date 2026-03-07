@@ -1,20 +1,57 @@
-import { noopAdapter } from "./noopAdapter";
-import { AuthContext, ToastContext, useAuth, useToast } from "./providerContexts";
+import { createContext, useContext } from "react";
 import {
 	type AuthAdapter,
+	type AuthContextValue,
 	type AuthUser,
 	DEFAULT_MAX_TOASTS,
 	DEFAULT_TOAST_DURATION_MS,
 	type LoginCredentials,
 	type ProvidersProps,
 	type RegisterData,
+	type ToastContextValue,
 } from "./providerTypes";
 import { ToastContainer } from "./ToastContainer";
 import { useAuthProvider } from "./useAuthProvider";
 import { useToastProvider } from "./useToastProvider";
 
 export type { AuthAdapter, AuthUser, LoginCredentials, RegisterData };
-export { useAuth, useToast };
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+const noopAdapter: AuthAdapter = {
+	getCurrentUser: async () => null,
+	login: async () => false,
+	logout: async () => {
+		/* No-op: Auth not implemented */
+	},
+	register: async () => {
+		/* No-op: Auth not implemented */
+	},
+	checkAdminStatus: async () => false,
+};
+
+export function useAuth(): AuthContextValue {
+	const ctx = useContext(AuthContext);
+	if (!ctx) {
+		throw new Error(
+			"useAuth must be used within <Providers>. " +
+				"Wrap your component tree with <Providers> in main.tsx.",
+		);
+	}
+	return ctx;
+}
+
+export function useToast(): ToastContextValue {
+	const ctx = useContext(ToastContext);
+	if (!ctx) {
+		throw new Error(
+			"useToast must be used within <Providers>. " +
+				"Wrap your component tree with <Providers> in main.tsx.",
+		);
+	}
+	return ctx;
+}
 
 export function Providers({
 	children,

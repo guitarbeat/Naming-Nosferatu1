@@ -10,7 +10,7 @@ import { Section } from "@/shared/components/layout/Section";
 import { Trophy } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
 import { NameSelector } from "../components/NameSelector";
-import { useTournamentHandlers } from "../hooks";
+import { useTournamentHandlers } from "../hooks/useTournamentHandlers";
 
 export default function TournamentFlow() {
 	const { user, tournament, tournamentActions } = useAppStore();

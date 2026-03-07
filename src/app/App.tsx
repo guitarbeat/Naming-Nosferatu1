@@ -13,7 +13,7 @@ import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
 import { NameSuggestion } from "@/features/tournament/components/NameSuggestion";
 import { ProfileSection } from "@/features/tournament/components/ProfileSection";
-import { useTournamentHandlers } from "@/features/tournament/hooks";
+import { useTournamentHandlers } from "@/features/tournament/hooks/useTournamentHandlers";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
 import { updateSupabaseUserContext } from "@/services/supabase/runtime";

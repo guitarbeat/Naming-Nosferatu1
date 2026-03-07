@@ -1,7 +1,50 @@
 import { useCallback, useEffect, useState } from "react";
-import { getConnectionInfo, IS_BROWSER, isSlowNetwork } from "./shared";
-import { useMediaQuery } from "./useMediaQuery";
-import { useOnlineStatus } from "./useOnlineStatus";
+import { getConnectionInfo, IS_BROWSER, isSlowNetwork, useEventListener } from "./shared";
+
+export function useMediaQuery(query: string): boolean {
+	const [matches, setMatches] = useState(false);
+
+	useEffect(() => {
+		if (!IS_BROWSER) {
+			return;
+		}
+
+		const media = window.matchMedia(query);
+		setMatches(media.matches);
+
+		const listener = () => setMatches(media.matches);
+		media.addEventListener("change", listener);
+
+		return () => media.removeEventListener("change", listener);
+	}, [query]);
+
+	return matches;
+}
+
+export function useOnlineStatus(options?: {
+	onReconnect?: () => void;
+	onDisconnect?: () => void;
+}): boolean {
+	const [isOnline, setIsOnline] = useState(
+		typeof navigator !== "undefined" ? navigator.onLine : true,
+	);
+
+	useEventListener("online", () => {
+		setIsOnline(true);
+		options?.onReconnect?.();
+	});
+
+	useEventListener("offline", () => {
+		setIsOnline(false);
+		options?.onDisconnect?.();
+	});
+
+	return isOnline;
+}
+
+export function useOfflineSync(): void {
+	useOnlineStatus();
+}
 
 export function useBrowserState() {
 	const isOnline = useOnlineStatus();
