@@ -790,12 +790,3 @@ export type CompositeTypes<
 	: PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
 		? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
 		: never;
-
-export const Constants = {
-	public: {
-		Enums: {
-			app_role: ["admin", "user"],
-			name_status: ["candidate", "intake", "tournament", "eliminated", "archived"],
-		},
-	},
-} as const;

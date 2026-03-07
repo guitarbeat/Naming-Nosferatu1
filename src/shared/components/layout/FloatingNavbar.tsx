@@ -46,7 +46,7 @@ function FloatingNavItem({
 			type="button"
 			whileTap={{ scale: 0.97 }}
 			className={cn(
-				"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
+				"group flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50 sm:flex-none",
 				isActive && "bg-foreground/15 text-foreground",
 				className,
 			)}
@@ -229,13 +229,12 @@ export function FloatingNavbar() {
 	}
 
 	return (
-		<nav
-			aria-label="Primary"
+		<div
 			style={{
 				bottom: "max(0.75rem, calc(env(safe-area-inset-bottom) + 0.5rem))",
 			}}
 			className={cn(
-				"fixed left-1/2 z-[100] flex min-h-[var(--mobile-nav-height)] max-w-[96vw] -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5",
+				"pointer-events-none fixed inset-x-0 z-[100] flex justify-center px-2 sm:px-3",
 				!prefersReducedMotion && "transition-transform transition-opacity duration-300",
 				prefersReducedMotion && "transition-none",
 				isNavVisible
@@ -243,61 +242,66 @@ export function FloatingNavbar() {
 					: "translate-y-[calc(100%+1.25rem)] opacity-0 pointer-events-none",
 			)}
 		>
-			{!isComplete && !isTournamentActive && (
+			<nav
+				aria-label="Primary"
+				className="pointer-events-auto flex min-h-[var(--mobile-nav-height)] w-full max-w-[46rem] items-center gap-1 overflow-x-auto rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5"
+			>
+				{!isComplete && !isTournamentActive && (
+					<FloatingNavItem
+						icon={selectedCount >= 2 ? Trophy : CheckCircle}
+						label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
+						isActive={isHomeRoute && activeSection === "pick"}
+						onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
+						className={cn(selectedCount >= 2 && "text-chart-4 hover:text-chart-4/80")}
+					/>
+				)}
+
+				{isComplete && (
+					<FloatingNavItem
+						icon={BarChart3}
+						label="Analyze"
+						isActive={isAnalysisRoute}
+						onClick={() => handleNavClick("analyze")}
+					/>
+				)}
+
 				<FloatingNavItem
-					icon={selectedCount >= 2 ? Trophy : CheckCircle}
-					label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
-					isActive={isHomeRoute && activeSection === "pick"}
-					onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
-					className={cn(selectedCount >= 2 && "text-chart-4 hover:text-chart-4/80")}
+					icon={isSwipeMode ? Layers : LayoutGrid}
+					label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
+					onClick={() => setSwipeMode(!isSwipeMode)}
 				/>
-			)}
 
-			{isComplete && (
 				<FloatingNavItem
-					icon={BarChart3}
-					label="Analyze"
-					isActive={isAnalysisRoute}
-					onClick={() => handleNavClick("analyze")}
+					icon={Lightbulb}
+					label="Suggest"
+					isActive={isHomeRoute && activeSection === "suggest"}
+					onClick={() => handleNavClick("suggest")}
 				/>
-			)}
 
-			<FloatingNavItem
-				icon={isSwipeMode ? Layers : LayoutGrid}
-				label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
-				onClick={() => setSwipeMode(!isSwipeMode)}
-			/>
-
-			<FloatingNavItem
-				icon={Lightbulb}
-				label="Suggest"
-				isActive={isHomeRoute && activeSection === "suggest"}
-				onClick={() => handleNavClick("suggest")}
-			/>
-
-			<FloatingNavItem
-				icon={User}
-				label={profileLabel}
-				isActive={isHomeRoute && activeSection === "profile"}
-				onClick={() => handleNavClick("profile")}
-				customIcon={
-					isLoggedIn && avatarUrl ? (
-						<img
-							src={avatarUrl}
-							alt={profileLabel}
-							className="h-6 w-6 rounded-full border border-border object-cover"
-						/>
-					) : (
-						<User
-							className={cn(
-								"h-6 w-6",
-								isLoggedIn && isAdmin && "text-chart-4",
-								isLoggedIn && !isAdmin && "text-primary",
-							)}
-						/>
-					)
-				}
-			/>
-		</nav>
+				<FloatingNavItem
+					icon={User}
+					label={profileLabel}
+					isActive={isHomeRoute && activeSection === "profile"}
+					onClick={() => handleNavClick("profile")}
+					customIcon={
+						isLoggedIn && avatarUrl ? (
+							<img
+								src={avatarUrl}
+								alt={profileLabel}
+								className="h-6 w-6 rounded-full border border-border object-cover"
+							/>
+						) : (
+							<User
+								className={cn(
+									"h-6 w-6",
+									isLoggedIn && isAdmin && "text-chart-4",
+									isLoggedIn && !isAdmin && "text-primary",
+								)}
+							/>
+						)
+					}
+				/>
+			</nav>
+		</div>
 	);
 }

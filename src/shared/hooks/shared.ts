@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 export const IS_BROWSER = typeof window !== "undefined";
 
-export interface NetworkInformation extends EventTarget {
+interface NetworkInformation extends EventTarget {
 	effectiveType?: string;
 	rtt?: number;
 	downlink?: number;

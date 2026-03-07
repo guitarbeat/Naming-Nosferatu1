@@ -13,7 +13,7 @@ function isRpcSignatureError(message: string): boolean {
 	);
 }
 
-export type PendingAdminAction = {
+type PendingAdminAction = {
 	type: "toggle-hidden" | "toggle-locked";
 	nameId: IdType;
 	isCurrentlyEnabled: boolean;

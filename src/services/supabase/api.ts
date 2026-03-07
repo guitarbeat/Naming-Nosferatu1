@@ -123,16 +123,21 @@ export const coreAPI = {
 	},
 
 	getTrendingNames: async (includeHidden: boolean = false) => {
+		// Prefer direct Supabase reads so the app works without /api.
+		const supabaseNames = await getNamesFromSupabase(includeHidden);
+		if (supabaseNames.length > 0) {
+			return supabaseNames;
+		}
+
 		try {
 			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
 			return (data ?? []).map((item) => mapNameRow(item));
 		} catch (apiErr) {
 			console.warn(
-				"[coreAPI.getTrendingNames] API failed, trying Supabase fallback:",
+				"[coreAPI.getTrendingNames] API failed after Supabase lookup:",
 				toErrorMessage(apiErr),
 			);
-			// Fallback when /api is not available (static-only deployments).
-			return await getNamesFromSupabase(includeHidden);
+			return supabaseNames;
 		}
 	},
 

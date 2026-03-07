@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getConnectionInfo, IS_BROWSER, isSlowNetwork, useEventListener } from "./shared";
 
-export function useMediaQuery(query: string): boolean {
+function useMediaQuery(query: string): boolean {
 	const [matches, setMatches] = useState(false);
 
 	useEffect(() => {
@@ -21,7 +21,7 @@ export function useMediaQuery(query: string): boolean {
 	return matches;
 }
 
-export function useOnlineStatus(options?: {
+function useOnlineStatus(options?: {
 	onReconnect?: () => void;
 	onDisconnect?: () => void;
 }): boolean {

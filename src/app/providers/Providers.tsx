@@ -7,14 +7,13 @@ import {
 	DEFAULT_TOAST_DURATION_MS,
 	type LoginCredentials,
 	type ProvidersProps,
-	type RegisterData,
 	type ToastContextValue,
 } from "./providerTypes";
 import { ToastContainer } from "./ToastContainer";
 import { useAuthProvider } from "./useAuthProvider";
 import { useToastProvider } from "./useToastProvider";
 
-export type { AuthAdapter, AuthUser, LoginCredentials, RegisterData };
+export type { AuthAdapter, AuthUser, LoginCredentials };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 const ToastContext = createContext<ToastContextValue | null>(null);

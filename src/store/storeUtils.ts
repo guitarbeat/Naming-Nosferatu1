@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from "@/shared/lib/constants";
 import type { ThemePreference, ThemeValue, UserState } from "@/shared/types";
 import type { AppState } from "./types";
 
-export type SetFn = Parameters<StateCreator<AppState>>[0];
+type SetFn = Parameters<StateCreator<AppState>>[0];
 
 export function patch<K extends keyof AppState>(
 	set: SetFn,

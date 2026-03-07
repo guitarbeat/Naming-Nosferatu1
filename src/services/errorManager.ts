@@ -12,7 +12,7 @@ import {
 	withRetry,
 } from "@/services/errorManagerCore";
 
-export { CircuitBreaker, createResilientFunction, parseError, withRetry };
+export { CircuitBreaker };
 
 export class ErrorManager {
 	static handleError(
