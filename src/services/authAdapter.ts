@@ -9,7 +9,7 @@
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { api } from "@/services/apiClient";
-import { supabase } from "@/integrations/supabase/client";
+import { resolveSupabaseClient } from "@/services/supabase/runtime";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
