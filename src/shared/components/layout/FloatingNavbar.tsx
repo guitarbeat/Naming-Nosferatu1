@@ -4,7 +4,7 @@
  */
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn, hapticNavTap, hapticTournamentStart } from "@/shared/lib/basic";
 import {
@@ -13,18 +13,34 @@ import {
 	Layers,
 	LayoutGrid,
 	Lightbulb,
+	Lock,
 	Trophy,
 	User,
 } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
 
 type NavSection = "pick" | "suggest" | "profile";
+const NavbarFxCanvas = lazy(() =>
+	import("@/shared/components/layout/NavbarFxCanvas").then((module) => ({
+		default: module.NavbarFxCanvas,
+	})),
+);
 
 const keyToId: Record<NavSection, string> = {
 	pick: "pick",
 	suggest: "suggest",
 	profile: "profile",
 };
+
+function isTypingTarget(target: EventTarget | null): boolean {
+	const element = target as HTMLElement | null;
+	return Boolean(
+		element?.tagName === "INPUT" ||
+			element?.tagName === "TEXTAREA" ||
+			element?.tagName === "SELECT" ||
+			element?.isContentEditable,
+	);
+}
 
 function FloatingNavItem({
 	icon: Icon,
@@ -53,6 +69,7 @@ function FloatingNavItem({
 			onClick={onClick}
 			aria-pressed={isActive}
 			aria-label={label}
+			title={label}
 		>
 			<span className="flex shrink-0 items-center justify-center">
 				{customIcon || <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
@@ -76,53 +93,105 @@ export function FloatingNavbar() {
 	const [activeSection, setActiveSection] = useState<NavSection>("pick");
 	const [isNavVisible, setIsNavVisible] = useState(true);
 	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+	const [shouldRenderFx, setShouldRenderFx] = useState(false);
 
 	const isHomeRoute = location.pathname === "/";
 	const isAnalysisRoute = location.pathname === "/analysis";
+	const isAdminRoute = location.pathname === "/admin";
 	const isTournamentRoute = location.pathname === "/tournament";
 
 	const selectedCount = selectedNames?.length || 0;
 	const isTournamentActive = Boolean(tournament.names);
 	const isComplete = tournament.isComplete;
 	const profileLabel = isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Profile";
+	const primaryLabel =
+		isTournamentActive && !isComplete
+			? "Resume"
+			: isAnalysisRoute
+				? "New Bracket"
+				: selectedCount >= 2
+					? `Start (${selectedCount})`
+					: "Pick Names";
 
-	const scrollToSection = (key: NavSection) => {
-		const id = keyToId[key];
-		const target = document.getElementById(id);
-		if (!target) {
-			window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
-			return;
-		}
+	const scrollToSection = useCallback(
+		(key: NavSection) => {
+			const id = keyToId[key];
+			const target = document.getElementById(id);
+			if (!target) {
+				window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+				return;
+			}
 
-		target.scrollIntoView({
-			behavior: prefersReducedMotion ? "auto" : "smooth",
-			block: "start",
-		});
-	};
+			target.scrollIntoView({
+				behavior: prefersReducedMotion ? "auto" : "smooth",
+				block: "start",
+			});
+		},
+		[prefersReducedMotion],
+	);
 
-	const handleStartTournament = () => {
+	const handleStartTournament = useCallback(() => {
 		hapticTournamentStart();
 		if (selectedNames && selectedNames.length >= 2) {
 			tournamentActions.setNames(selectedNames);
 			navigate("/tournament");
 		}
-	};
+	}, [navigate, selectedNames, tournamentActions]);
 
-	const handleNavClick = (key: NavSection | "analyze") => {
+	const handleNavClick = useCallback(
+		(key: NavSection | "analyze") => {
+			hapticNavTap();
+			if (key === "analyze") {
+				navigate("/analysis");
+				return;
+			}
+
+			if (!isHomeRoute) {
+				navigate("/");
+				window.setTimeout(() => scrollToSection(key), 120);
+				return;
+			}
+
+			scrollToSection(key);
+		},
+		[isHomeRoute, navigate, scrollToSection],
+	);
+
+	const handlePrimaryAction = useCallback(() => {
 		hapticNavTap();
-		if (key === "analyze") {
-			navigate("/analysis");
+		if (isTournamentActive && !isComplete) {
+			navigate("/tournament");
 			return;
 		}
-
-		if (!isHomeRoute) {
+		if (isAnalysisRoute) {
 			navigate("/");
-			window.setTimeout(() => scrollToSection(key), 120);
+			window.setTimeout(() => scrollToSection("pick"), 120);
 			return;
 		}
+		if (selectedCount >= 2) {
+			handleStartTournament();
+			return;
+		}
+		handleNavClick("pick");
+	}, [
+		handleNavClick,
+		handleStartTournament,
+		isAnalysisRoute,
+		isComplete,
+		isTournamentActive,
+		navigate,
+		scrollToSection,
+		selectedCount,
+	]);
 
-		scrollToSection(key);
-	};
+	const toggleViewMode = useCallback(() => {
+		setSwipeMode(!isSwipeMode);
+	}, [isSwipeMode, setSwipeMode]);
+
+	const handleAdminOpen = useCallback(() => {
+		hapticNavTap();
+		navigate("/admin");
+	}, [navigate]);
 
 	useEffect(() => {
 		if (!isHomeRoute) {
@@ -176,6 +245,26 @@ export function FloatingNavbar() {
 	}, []);
 
 	useEffect(() => {
+		if (prefersReducedMotion) {
+			setShouldRenderFx(false);
+			return;
+		}
+		const desktopMediaQuery = window.matchMedia("(min-width: 768px)");
+		const lowPowerMode = Boolean(
+			(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
+		);
+		const cpuThreads = navigator.hardwareConcurrency ?? 4;
+		setShouldRenderFx(desktopMediaQuery.matches && !lowPowerMode && cpuThreads >= 6);
+
+		const onChange = () => {
+			setShouldRenderFx(desktopMediaQuery.matches && !lowPowerMode && cpuThreads >= 6);
+		};
+
+		desktopMediaQuery.addEventListener("change", onChange);
+		return () => desktopMediaQuery.removeEventListener("change", onChange);
+	}, [prefersReducedMotion]);
+
+	useEffect(() => {
 		let lastScrollY = window.scrollY;
 		let ticking = false;
 		const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
@@ -224,6 +313,43 @@ export function FloatingNavbar() {
 		};
 	}, []);
 
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (isTypingTarget(event.target)) {
+				return;
+			}
+
+			if (event.key === "1") {
+				handlePrimaryAction();
+				return;
+			}
+			if (event.key === "2") {
+				toggleViewMode();
+				return;
+			}
+			if (event.key === "3") {
+				handleNavClick("suggest");
+				return;
+			}
+			if (event.key === "4") {
+				handleNavClick("profile");
+				return;
+			}
+			if (event.key === "5") {
+				if (isAdmin) {
+					handleAdminOpen();
+					return;
+				}
+				if (isComplete) {
+					handleNavClick("analyze");
+				}
+			}
+		};
+
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [handlePrimaryAction, handleNavClick, handleAdminOpen, isAdmin, isComplete, toggleViewMode]);
+
 	if (isTournamentRoute) {
 		return null;
 	}
@@ -244,63 +370,95 @@ export function FloatingNavbar() {
 		>
 			<nav
 				aria-label="Primary"
-				className="pointer-events-auto flex min-h-[var(--mobile-nav-height)] w-full max-w-[46rem] items-center gap-1 overflow-x-auto rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5"
+				className="pointer-events-auto relative isolate flex min-h-[var(--mobile-nav-height)] w-full max-w-[46rem] items-center gap-1 overflow-x-auto rounded-full border border-border/80 bg-black/45 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md sm:gap-1.5"
 			>
-				{!isComplete && !isTournamentActive && (
+				{!prefersReducedMotion && (
+					<>
+						{shouldRenderFx && (
+							<Suspense fallback={null}>
+								<NavbarFxCanvas className="opacity-80" />
+							</Suspense>
+						)}
+						<motion.div
+							aria-hidden="true"
+							className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-35"
+							style={{
+								backgroundImage: "radial-gradient(rgba(255,255,255,0.6) 0.8px, transparent 0.8px)",
+								backgroundSize: "14px 14px",
+							}}
+							animate={{ backgroundPosition: ["0px 0px", "14px 14px"] }}
+							transition={{ duration: 2.8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+						/>
+					</>
+				)}
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] bg-[radial-gradient(110%_90%_at_50%_-20%,rgba(255,255,255,0.18)_0%,transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.1),rgba(0,0,0,0.3))]"
+				/>
+				<div className="relative z-10 flex w-full items-center gap-1 sm:gap-1.5">
 					<FloatingNavItem
-						icon={selectedCount >= 2 ? Trophy : CheckCircle}
-						label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
+						icon={isTournamentActive && !isComplete ? Trophy : CheckCircle}
+						label={primaryLabel}
 						isActive={isHomeRoute && activeSection === "pick"}
-						onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
+						onClick={handlePrimaryAction}
 						className={cn(selectedCount >= 2 && "text-chart-4 hover:text-chart-4/80")}
 					/>
-				)}
 
-				{isComplete && (
+					{isComplete && (
+						<FloatingNavItem
+							icon={BarChart3}
+							label="Analyze"
+							isActive={isAnalysisRoute}
+							onClick={() => handleNavClick("analyze")}
+						/>
+					)}
+
 					<FloatingNavItem
-						icon={BarChart3}
-						label="Analyze"
-						isActive={isAnalysisRoute}
-						onClick={() => handleNavClick("analyze")}
+						icon={isSwipeMode ? Layers : LayoutGrid}
+						label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
+						onClick={toggleViewMode}
 					/>
-				)}
 
-				<FloatingNavItem
-					icon={isSwipeMode ? Layers : LayoutGrid}
-					label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
-					onClick={() => setSwipeMode(!isSwipeMode)}
-				/>
+					<FloatingNavItem
+						icon={Lightbulb}
+						label="Suggest"
+						isActive={isHomeRoute && activeSection === "suggest"}
+						onClick={() => handleNavClick("suggest")}
+					/>
 
-				<FloatingNavItem
-					icon={Lightbulb}
-					label="Suggest"
-					isActive={isHomeRoute && activeSection === "suggest"}
-					onClick={() => handleNavClick("suggest")}
-				/>
+					<FloatingNavItem
+						icon={User}
+						label={profileLabel}
+						isActive={isHomeRoute && activeSection === "profile"}
+						onClick={() => handleNavClick("profile")}
+						customIcon={
+							isLoggedIn && avatarUrl ? (
+								<img
+									src={avatarUrl}
+									alt={profileLabel}
+									className="h-6 w-6 rounded-full border border-border object-cover"
+								/>
+							) : (
+								<User
+									className={cn(
+										"h-6 w-6",
+										isLoggedIn && isAdmin && "text-chart-4",
+										isLoggedIn && !isAdmin && "text-primary",
+									)}
+								/>
+							)
+						}
+					/>
 
-				<FloatingNavItem
-					icon={User}
-					label={profileLabel}
-					isActive={isHomeRoute && activeSection === "profile"}
-					onClick={() => handleNavClick("profile")}
-					customIcon={
-						isLoggedIn && avatarUrl ? (
-							<img
-								src={avatarUrl}
-								alt={profileLabel}
-								className="h-6 w-6 rounded-full border border-border object-cover"
-							/>
-						) : (
-							<User
-								className={cn(
-									"h-6 w-6",
-									isLoggedIn && isAdmin && "text-chart-4",
-									isLoggedIn && !isAdmin && "text-primary",
-								)}
-							/>
-						)
-					}
-				/>
+					{isAdmin && (
+						<FloatingNavItem
+							icon={Lock}
+							label="Admin"
+							isActive={isAdminRoute}
+							onClick={handleAdminOpen}
+						/>
+					)}
+				</div>
 			</nav>
 		</div>
 	);

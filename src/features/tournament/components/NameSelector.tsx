@@ -27,6 +27,8 @@ import useAppStore from "@/store/appStore";
 
 const SWIPE_OFFSET_THRESHOLD = 100;
 const SWIPE_VELOCITY_THRESHOLD = 500;
+const isLockedName = (name: NameItem) => Boolean(name.lockedIn || name.locked_in);
+const isHiddenName = (name: NameItem) => Boolean(name.isHidden);
 
 export function NameSelector() {
 	const toast = useToast();
@@ -160,22 +162,29 @@ export function NameSelector() {
 		[names, tournamentActions],
 	);
 
-	const toggleName = useCallback(
-		(nameId: IdType) => {
+	const updateSelection = useCallback(
+		(updater: (draft: Set<IdType>) => void) => {
 			setSelectedNames((prev) => {
 				const next = new Set(prev);
-				if (next.has(nameId)) {
-					next.delete(nameId);
-				} else {
-					next.add(nameId);
-				}
-
+				updater(next);
 				syncSelectionToStore(next);
-
 				return next;
 			});
 		},
 		[syncSelectionToStore],
+	);
+
+	const toggleName = useCallback(
+		(nameId: IdType) => {
+			updateSelection((next) => {
+				if (next.has(nameId)) {
+					next.delete(nameId);
+					return;
+				}
+				next.add(nameId);
+			});
+		},
+		[updateSelection],
 	);
 
 	// Trigger haptic feedback if available
@@ -220,11 +229,8 @@ export function NameSelector() {
 	const handleSwipe = useCallback(
 		(nameId: IdType, direction: "left" | "right", velocity: number = 0) => {
 			if (direction === "right") {
-				setSelectedNames((prev) => {
-					const next = new Set(prev);
+				updateSelection((next) => {
 					next.add(nameId);
-					syncSelectionToStore(next);
-					return next;
 				});
 			}
 			markSwiped(nameId, direction);
@@ -245,7 +251,7 @@ export function NameSelector() {
 				}, resetDelay);
 			});
 		},
-		[markSwiped, syncSelectionToStore, triggerHaptic],
+		[markSwiped, triggerHaptic, updateSelection],
 	);
 
 	const handleDragEnd = useCallback(
@@ -292,27 +298,22 @@ export function NameSelector() {
 
 		// If it was a right swipe, remove from selected names and sync with store
 		if (lastSwipe.direction === "right") {
-			setSelectedNames((prev) => {
-				const next = new Set(prev);
+			updateSelection((next) => {
 				next.delete(lastSwipe.id);
-				syncSelectionToStore(next);
-				return next;
 			});
 		}
 
 		triggerHaptic();
-	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
+	}, [swipeHistory, triggerHaptic, updateSelection]);
 
-	const visibleCards = names.filter(
-		(name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in),
-	);
+	const visibleCards = names.filter((name) => !swipedIds.has(name.id) && !isLockedName(name));
 	const cardsToRender = visibleCards.slice(0, 3);
 
 	const availableNames = useMemo(
-		() => names.filter((name) => !(name.lockedIn || name.locked_in) && !name.isHidden),
+		() => names.filter((name) => !isLockedName(name) && !isHiddenName(name)),
 		[names],
 	);
-	const hiddenNamesAll = useMemo(() => names.filter((name) => name.isHidden), [names]);
+	const hiddenNamesAll = useMemo(() => names.filter(isHiddenName), [names]);
 	const hiddenFiltered = useMemo(() => {
 		const q = hiddenQuery.trim().toLowerCase();
 		return hiddenNamesAll.filter((name) => {
@@ -332,10 +333,6 @@ export function NameSelector() {
 		() => hiddenFiltered.slice(0, hiddenRenderCount),
 		[hiddenFiltered, hiddenRenderCount],
 	);
-	const selectedIdsSet = useMemo(() => {
-		const ids = new Set(selectedNames);
-		return ids;
-	}, [selectedNames]);
 	const selectedAvailableCount = useMemo(() => {
 		const availableIds = new Set(availableNames.map((n) => n.id));
 		let count = 0;
@@ -349,17 +346,17 @@ export function NameSelector() {
 	const selectedHiddenCount = useMemo(() => {
 		let count = 0;
 		hiddenNamesAll.forEach((name) => {
-			if (selectedIdsSet.has(name.id)) {
+			if (selectedNames.has(name.id)) {
 				count += 1;
 			}
 		});
 		return count;
-	}, [hiddenNamesAll, selectedIdsSet]);
+	}, [hiddenNamesAll, selectedNames]);
 	const canSelectAllAvailable = useMemo(
-		() => availableNames.some((name) => !selectedIdsSet.has(name.id)),
-		[availableNames, selectedIdsSet],
+		() => availableNames.some((name) => !selectedNames.has(name.id)),
+		[availableNames, selectedNames],
 	);
-	const hasAnySelection = selectedIdsSet.size > 0;
+	const hasAnySelection = selectedNames.size > 0;
 
 	// Keyboard navigation for swipe mode
 	useEffect(() => {
@@ -419,25 +416,24 @@ export function NameSelector() {
 	);
 
 	const handleSelectAllAvailable = useCallback(() => {
-		setSelectedNames((prev) => {
-			const next = new Set(prev);
+		updateSelection((next) => {
 			availableNames.forEach((name) => {
 				next.add(name.id);
 			});
-			syncSelectionToStore(next);
-			return next;
 		});
 		triggerHaptic();
-	}, [availableNames, syncSelectionToStore, triggerHaptic]);
+	}, [availableNames, triggerHaptic, updateSelection]);
 
 	const handleClearSelection = useCallback(() => {
-		const lockedIds = new Set(
-			names.filter((name) => name.lockedIn || name.locked_in).map((name) => name.id),
-		);
-		setSelectedNames(lockedIds);
-		syncSelectionToStore(lockedIds);
+		const lockedIds = names.filter(isLockedName).map((name) => name.id);
+		updateSelection((next) => {
+			next.clear();
+			lockedIds.forEach((id) => {
+				next.add(id);
+			});
+		});
 		triggerHaptic();
-	}, [names, syncSelectionToStore, triggerHaptic]);
+	}, [names, triggerHaptic, updateSelection]);
 
 	const handleSelectRandomAvailable = useCallback(() => {
 		if (availableNames.length === 0) {
@@ -453,18 +449,15 @@ export function NameSelector() {
 			pool[j] = temp as NameItem;
 		}
 
-		const randomIds = new Set(pool.slice(0, targetCount).map((name) => name.id));
-		setSelectedNames((prev) => {
-			const next = new Set(prev);
+		const randomIds = pool.slice(0, targetCount).map((name) => name.id);
+		updateSelection((next) => {
 			randomIds.forEach((id) => {
 				next.add(id);
 			});
-			syncSelectionToStore(next);
-			return next;
 		});
 		triggerHaptic();
 		toast.showSuccess(`Added ${targetCount} random names.`);
-	}, [availableNames, syncSelectionToStore, toast, triggerHaptic]);
+	}, [availableNames, toast, triggerHaptic, updateSelection]);
 
 	if (isLoading) {
 		return (

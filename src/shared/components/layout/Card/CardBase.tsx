@@ -183,9 +183,12 @@ const CardBase = memo(
 						}}
 						{...glassProps}
 					>
-						<Component ref={ref} className={contentClasses} onClick={onClick} {...props}>
-							{children}
-						</Component>
+						{React.createElement(
+							Component as React.ElementType,
+							{ ref, className: contentClasses, onClick, ...props } as React.Attributes &
+								Record<string, unknown>,
+							children,
+						)}
 					</LiquidGlass>
 				);
 			}
@@ -203,30 +206,30 @@ const CardBase = memo(
 
 			const CommonComponent = (enableTilt ? motion.div : Component) as React.ElementType;
 
-			return (
-				<CommonComponent
-					ref={ref}
-					className={finalClasses}
-					onClick={onClick}
-					onMouseMove={handleMouseMove}
-					onMouseLeave={handleMouseLeave}
-					{...motionProps}
-					{...props}
+			return React.createElement(
+				CommonComponent,
+				{
+					ref,
+					className: finalClasses,
+					onClick,
+					onMouseMove: handleMouseMove,
+					onMouseLeave: handleMouseLeave,
+					...motionProps,
+					...props,
+				} as React.Attributes & Record<string, unknown>,
+				<div
+					className="relative z-10 h-full"
+					style={
+						enableTilt
+							? {
+									transform: "translateZ(20px)",
+									transformStyle: "preserve-3d",
+								}
+							: undefined
+					}
 				>
-					<div
-						className="relative z-10 h-full"
-						style={
-							enableTilt
-								? {
-										transform: "translateZ(20px)",
-										transformStyle: "preserve-3d",
-									}
-								: undefined
-						}
-					>
-						{children}
-					</div>
-				</CommonComponent>
+					{children}
+				</div>,
 			);
 		},
 	),
