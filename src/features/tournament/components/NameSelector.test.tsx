@@ -63,11 +63,6 @@ vi.mock("@/features/tournament/hooks/useNameSelectorAdminActions", () => ({
 	}),
 }));
 
-vi.mock("@/features/tournament/components/NameSelectorHeader", () => ({
-	LockedNamesBanner: () => <div data-testid="locked-banner" />,
-	NameSelectorTopControls: () => <div data-testid="top-controls" />,
-}));
-
 vi.mock("@/features/tournament/components/NameSelectorSwipeSection", () => ({
 	NameSelectorSwipeSection: () => <div data-testid="swipe-section" />,
 }));
