@@ -891,9 +891,9 @@ export function NameSelector() {
 													className="w-full max-w-md h-[550px]"
 												>
 													<Card
-														className={`relative overflow-hidden group transition-all duration-200 h-full ${
+														className={`name-swipe-card relative overflow-hidden group transition-all duration-200 h-full ${
 															selectedNames.has(nameItem.id)
-																? "shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+																? "ring-2 ring-primary/45 shadow-[0_0_35px_rgba(34,197,94,0.28)]"
 																: ""
 														} ${
 															index === 0
@@ -939,13 +939,13 @@ export function NameSelector() {
 															</>
 														)}
 
-														<div className="relative w-full h-full flex flex-col justify-end bg-foreground/10">
+														<div className="relative w-full h-full flex flex-col justify-end bg-slate-950/25">
 															<CatImage
 																src={catImage}
 																alt={nameItem.name}
 																objectFit="cover"
 																containerClassName="absolute inset-0 w-full h-full"
-																imageClassName="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-700"
+																imageClassName="name-swipe-card__image w-full h-full object-cover opacity-95 transition-transform duration-700"
 															/>
 
 															{/* Zoom Button Overlay */}
@@ -964,8 +964,8 @@ export function NameSelector() {
 															)}
 
 															{/* Name and Info Overlay */}
-															<div className="relative z-10 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent flex flex-col justify-end pointer-events-none">
-																<h3 className="font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full">
+															<div className="name-swipe-card__overlay relative z-10 p-8 flex flex-col justify-end pointer-events-none">
+																<h3 className="font-whimsical text-4xl lg:text-5xl text-white tracking-wide drop-shadow-2xl break-words w-full">
 																	{nameItem.name}
 																	{nameItem.pronunciation && (
 																		<span className="ml-3 text-amber-400 text-2xl lg:text-3xl font-bold italic opacity-90">
@@ -974,7 +974,7 @@ export function NameSelector() {
 																	)}
 																</h3>
 																{nameItem.description && (
-																	<p className="text-foreground/90 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3">
+																	<p className="text-white/85 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3">
 																		{nameItem.description}
 																	</p>
 																)}
@@ -1110,26 +1110,26 @@ export function NameSelector() {
 													whileHover={{ scale: 1.02 }}
 													whileTap={{ scale: 0.98 }}
 													transition={{ type: "spring", stiffness: 400, damping: 25 }}
-													className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 overflow-hidden cursor-pointer ${
+													className={`mobile-readable-card name-grid-card relative rounded-lg sm:rounded-xl border-2 overflow-hidden cursor-pointer transition-all duration-300 ${
 														isSelected
-															? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
-															: "border-border/10 bg-foreground/5 hover:border-border/20 hover:bg-foreground/10 hover:shadow-lg"
+															? "name-grid-card--selected border-primary/70 bg-primary/15 shadow-[0_18px_40px_rgba(34,197,94,0.26)] ring-2 ring-primary/45"
+															: "border-white/15 bg-slate-950/45 hover:border-white/35 hover:bg-slate-900/55 shadow-[0_12px_28px_rgba(2,6,23,0.5)]"
 													} ${nameItem.lockedIn || nameItem.locked_in ? "opacity-75" : ""}`}
 												>
-													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
+													<div className="name-grid-card__media w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
 														<CatImage
 															src={catImage}
 															alt={nameItem.name}
 															objectFit="cover"
 															containerClassName="w-full h-full"
-															imageClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+															imageClassName="name-grid-card__image w-full h-full object-cover transition-transform duration-500"
 														/>
 
 														{/* Grid Name Overlay */}
-														<div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 bg-gradient-to-t from-background/95 via-background/65 to-transparent flex flex-col justify-end pointer-events-none">
+														<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 															<div className="flex flex-col gap-0.5">
 																<div className="flex items-center justify-between gap-2">
-																	<span className="mobile-readable-title font-bold text-foreground text-[13px] sm:text-base leading-tight drop-shadow-md truncate">
+																	<span className="mobile-readable-title font-bold text-white text-[13px] sm:text-base leading-tight drop-shadow-md truncate">
 																		{nameItem.name}
 																	</span>
 																	{isSelected && (
@@ -1148,7 +1148,7 @@ export function NameSelector() {
 																	</span>
 																)}
 																{nameItem.description && (
-																	<p className="mobile-readable-description text-foreground/95 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
+																	<p className="mobile-readable-description text-white/90 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
 																		{nameItem.description}
 																	</p>
 																)}
@@ -1161,7 +1161,7 @@ export function NameSelector() {
 																e.stopPropagation();
 																handleOpenLightbox(nameItem.id);
 															}}
-															className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/60 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/img:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/80 z-10"
+															className="name-grid-card__zoom absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/65 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/img:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/85 z-10"
 															aria-label="View full size"
 														>
 															<ZoomIn size={14} />
@@ -1396,26 +1396,26 @@ export function NameSelector() {
 															}}
 															role="button"
 															tabIndex={0}
-															className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 transition-all overflow-hidden group transform hover:scale-105 active:scale-95 cursor-pointer ${
+															className={`mobile-readable-card name-grid-card relative rounded-lg sm:rounded-xl border-2 transition-all overflow-hidden group transform hover:scale-105 active:scale-95 cursor-pointer ${
 																isSelected
-																	? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
-																	: "border-border/10 bg-foreground/5 hover:border-border/20 hover:bg-foreground/10 hover:shadow-lg"
+																	? "name-grid-card--selected border-primary/70 bg-primary/15 shadow-[0_18px_40px_rgba(34,197,94,0.26)] ring-2 ring-primary/45"
+																	: "border-white/15 bg-slate-950/45 hover:border-white/35 hover:bg-slate-900/55 shadow-[0_12px_28px_rgba(2,6,23,0.5)]"
 															}`}
 														>
-															<div className="aspect-[5/4] sm:aspect-[4/3] w-full relative group/hidden">
+															<div className="name-grid-card__media aspect-[5/4] sm:aspect-[4/3] w-full relative group/hidden">
 																<CatImage
 																	src={catImage}
 																	alt={nameItem.name}
 																	objectFit="cover"
 																	containerClassName="w-full h-full"
-																	imageClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+																	imageClassName="name-grid-card__image w-full h-full object-cover transition-transform duration-500"
 																/>
 
 																{/* Hidden Grid Name Overlay */}
-																<div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 bg-gradient-to-t from-background/95 via-background/65 to-transparent flex flex-col justify-end pointer-events-none">
+																<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 																	<div className="flex flex-col gap-0.5">
 																		<div className="flex items-center justify-between gap-2">
-																			<span className="mobile-readable-title font-bold text-foreground text-[13px] sm:text-base leading-tight drop-shadow-md truncate">
+																			<span className="mobile-readable-title font-bold text-white text-[13px] sm:text-base leading-tight drop-shadow-md truncate">
 																				{nameItem.name}
 																			</span>
 																			{isSelected && (
@@ -1434,7 +1434,7 @@ export function NameSelector() {
 																			</span>
 																		)}
 																		{nameItem.description && (
-																			<p className="mobile-readable-description text-foreground/95 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
+																			<p className="mobile-readable-description text-white/90 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
 																				{nameItem.description}
 																			</p>
 																		)}
@@ -1447,7 +1447,7 @@ export function NameSelector() {
 																		e.stopPropagation();
 																		handleOpenLightbox(nameItem.id);
 																	}}
-																	className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/60 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/hidden:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/80 z-10"
+																	className="name-grid-card__zoom absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/65 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/hidden:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/85 z-10"
 																	aria-label="View full size"
 																>
 																	<ZoomIn size={14} />
