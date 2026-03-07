@@ -14,10 +14,10 @@ import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {
-		// Query cat_user_roles directly using the always-available integrations client.
-		// This avoids cross-transaction issues with set_user_context + is_admin RPCs,
-		// and avoids the VITE_SUPABASE_ANON_KEY env var mismatch in runtime.ts.
-		const { data, error } = await (supabase as any)
+		const client = await resolveSupabaseClient();
+		if (!client) return false;
+
+		const { data, error } = await (client as any)
 			.from("cat_user_roles")
 			.select("role")
 			.ilike("user_name", userName)
