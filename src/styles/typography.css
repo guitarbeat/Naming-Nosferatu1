@@ -70,54 +70,6 @@
 }
 
 /* ==========================================================================
-   WEBSITE-INSPIRED HEADING TREATMENT (HYBRID)
-   ========================================================================== */
-
-h1,
-h2,
-h3,
-.type-h1,
-.type-h2,
-.type-h3 {
-	font-family: var(--font-sans);
-	font-weight: var(--pw-heading-weight, var(--font-weight-bold));
-	letter-spacing: var(--pw-heading-tracking, var(--tracking-wide));
-	text-wrap: balance;
-}
-
-h1,
-.type-h1 {
-	font-size: var(--pw-heading-1-size, var(--text-4xl));
-	line-height: 1.08;
-	text-transform: var(--pw-heading-transform, uppercase);
-}
-
-h2,
-.type-h2 {
-	font-size: var(--pw-heading-2-size, var(--text-3xl));
-	line-height: 1.14;
-	text-transform: var(--pw-heading-transform, uppercase);
-}
-
-h3,
-.type-h3 {
-	font-size: var(--pw-heading-3-size, var(--text-2xl));
-	line-height: 1.2;
-}
-
-.section-title,
-.display-title {
-	background: linear-gradient(
-		120deg,
-		var(--pw-heading-gradient-from, var(--primary-color)),
-		var(--pw-heading-gradient-to, var(--accent-color))
-	);
-	background-clip: text;
-	-webkit-background-clip: text;
-	color: transparent;
-}
-
-/* ==========================================================================
    WORD BREAK
    ========================================================================== */
 

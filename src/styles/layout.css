@@ -52,9 +52,6 @@
 }
 .app {
 	min-height: 100dvh;
-	width: 100%;
-	color: var(--foreground);
-	font-family: var(--font-sans);
 }
 
 .app-main-wrapper {
@@ -79,7 +76,11 @@
 	}
 }
 
-/* cat-background styles live in components.css */
+.app .cat-background {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-0);
+}
 
 .app-header {
 	position: relative;
