@@ -55,10 +55,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@capacitor/android": "7.4.4",
     "@capacitor/cli": "7.4.4",
-    "@capacitor/core": "7.4.4",
-    "@capacitor/ios": "7.4.4",
     "@hello-pangea/dnd": "^18.0.1",
     "@heroui/react": "^2.8.9",
     "@supabase/supabase-js": "^2.98.0",

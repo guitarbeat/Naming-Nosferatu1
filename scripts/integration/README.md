@@ -52,7 +52,8 @@ npm run test:coverage # Run tests with coverage
 ## Development Status
 
 ✅ Task 1: Project structure and core types - COMPLETE
-- Created `src/services/integration/` directory
+- Created integration tooling directory
+- Moved integration tooling to `scripts/integration/` to keep runtime `src/` focused
 - Defined all TypeScript interfaces and types from design document
 - Set up fast-check library for property-based testing
 - Configured Vitest for testing

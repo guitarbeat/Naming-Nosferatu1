@@ -7,8 +7,9 @@
    4. Typography utilities
    5. Layout primitives & responsive
    6. Component styles
-   7. Motion & animation system
-   8. Glass morphism effects
+   7. Tournament-specific component styles
+   8. Motion & animation system
+   9. Glass morphism effects
 */
 
 @import "./base.css";
@@ -17,5 +18,6 @@
 @import "./typography.css";
 @import "./layout.css";
 @import "./components.css";
+@import "./tournament.css";
 @import "./motion.css";
 @import "./liquid-glass.css";
