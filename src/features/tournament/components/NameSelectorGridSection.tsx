@@ -20,6 +20,11 @@ const GRID_CARD_BASE_CLASS =
 	"mobile-readable-card name-grid-card relative rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
 const GRID_CARD_RESTING_CLASS = "name-grid-card--resting";
 const GRID_CARD_SELECTED_CLASS = "name-grid-card--selected ring-2 ring-primary/45";
+const GRID_TITLE_CLASS = "name-card-title name-card-title--grid mobile-readable-title truncate";
+const GRID_PRONUNCIATION_CLASS =
+	"name-card-pronunciation name-card-pronunciation--grid mobile-readable-meta truncate";
+const GRID_DESCRIPTION_CLASS =
+	"name-card-description name-card-description--grid mobile-readable-description line-clamp-2 sm:line-clamp-3 mt-1";
 
 interface HiddenPanelController {
 	isCollapsed: boolean;
@@ -114,10 +119,10 @@ export function NameSelectorGridSection({
 
 									<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 										<div className="flex flex-col gap-0.5">
-											<div className="flex items-center justify-between gap-2">
-												<span className="mobile-readable-title font-whimsical font-black text-white text-[13px] sm:text-base leading-tight tracking-[0.01em] drop-shadow-md truncate">
-													{nameItem.name}
-												</span>
+												<div className="flex items-center justify-between gap-2">
+													<span className={GRID_TITLE_CLASS}>
+														{nameItem.name}
+													</span>
 												{isSelected && (
 													<motion.div
 														initial={{ scale: 0, opacity: 0 }}
@@ -128,16 +133,16 @@ export function NameSelectorGridSection({
 													</motion.div>
 												)}
 											</div>
-											{nameItem.pronunciation && (
-												<span className="mobile-readable-meta text-amber-200 text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
-													[{nameItem.pronunciation}]
-												</span>
-											)}
-											{nameItem.description && (
-												<p className="mobile-readable-description text-white/90 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm">
-													{nameItem.description}
-												</p>
-											)}
+												{nameItem.pronunciation && (
+													<span className={GRID_PRONUNCIATION_CLASS}>
+														[{nameItem.pronunciation}]
+													</span>
+												)}
+												{nameItem.description && (
+													<p className={GRID_DESCRIPTION_CLASS}>
+														{nameItem.description}
+													</p>
+												)}
 										</div>
 									</div>
 
@@ -382,7 +387,7 @@ export function NameSelectorGridSection({
 													<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 														<div className="flex flex-col gap-0.5">
 															<div className="flex items-center justify-between gap-2">
-																<span className="mobile-readable-title font-whimsical font-black text-white text-[13px] sm:text-base leading-tight tracking-[0.01em] drop-shadow-md truncate">
+																<span className={GRID_TITLE_CLASS}>
 																	{nameItem.name}
 																</span>
 																{isSelected && (
@@ -395,16 +400,16 @@ export function NameSelectorGridSection({
 																	</motion.div>
 																)}
 															</div>
-															{nameItem.pronunciation && (
-																<span className="mobile-readable-meta text-amber-200 text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
-																	[{nameItem.pronunciation}]
-																</span>
-															)}
-															{nameItem.description && (
-																<p className="mobile-readable-description text-white/90 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm">
-																	{nameItem.description}
-																</p>
-															)}
+																{nameItem.pronunciation && (
+																	<span className={GRID_PRONUNCIATION_CLASS}>
+																		[{nameItem.pronunciation}]
+																	</span>
+																)}
+																{nameItem.description && (
+																	<p className={GRID_DESCRIPTION_CLASS}>
+																		{nameItem.description}
+																	</p>
+																)}
 														</div>
 													</div>
 

@@ -125,6 +125,27 @@
 	transform: translateY(-1px);
 }
 
+.name-card-title {
+	font-family: var(--font-whimsical, "Jersey 10"), "Arial Black", sans-serif;
+	font-weight: 900;
+	line-height: 1.1;
+	letter-spacing: 0.01em;
+	color: rgb(255 255 255);
+	text-shadow: 0 2px 14px rgb(2 6 23 / 65%);
+}
+
+.name-card-pronunciation {
+	color: rgb(253 230 138 / 95%);
+	font-weight: 700;
+	font-style: italic;
+	text-shadow: 0 1px 10px rgb(2 6 23 / 65%);
+}
+
+.name-card-description {
+	color: rgb(255 255 255 / 88%);
+	text-shadow: 0 1px 8px rgb(2 6 23 / 62%);
+}
+
 .name-swipe-card {
 	border-radius: 1.4rem;
 	border: 1px solid rgb(255 255 255 / 18%);
