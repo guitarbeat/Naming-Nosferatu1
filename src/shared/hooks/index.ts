@@ -1,6 +1,25 @@
 /**
  * @module useHooks
- * @description Reusable hooks collection.
+ * @description Self-contained, zero-dependency (beyond React) collection of reusable hooks.
+ *
+ * **Primitives**
+ * - {@link useEventListener}  — Type-safe, auto-cleaning event listeners
+ * - {@link useDebounce}       — Debounce a rapidly-changing value
+ * - {@link useThrottle}       — Throttle a rapidly-changing value
+ * - {@link useToggle}         — Boolean toggle with setter
+ * - {@link usePrevious}       — Access the previous render's value
+ * - {@link useClickOutside}   — Detect clicks outside a ref'd element
+ *
+ * **Browser & Environment**
+ * - {@link useBrowserState}   — Responsive breakpoints, network, accessibility
+ * - {@link useOnlineStatus}   — Online/offline with transition callbacks
+ *
+ * **Persistence**
+ * - {@link useLocalStorage}   — localStorage with cross-tab sync & functional updates
+ * - {@link useCollapsible}    — Collapsible state with optional persistence
+ *
+ * **Forms**
+ * - {@link useValidatedForm}  — Lightweight form state + validation
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -68,35 +87,6 @@ function useEventListener<K extends keyof WindowEventMap>(
 			targetElement.removeEventListener(eventName, eventListener, options);
 		};
 	}, [eventName, element, options]);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// useMediaQuery
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Subscribe to a CSS media query.
- */
-export function useMediaQuery(query: string): boolean {
-	const [matches, setMatches] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		const media = window.matchMedia(query);
-		if (media.matches !== matches) {
-			setMatches(media.matches);
-		}
-
-		const listener = () => setMatches(media.matches);
-		media.addEventListener("change", listener);
-
-		return () => media.removeEventListener("change", listener);
-	}, [query, matches]);
-
-	return matches;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
