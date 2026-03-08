@@ -25,6 +25,8 @@ const GRID_PRONUNCIATION_CLASS =
 	"name-card-pronunciation name-card-pronunciation--grid mobile-readable-meta truncate";
 const GRID_DESCRIPTION_CLASS =
 	"name-card-description name-card-description--grid mobile-readable-description line-clamp-2 sm:line-clamp-3 mt-1";
+const ADMIN_ACTION_PANEL_BASE_CLASS = "name-admin-action name-admin-action--panel";
+const ADMIN_ACTION_SPINNER_CLASS = "name-admin-action__spinner";
 
 interface HiddenPanelController {
 	isCollapsed: boolean;
@@ -173,15 +175,13 @@ export function NameSelectorGridSection({
 											whileHover={{ scale: 1.05 }}
 											whileTap={{ scale: 0.95 }}
 											transition={{ type: "spring", stiffness: 400, damping: 25 }}
-											className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-												nameItem.isHidden
-													? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/25"
-													: "bg-red-600 hover:bg-red-700 text-white shadow-red-500/25"
-											} ${togglingHidden.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
+											className={`${ADMIN_ACTION_PANEL_BASE_CLASS} ${
+												nameItem.isHidden ? "name-admin-action--unhide" : "name-admin-action--hide"
+											} ${togglingHidden.has(nameItem.id) ? "name-admin-action--disabled" : ""}`}
 										>
 											{togglingHidden.has(nameItem.id) ? (
 												<div className="flex items-center justify-center gap-1">
-													<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+													<div className={ADMIN_ACTION_SPINNER_CLASS} />
 													<span>Processing...</span>
 												</div>
 											) : nameItem.isHidden ? (
@@ -211,15 +211,15 @@ export function NameSelectorGridSection({
 											whileHover={{ scale: 1.05 }}
 											whileTap={{ scale: 0.95 }}
 											transition={{ type: "spring", stiffness: 400, damping: 25 }}
-											className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+											className={`${ADMIN_ACTION_PANEL_BASE_CLASS} ${
 												nameItem.lockedIn || nameItem.locked_in
-													? "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/25"
-													: "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/25"
-											} ${togglingLocked.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
+													? "name-admin-action--unlock"
+													: "name-admin-action--lock"
+											} ${togglingLocked.has(nameItem.id) ? "name-admin-action--disabled" : ""}`}
 										>
 											{togglingLocked.has(nameItem.id) ? (
 												<div className="flex items-center justify-center gap-1">
-													<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+													<div className={ADMIN_ACTION_SPINNER_CLASS} />
 													<span>Processing...</span>
 												</div>
 											) : nameItem.lockedIn || nameItem.locked_in ? (
@@ -428,15 +428,13 @@ export function NameSelectorGridSection({
 																});
 															}}
 															disabled={togglingHidden.has(nameItem.id)}
-															className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-green-600 hover:bg-green-700 text-white ${
-																togglingHidden.has(nameItem.id)
-																	? "opacity-50 cursor-not-allowed"
-																	: ""
+															className={`w-full ${ADMIN_ACTION_PANEL_BASE_CLASS} name-admin-action--unhide ${
+																togglingHidden.has(nameItem.id) ? "name-admin-action--disabled" : ""
 															}`}
 														>
 															{togglingHidden.has(nameItem.id) ? (
 																<div className="flex items-center justify-center gap-1">
-																	<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+																	<div className={ADMIN_ACTION_SPINNER_CLASS} />
 																	<span>Processing...</span>
 																</div>
 															) : (

@@ -249,6 +249,112 @@
 	background: transparent;
 }
 
+.name-admin-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	transition:
+		background-color var(--duration-fast) ease,
+		color var(--duration-fast) ease,
+		box-shadow var(--duration-fast) ease,
+		transform var(--duration-fast) ease,
+		opacity var(--duration-fast) ease;
+}
+
+.name-admin-action--panel {
+	flex: 1;
+	color: rgb(255 255 255);
+	box-shadow: 0 10px 20px rgb(2 6 23 / 40%);
+}
+
+.name-admin-action--hide {
+	background-color: rgb(220 38 38);
+	box-shadow:
+		0 10px 20px rgb(2 6 23 / 40%),
+		0 0 0 1px rgb(248 113 113 / 15%);
+}
+
+.name-admin-action--hide:hover {
+	background-color: rgb(185 28 28);
+}
+
+.name-admin-action--unhide {
+	background-color: rgb(22 163 74);
+	box-shadow:
+		0 10px 20px rgb(2 6 23 / 40%),
+		0 0 0 1px rgb(74 222 128 / 18%);
+}
+
+.name-admin-action--unhide:hover {
+	background-color: rgb(21 128 61);
+}
+
+.name-admin-action--lock {
+	background-color: rgb(217 119 6);
+	box-shadow:
+		0 10px 20px rgb(2 6 23 / 40%),
+		0 0 0 1px rgb(251 191 36 / 18%);
+}
+
+.name-admin-action--lock:hover {
+	background-color: rgb(180 83 9);
+}
+
+.name-admin-action--unlock {
+	background-color: rgb(75 85 99);
+	box-shadow:
+		0 10px 20px rgb(2 6 23 / 40%),
+		0 0 0 1px rgb(148 163 184 / 20%);
+}
+
+.name-admin-action--unlock:hover {
+	background-color: rgb(55 65 81);
+}
+
+.name-admin-action--text {
+	width: fit-content;
+	padding: 0;
+	border-radius: 0;
+	font-size: 0.875rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgb(251 191 36 / 95%);
+	pointer-events: auto;
+}
+
+.name-admin-action--text:hover {
+	color: rgb(252 211 77);
+	transform: scale(1.05);
+}
+
+.name-admin-action:disabled,
+.name-admin-action--disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.name-admin-action__spinner {
+	width: 0.75rem;
+	height: 0.75rem;
+	border: 1px solid currentcolor;
+	border-top-color: transparent;
+	border-radius: 9999px;
+	animation: spin 0.8s linear infinite;
+}
+
+.name-admin-action__spinner--text {
+	width: 1rem;
+	height: 1rem;
+	border-width: 2px;
+}
+
 @media (width >= 640px) {
 	.name-card-title--grid {
 		font-size: 1rem;

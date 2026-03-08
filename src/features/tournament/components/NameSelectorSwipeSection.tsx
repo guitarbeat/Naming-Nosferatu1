@@ -207,15 +207,15 @@ export function NameSelectorSwipeSection({
 																});
 															}}
 															disabled={togglingHidden.has(nameItem.id)}
-															className={`mt-4 flex items-center gap-2 pointer-events-auto w-fit text-sm font-bold tracking-wider uppercase transition-all ${
+															className={`mt-4 name-admin-action name-admin-action--text ${
 																togglingHidden.has(nameItem.id)
-																	? "text-slate-500 cursor-not-allowed"
-																	: "text-amber-400 hover:text-amber-300 hover:scale-105 active:scale-95"
+																	? "name-admin-action--disabled"
+																	: "active:scale-95"
 															}`}
 														>
 															{togglingHidden.has(nameItem.id) ? (
 																<>
-																	<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+																	<div className="name-admin-action__spinner name-admin-action__spinner--text" />
 																	<span>Processing...</span>
 																</>
 															) : nameItem.isHidden ? (
