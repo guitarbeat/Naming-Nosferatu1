@@ -103,3 +103,67 @@ These do not currently affect runtime, but they add surface area and maintenance
 pnpm lint && pnpm test -- --run src/app/App.test.tsx src/test/features/tournament/TournamentFlow.test.tsx && pnpm build
 ```
 
+## Second-Pass Scan (Likely Missed Areas)
+
+This pass focused on areas commonly missed by import-graph tools:
+- `public/` runtime assets
+- service worker wiring
+- CSS keyframes/utilities with no class usage
+- knip false positives around framework-driven methods
+
+### Additional High-Confidence Findings
+
+1. `public/sw.js` appears unregistered
+   - No `navigator.serviceWorker.register(...)` usage found in `src/`, `server/`, `scripts/`, or `index.html`.
+   - If PWA support is not intended, this file is dead.
+
+2. `public/assets/images/gallery.json` appears unused
+   - No runtime fetch/import references found.
+   - Current image sources come from `src/shared/lib/constants.ts` and direct paths in `index.html`.
+
+3. Legacy/alternate image variants in `public/assets/images/` are likely unused
+   - `.avif` variants are referenced by app constants.
+   - Most `.webp` twins have zero references.
+   - Additional standalone files with zero references:
+     - `/assets/images/1769481846084.png`
+     - `/assets/images/cat graphic HD.png`
+     - `/assets/images/vibrant cat with baguettes t-shirt.png`
+   - Keep only if they are intentionally manual assets.
+
+### CSS Motion Debt (Not Runtime-Broken, But Probably Dead)
+
+In `src/styles/motion.css`, many keyframes are defined but not wired to active class usage in the app UI:
+- `bounce-subtle`
+- `pulse-glow`
+- `pulse-opacity`
+- `gradient-shift`
+- `cosmic-float`
+- `cat-bounce`
+- `fadeIn`
+- `fadeOut`
+- `glowPulse`
+- `cosmicFloat`
+- `trend-pulse`
+- `analysis-panel-fade-in`
+- `analysis-pulse`
+- `analysis-selection-pulse`
+
+Note:
+- `spin` is in active use (`.animate-spin` and loader/button states).
+- This section should be cleaned cautiously: some classes may be intended as design-system reserve utilities.
+
+### Knip False-Positive Notes (Second Pass)
+
+`knip` reported some class members as unused that are framework-driven and should not be auto-removed:
+- `ErrorBoundary.getDerivedStateFromError`
+- `ErrorBoundary.componentDidCatch`
+- `ErrorBoundary.render`
+
+These are React lifecycle/render methods and can be invoked implicitly by React, not explicit imports.
+
+### Suggested Next Cleanup Batch (Missed-Area Focus)
+
+1. Remove or document `public/sw.js`.
+2. Remove or document `public/assets/images/gallery.json`.
+3. Delete unreferenced duplicate image variants (mostly `.webp`) after confirming no CDN/external usage.
+4. Prune `motion.css` keyframes that have no corresponding utility classes used in current components.
