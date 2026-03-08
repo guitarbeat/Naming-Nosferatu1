@@ -7,7 +7,9 @@
  * import directly from `lucide-react`.
  */
 
+export type { LucideIcon } from "lucide-react";
 export {
+	AlertCircle,
 	BarChart3,
 	Cat,
 	Check,
@@ -17,11 +19,14 @@ export {
 	ChevronRight,
 	Clock,
 	Copy,
+	Download,
 	Eye,
 	EyeOff,
 	Gamepad2,
 	GripVertical,
 	Heart,
+	Home,
+	Info,
 	Layers,
 	LayoutGrid,
 	Lightbulb,
@@ -34,12 +39,14 @@ export {
 	PawPrint,
 	Pencil,
 	Plus,
+	RefreshCcw,
 	Save,
 	Shuffle,
 	SkipBack,
 	SkipForward,
 	Trophy,
 	Undo2,
+	Upload,
 	User,
 	Volume2,
 	VolumeX,

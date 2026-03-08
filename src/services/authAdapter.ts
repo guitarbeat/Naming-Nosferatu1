@@ -10,7 +10,6 @@
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { api } from "@/services/apiClient";
 import { resolveSupabaseClient } from "@/services/supabase/runtime";
-import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 // Simple admin usernames - can be expanded as needed
 const ADMIN_USERNAMES = ["Aaron", "admin", "administrator"];
@@ -52,21 +51,16 @@ export const authAdapter: AuthAdapter = {
 			return null;
 		}
 
-		const userName = localStorage.getItem(STORAGE_KEYS.USER);
-		const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+		const userName = localStorage.getItem("userName");
+		const userId = localStorage.getItem("userId");
 
 		if (!userName) {
 			return null;
 		}
 
 		const supabaseIsAdmin = await getSupabaseAdminStatus(userName);
-		// Use OR logic: admin if Supabase says so OR if in the local admin list.
-		// Previously used ?? which only fell through on null, meaning a Supabase
-		// "false" (user_roles row missing) would override the local admin list.
-		const isAdmin = supabaseIsAdmin === true || isKnownAdminUser(userName);
-		console.log(
-			`[AuthAdapter] User: ${userName}, SupabaseAdmin: ${supabaseIsAdmin}, LocalAdmin: ${isKnownAdminUser(userName)}, Final: ${isAdmin}`,
-		);
+		const isAdmin = supabaseIsAdmin ?? isKnownAdminUser(userName);
+		console.log(`[AuthAdapter] User: ${userName}, IsAdmin: ${isAdmin}`);
 
 		return {
 			id: userId || userName,
@@ -92,14 +86,14 @@ export const authAdapter: AuthAdapter = {
 				userName,
 			});
 			if (response.success && response.data?.userId) {
-				localStorage.setItem(STORAGE_KEYS.USER_ID, response.data.userId);
+				localStorage.setItem("userId", response.data.userId);
 			}
 		} catch (e) {
 			console.error("Failed to register user", e);
 		}
 
-		// Store username in localStorage (must match STORAGE_KEYS.USER for consistency with appStore)
-		localStorage.setItem(STORAGE_KEYS.USER, userName);
+		// Store username in localStorage
+		localStorage.setItem("userName", userName);
 		return true;
 	},
 
@@ -108,8 +102,8 @@ export const authAdapter: AuthAdapter = {
 	 */
 	async logout(): Promise<void> {
 		if (typeof window !== "undefined") {
-			localStorage.removeItem(STORAGE_KEYS.USER);
-			localStorage.removeItem(STORAGE_KEYS.USER_ID);
+			localStorage.removeItem("userName");
+			localStorage.removeItem("userId");
 		}
 	},
 
@@ -131,6 +125,6 @@ export const authAdapter: AuthAdapter = {
 		}
 
 		const supabaseIsAdmin = await getSupabaseAdminStatus(normalized);
-		return supabaseIsAdmin === true || isKnownAdminUser(normalized);
+		return supabaseIsAdmin ?? isKnownAdminUser(normalized);
 	},
 };

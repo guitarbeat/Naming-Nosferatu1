@@ -5,7 +5,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/services/supabase/api";
+import { coreAPI, hiddenNamesAPI, imagesAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
@@ -89,10 +89,7 @@ export function AdminDashboard() {
 		setIsLoading(true);
 		try {
 			// Load all names with admin visibility
-			const [allNames, siteStats] = await Promise.all([
-				coreAPI.getTrendingNames(true),
-				statsAPI.getSiteStats(),
-			]);
+			const allNames = await coreAPI.getTrendingNames(true);
 
 			// Load stats (we'll simulate some for now)
 			const adminStats: AdminStats = {
@@ -100,17 +97,17 @@ export function AdminDashboard() {
 				activeNames: allNames.filter((n) => !n.isHidden && !(n.lockedIn || n.locked_in)).length,
 				hiddenNames: allNames.filter((n) => n.isHidden).length,
 				lockedInNames: allNames.filter((n) => n.lockedIn || n.locked_in).length,
-				totalUsers: siteStats?.totalUsers || 0,
+				totalUsers: 0, // TODO: Implement user count
 				activeTournaments: 0, // TODO: Implement tournament count
-				recentVotes: siteStats?.totalRatings || 0,
+				recentVotes: 0, // TODO: Implement vote tracking
 			};
 
-			// Derive stats from real name data instead of mock/random placeholders
+			// Add some mock stats for demonstration
 			const namesWithStats: NameWithStats[] = allNames.map((name) => ({
 				...name,
-				votes: Number((name.wins || 0) + (name.losses || 0)),
-				lastVoted: undefined,
-				popularityScore: Number(name.popularity_score || 0),
+				votes: Math.floor(Math.random() * 100),
+				lastVoted: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+				popularityScore: Math.random() * 100,
 			}));
 
 			setStats(adminStats);

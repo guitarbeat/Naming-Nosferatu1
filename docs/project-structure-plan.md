@@ -5,12 +5,13 @@
 - Reduce coupling by enforcing a one-way dependency flow: `app -> features -> shared`.
 - Keep infrastructure and domain logic clearly separated.
 
-## Proposed Structure (inside `src/`)
+## Proposed Structure (inside `source/`)
 ```
-src/
+source/
   app/
     main.tsx
     App.tsx
+    routes.tsx
     providers/
   features/
     tournament/
@@ -35,17 +36,18 @@ src/
 ```
 
 ## Current-to-Target Mapping (Examples)
-- `src/layout/*` → `src/shared/ui/*`
-- `src/hooks/useBrowserState.ts` → split into:
-  - `src/shared/hooks/useBrowserState.ts` (pure browser state)
-  - `src/features/tournament/hooks/useOfflineSync.ts` (tournament-specific syncing)
-- `src/hooks/useNames.ts` → `src/features/tournament/hooks/useNames.ts` (domain hook)
-- `src/hooks/useValidatedForm.ts` → `src/shared/hooks/useValidatedForm.ts` (generic form hook)
-- `src/services/supabase/*` → `src/shared/services/supabase/*`
-- `src/services/tournament.ts` → `src/features/tournament/services/tournament.ts`
-- `src/store/appStore.ts` → `src/app/store/appStore.ts` + feature slices in `src/features/*/store/`
-- `src/utils/*` → `src/shared/lib/*`
-- `src/types/index.ts` → split into `src/shared/types/` + `src/features/*/types/` as needed
+- `source/layout/*` → `source/shared/ui/*`
+- `source/hooks/useBrowserState.ts` → split into:
+  - `source/shared/hooks/useBrowserState.ts` (pure browser state)
+  - `source/features/tournament/hooks/useOfflineSync.ts` (tournament-specific syncing)
+- `source/hooks/useNames.ts` → `source/features/tournament/hooks/useNames.ts` (domain hook)
+- `source/hooks/useValidatedForm.ts` → `source/shared/hooks/useValidatedForm.ts` (generic form hook)
+- `source/services/supabase/*` → `source/shared/services/supabase/*`
+- `source/services/SyncQueue.ts` → `source/shared/services/SyncQueue.ts`
+- `source/services/tournament.ts` → `source/features/tournament/services/tournament.ts`
+- `source/store/appStore.ts` → `source/app/store/appStore.ts` + feature slices in `source/features/*/store/`
+- `source/utils/*` → `source/shared/lib/*`
+- `source/types/appTypes.ts` → split into `source/shared/types/` + `source/features/*/types/` as needed
 
 ## Scalability Bottlenecks Observed
 - Global buckets (`layout/`, `hooks/`, `services/`, `utils/`) will become catch-alls and hide ownership.
@@ -75,7 +77,7 @@ src/
 3. Add temporary `index.ts` barrels (optional) in `shared/` and `features/` to ease import updates during migration.
 
 ### Phase 1: Create Target Folders
-4. Create `src/app/`, `src/shared/`, and feature subfolders (`ui`, `hooks`, `services`, `types`, `store`).
+4. Create `source/app/`, `source/shared/`, and feature subfolders (`ui`, `hooks`, `services`, `types`, `store`).
 
 ### Phase 2: Shared Infrastructure First
 5. Move infra services (e.g., Supabase client, sync queue) into `shared/services/`.

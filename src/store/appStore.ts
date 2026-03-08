@@ -182,9 +182,7 @@ function getInitialUserState(): UserState {
 	if (stored?.trim()) {
 		try {
 			const parsed = JSON.parse(stored);
-			if (typeof parsed === "string") {
-				return { ...base, name: parsed, isLoggedIn: true };
-			}
+			if (typeof parsed === "string") return { ...base, name: parsed, isLoggedIn: true };
 			if (typeof parsed === "string") {
 				return { ...base, name: parsed, isLoggedIn: true };
 			}

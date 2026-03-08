@@ -30,10 +30,6 @@
 	display: inline-block; /* Ensure it wraps content */
 }
 
-.fancy-button-wrap[aria-disabled="true"] {
-	pointer-events: none;
-}
-
 /* Button Shadow Container */
 .fancy-button-shadow {
 	--shadow-cuttoff-fix: 2em;
@@ -107,16 +103,6 @@
 	box-sizing: border-box;
 }
 
-.fancy-button:disabled {
-	cursor: not-allowed;
-	opacity: 0.55;
-}
-
-.fancy-button:focus-visible {
-	outline: 2px solid rgb(255 255 255 / 75%);
-	outline-offset: 3px;
-}
-
 .fancy-button:hover {
 	transform: scale(0.975);
 	backdrop-filter: blur(0.01em);
@@ -132,36 +118,32 @@
 }
 
 /* Button Text */
-.fancy-button > .fancy-button-content {
+.fancy-button span {
 	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5rem;
+	display: block;
 	user-select: none;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	font-family: "Inter", sans-serif;
-	letter-spacing: -0.02em;
-	font-weight: 600;
+	letter-spacing: -0.05em;
+	font-weight: 500;
 	font-size: 1em;
-	color: rgb(255 255 255 / 95%);
+	color: rgba(50, 50, 50, 1);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	text-shadow: 0 0.15em 0.05em rgba(0, 0, 0, 0.35);
+	text-shadow: 0em 0.25em 0.05em rgba(0, 0, 0, 0.1);
 	transition: all var(--anim--hover-time) var(--anim--hover-ease);
 	padding-inline: 1.5em;
 	padding-block: 0.875em;
-	line-height: 1;
 }
 
-.fancy-button:hover > .fancy-button-content {
+.fancy-button:hover span {
 	text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.12);
 }
 
 /* Text */
-.fancy-button > .fancy-button-content::after {
+.fancy-button span::after {
 	content: "";
 	display: block;
 	position: absolute;
@@ -190,55 +172,21 @@
 		--angle-2 calc(var(--anim--hover-time) * 1.25) var(--anim--hover-ease);
 }
 
-.fancy-button:hover > .fancy-button-content::after {
+.fancy-button:hover span::after {
 	background-position: 25% 50%;
 }
 
-.fancy-button:active > .fancy-button-content::after {
+.fancy-button:active span::after {
 	background-position: 50% 15%;
 	--angle-2: -15deg;
 }
 
 /* Touch Devices */
 @media (hover: none) and (pointer: coarse) {
-	.fancy-button > .fancy-button-content::after,
-	.fancy-button:active > .fancy-button-content::after {
+	.fancy-button span::after,
+	.fancy-button:active span::after {
 		--angle-2: -45deg;
 	}
-}
-
-.fancy-button > .fancy-button-content > svg {
-	width: 1em;
-	height: 1em;
-}
-
-.fancy-button--small > .fancy-button-content {
-	padding-inline: 1.15em;
-	padding-block: 0.62em;
-	font-size: 0.78rem;
-}
-
-.fancy-button--medium > .fancy-button-content {
-	padding-inline: 1.4em;
-	padding-block: 0.8em;
-	font-size: 0.9rem;
-}
-
-.fancy-button--large > .fancy-button-content {
-	padding-inline: 1.7em;
-	padding-block: 0.9em;
-	font-size: 0.98rem;
-}
-
-.fancy-button--xl > .fancy-button-content {
-	padding-inline: 1.9em;
-	padding-block: 0.98em;
-	font-size: 1.05rem;
-}
-
-.fancy-button--icon > .fancy-button-content {
-	padding-inline: 0.74em;
-	padding-block: 0.74em;
 }
 
 /* ========== BUTTON OUTLINE ========== */
@@ -334,6 +282,6 @@
 	opacity: 0.75;
 }
 
-.fancy-button-wrap:has(.fancy-button:active) .fancy-button-content {
+.fancy-button-wrap:has(.fancy-button:active) span {
 	text-shadow: 0.025em 0.25em 0.05em rgba(0, 0, 0, 0.12);
 }

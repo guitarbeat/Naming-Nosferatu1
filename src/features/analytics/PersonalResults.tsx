@@ -2,7 +2,8 @@ import { CardBody, Button as HeroButton } from "@heroui/react";
 import { useToast } from "@/app/providers/Providers";
 import { usePersonalResults } from "@/features/analytics/hooks/usePersonalResults";
 import { Card } from "@/shared/components/layout";
-import { Plus } from "@/shared/lib/icons";
+import { exportTournamentResultsToCSV } from "@/shared/lib/basic";
+import { Download, Plus } from "@/shared/lib/icons";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RankingAdjustment } from "./RankingAdjustment";
 
@@ -87,6 +88,19 @@ export const PersonalResults = ({
 					startContent={<Plus size={18} />}
 				>
 					New Tournament
+				</HeroButton>
+				<HeroButton
+					variant="flat"
+					className="bg-white/5 hover:bg-white/10 text-white"
+					startContent={<Download size={18} />}
+					onClick={() => {
+						if (!rankings.length) {
+							return;
+						}
+						exportTournamentResultsToCSV(rankings);
+					}}
+				>
+					Export CSV
 				</HeroButton>
 			</div>
 		</div>

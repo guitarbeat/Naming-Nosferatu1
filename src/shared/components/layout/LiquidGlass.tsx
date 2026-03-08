@@ -79,14 +79,6 @@ function LiquidGlass({
 			return false;
 		}
 		try {
-			const userAgent = window.navigator.userAgent;
-			const isWebKitSafari =
-				/Safari\//.test(userAgent) &&
-				!/Chrome\/|CriOS\/|Edg\/|OPR\/|Firefox\/|FxiOS\//.test(userAgent);
-			if (!isWebKitSafari) {
-				return false;
-			}
-
 			const testEl = document.createElement("div");
 			testEl.style.backdropFilter = "url(#test)";
 			const hasUrl = testEl.style.backdropFilter.includes("url");

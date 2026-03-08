@@ -83,3 +83,20 @@ export const STORAGE_KEYS = {
 export const TIMING = {
 	RIPPLE_ANIMATION_DURATION_MS: 400,
 } as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Notifications
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const NOTIFICATION = {
+	ERROR_DURATION_MS: 5000,
+	MAX_TOASTS: 5,
+} as const;
+
+export const FILTER_OPTIONS = {
+	VISIBILITY: {
+		ALL: "all",
+		VISIBLE: "visible",
+		HIDDEN: "hidden",
+	},
+} as const;

@@ -3,7 +3,7 @@
  * @description Random cat name generator with favorites persistence.
  */
 
-import { useCallback, useId, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLocalStorage } from "@/shared/hooks";
 import { Copy, Heart, Shuffle } from "@/shared/lib/icons";
 
@@ -95,7 +95,6 @@ export function RandomGenerator({
 	fetchNames,
 	storageKey = "cat_name_favorites",
 }: RandomGeneratorProps) {
-	const dottedGridId = useId().replace(/:/g, "-");
 	const [generatedName, setGeneratedName] = useState<string | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [storedFavorites, setStoredFavorites] = useLocalStorage<string[]>(storageKey, []);
@@ -155,30 +154,9 @@ export function RandomGenerator({
 			<p className="mb-8 text-center text-white/60">Can&apos;t decide? Let fate decide for you.</p>
 
 			{/* Generator Card */}
-			<div className="random-generator-card relative flex min-h-[240px] w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 px-6 py-12 backdrop-blur-sm">
-				<svg
-					className="absolute inset-0 h-full w-full pointer-events-none z-0"
-					width="100%"
-					height="100%"
-					xmlns="http://www.w3.org/2000/svg"
-					aria-hidden="true"
-				>
-					<defs>
-						<pattern id={dottedGridId} width="30" height="30" patternUnits="userSpaceOnUse">
-							<circle cx="2" cy="2" r="1" fill="rgba(255, 255, 255, 0.2)" />
-						</pattern>
-					</defs>
-					<rect width="100%" height="100%" fill={`url(#${dottedGridId})`} />
-				</svg>
-				<div className="random-generator-bubble random-generator-bubble--one" aria-hidden="true" />
-				<div className="random-generator-bubble random-generator-bubble--two" aria-hidden="true" />
-				<div
-					className="random-generator-bubble random-generator-bubble--three"
-					aria-hidden="true"
-				/>
-
+			<div className="flex min-h-[240px] w-full flex-col items-center justify-center gap-8 rounded-2xl border border-white/10 bg-white/5 px-6 py-12 backdrop-blur-sm">
 				{/* Display Area */}
-				<div className="relative z-10 flex min-h-[100px] w-full flex-col items-center justify-center text-center">
+				<div className="flex min-h-[100px] w-full flex-col items-center justify-center text-center">
 					{isGenerating ? (
 						<Spinner />
 					) : generatedName ? (
@@ -215,17 +193,14 @@ export function RandomGenerator({
 				</div>
 
 				{/* Generate Button */}
-				<div className="button-wrap random-generator-button-wrap">
-					<button
-						type="button"
-						onClick={generateName}
-						disabled={isGenerating}
-						className="random-generator-button"
-					>
-						<span>{isGenerating ? "Generating..." : "Generate Name"}</span>
-					</button>
-					<div className="button-shadow random-generator-button-shadow" aria-hidden="true" />
-				</div>
+				<button
+					type="button"
+					onClick={generateName}
+					disabled={isGenerating}
+					className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 text-base font-bold text-white shadow-lg shadow-purple-900/20 transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+				>
+					{isGenerating ? "Generating..." : "Generate Name"}
+				</button>
 			</div>
 
 			{/* Favorites */}

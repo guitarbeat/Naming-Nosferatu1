@@ -99,10 +99,7 @@ function analyseImage(imgEl: HTMLImageElement): {
 
 		return { focal: pct, accent, orientation };
 	} catch (error) {
-		// Silently fail for CORS or canvas issues - focal analysis is optional enhancement
-		if (process.env.NODE_ENV === "development") {
-			console.debug("Could not analyze image (CORS or canvas issue):", (error as Error).message);
-		}
+		console.error("Failed to analyse cat image metadata", error);
 		return {};
 	}
 }
@@ -145,33 +142,36 @@ function CatImage({
 		setHasError(false);
 	}, [src]);
 
-	const applyImageEnhancements = useCallback((imgEl: HTMLImageElement | null) => {
-		if (!imgEl) {
-			return;
-		}
-		const container = containerRef.current;
-		if (!container) {
-			return;
-		}
+	const applyImageEnhancements = useCallback(
+		(imgEl: HTMLImageElement | null) => {
+			if (!imgEl) {
+				return;
+			}
+			const container = containerRef.current;
+			if (!container) {
+				return;
+			}
 
-		const { focal, accent, orientation } = analyseImage(imgEl);
-		if (focal != null) {
-			container.style.setProperty("--image-pos-y", `${focal}%`);
-		}
-		if (accent) {
-			container.style.setProperty("--cat-image-accent-rgb", accent);
-		}
-		if (orientation) {
-			container.dataset.orientation = orientation;
-		}
+			const { focal, accent, orientation } = analyseImage(imgEl);
+			if (focal != null) {
+				container.style.setProperty("--image-pos-y", `${focal}%`);
+			}
+			if (accent) {
+				container.style.setProperty("--cat-image-accent-rgb", accent);
+			}
+			if (orientation) {
+				container.dataset.orientation = orientation;
+			}
 
-		if (imgEl.naturalWidth && imgEl.naturalHeight && imgEl.naturalHeight > 0) {
-			const ratio = imgEl.naturalWidth / imgEl.naturalHeight;
-			container.style.setProperty("--cat-image-fit", "cover");
-			container.style.setProperty("--cat-image-ratio", ratio.toFixed(3));
-		}
-		container.dataset.loaded = "true";
-	}, []);
+			if (imgEl.naturalWidth && imgEl.naturalHeight && imgEl.naturalHeight > 0) {
+				const ratio = imgEl.naturalWidth / imgEl.naturalHeight;
+				container.style.setProperty("--cat-image-fit", "cover");
+				container.style.setProperty("--cat-image-ratio", ratio.toFixed(3));
+			}
+			container.dataset.loaded = "true";
+		},
+		[objectFit],
+	);
 
 	const handleLoad = useCallback(
 		(event: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -227,11 +227,9 @@ function CatImage({
 	const renderImage = () => {
 		const imageStyle: React.CSSProperties = {
 			objectPosition: "center var(--image-pos-y, 50%)",
-			objectFit: objectFit ?? ("var(--cat-image-fit, cover)" as React.CSSProperties["objectFit"]),
+			objectFit: "var(--cat-image-fit, cover)" as React.CSSProperties["objectFit"],
 		};
 
-		// Only set CORS for external images; local assets don't need it
-		const isLocalAsset = currentSrc && typeof currentSrc === "string" && currentSrc.startsWith("/");
 		const commonProps = {
 			ref: imageRef,
 			src: currentSrc || fallbackUrl,
@@ -242,7 +240,7 @@ function CatImage({
 			decoding,
 			onLoad: handleLoad,
 			onError: handleError,
-			...(isLocalAsset ? {} : { crossOrigin: "anonymous" as const }),
+			crossOrigin: "anonymous" as const,
 		};
 
 		if (currentSrc && typeof currentSrc === "string" && currentSrc.startsWith("/assets/images/")) {
@@ -252,7 +250,7 @@ function CatImage({
 			}
 			const base = currentSrc.replace(/\.[^.]+$/, "");
 			return (
-				<picture className="block h-full w-full">
+				<picture>
 					<source type="image/avif" srcSet={`${base}.avif`} />
 					<source type="image/webp" srcSet={`${base}.webp`} />
 					<img {...commonProps} />

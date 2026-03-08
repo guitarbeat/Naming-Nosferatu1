@@ -17,7 +17,7 @@ This document provides a comprehensive guide for setting up, developing, maintai
 - **Modernized Routing**: Migrated from custom `useRouting` to React Router DOM v6
   - Improved navigation patterns and URL synchronization
   - Added Router context safety checks
-- **Component Consolidation**: Unified navigation flows under the shared layout/navigation primitives
+- **Component Consolidation**: Unified 4 navigation components into single `AdaptiveNav`
 - **CVA Implementation**: Adopted Class Variance Authority for component variants
 - **Removed Unused Dependencies**: `sharp`, `lovable-tagger` (kept `react-router-dom` as actively used)
 - **Code Quality Report**: Comprehensive post-consolidation assessment (See `docs/archive/specs/css-dry-refactor/analysis/css-analysis-report.md`)
@@ -175,7 +175,7 @@ To maintain long-term maintainability, follow these principles:
 ### Writing Guidelines
 
 - **Capitalization**: Use Sentence case for headings and buttons (e.g., "Start tournament").
-- **Buttons**: Use action verbs (e.g., "Vote," "Skip," "Start tournament").
+- **Buttons**: Use action verbs (e.g., "Vote," "Skip," "Export CSV").
 - **Dates**: Use relative dates ("2 days ago") for recent events, absolute ("Jan 15, 2026") for history.
 - **Placeholders**: Use `{variableName}` format consistently.
 
@@ -231,13 +231,6 @@ Use these tools to keep the codebase clean:
 - **`pnpm run lint`** - Biome linting catches unused variables
 - Review `// ts-prune-ignore-next` comments periodically
 
-Removal-first policy (default):
-
-1. If code has no runtime or test consumer, remove it.
-2. Do not keep unused code as "maybe later" unless there is a tracked issue, named owner, and target release.
-3. Treat `pnpm run lint` and `pnpm run check:deps` as required release gates.
-4. Re-adding removed code requires a new explicit product requirement.
-
 ---
 
 ## 📂 Directory Structure
@@ -251,7 +244,8 @@ src/
 ├── shared/             # Shared components, hooks, utils, types
 ├── store/              # Zustand app store
 ├── styles/             # CSS layers/tokens/effects
-└── types/              # App-level types
+├── types/              # App-level types
+└── routes.tsx          # Route definitions
 
 server/                 # Express API routes/auth/validation
 shared/                 # Cross-runtime shared schema

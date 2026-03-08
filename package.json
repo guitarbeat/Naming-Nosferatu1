@@ -30,7 +30,7 @@
 		"pnpm": ">=10.26.0"
 	},
 	"scripts": {
-		"dev": "vite",
+		"dev": "pnpm run dev:server & pnpm run dev:client",
 		"dev:server": "tsx server/index.ts",
 		"dev:client": "vite",
 		"build": "vite build",
@@ -55,6 +55,10 @@
 		"test:coverage": "vitest --coverage"
 	},
 	"dependencies": {
+		"@capacitor/android": "7.4.4",
+		"@capacitor/cli": "7.4.4",
+		"@capacitor/core": "7.4.4",
+		"@capacitor/ios": "7.4.4",
 		"@hello-pangea/dnd": "^18.0.1",
 		"@heroui/react": "^2.8.9",
 		"@supabase/supabase-js": "^2.97.0",
@@ -69,9 +73,7 @@
 		"drizzle-kit": "^0.31.9",
 		"drizzle-orm": "^0.45.1",
 		"express": "^5.2.1",
-		"express-rate-limit": "^8.2.1",
 		"framer-motion": "^12.34.2",
-		"jsonwebtoken": "^9.0.3",
 		"lucide-react": "^0.563.0",
 		"pg": "^8.18.0",
 		"react": "^19.2.4",
@@ -83,16 +85,17 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.15",
-		"@dyad-sh/react-vite-component-tagger": "^0.8.0",
+		"@tailwindcss/postcss": "^4.2.0",
 		"@tailwindcss/vite": "4.1.18",
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.2",
-		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^25.3.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"@types/supertest": "^6.0.3",
+		"@types/testing-library__jest-dom": "^6.0.0",
+		"@types/three": "^0.182.0",
 		"@vitejs/plugin-react": "^5.1.4",
 		"@vitest/coverage-v8": "^4.0.18",
 		"autoprefixer": "^10.4.24",
@@ -101,9 +104,11 @@
 		"jsdom": "^28.1.0",
 		"knip": "^5.84.1",
 		"postcss": "^8.5.6",
+		"postcss-discard-unused": "^7.0.4",
 		"supertest": "^7.2.2",
 		"tailwindcss": "4.1.18",
 		"terser": "^5.46.0",
+		"three": "^0.182.0",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
@@ -132,7 +137,6 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"@esbuild-kit/core-utils>esbuild": "0.25.12",
 			"@isaacs/brace-expansion": ">=5.0.1",
 			"tar@<=7.5.2": ">=7.5.3",
 			"tar@<=7.5.3": ">=7.5.4"

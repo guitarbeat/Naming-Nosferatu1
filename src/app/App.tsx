@@ -8,15 +8,12 @@
  */
 
 import { Suspense, useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
-import { NameSuggestion } from "@/features/tournament/components/NameSuggestion";
-import { ProfileSection } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
-import { updateSupabaseUserContext } from "@/services/supabase/runtime";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { useOfflineSync } from "@/shared/hooks";
 import { cn } from "@/shared/lib/basic";
@@ -40,7 +37,6 @@ function App() {
 		if (authUser) {
 			userActions.setAdminStatus(Boolean(authUser.isAdmin));
 		}
-		updateSupabaseUserContext(authUser?.name ?? null, authUser?.id ?? null);
 	}, [authUser, userActions]);
 
 	useEffect(() => {
@@ -52,9 +48,7 @@ function App() {
 		};
 	}, []);
 
-	useAppStoreInitialization((name) => {
-		updateSupabaseUserContext(name, null);
-	});
+	useAppStoreInitialization();
 	useOfflineSync();
 
 	if (!isInitialized) {
@@ -102,28 +96,17 @@ function App() {
 }
 
 function HomeContent() {
-	const { login } = useAuth();
-
 	return (
-		<>
-			<Section id="pick" variant="minimal" padding="none" maxWidth="full">
-				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
-					<TournamentFlow />
-				</Suspense>
-			</Section>
-
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
-				<NameSuggestion variant="inline" />
-			</Section>
-
-			<ProfileSection onLogin={(name) => login({ name })} />
-		</>
+		<Section id="pick" variant="minimal" padding="none" maxWidth="full">
+			<Suspense fallback={<Loading variant="skeleton" height={400} />}>
+				<TournamentFlow />
+			</Suspense>
+		</Section>
 	);
 }
 
 function TournamentContent() {
 	const { user, tournament, tournamentActions } = useAppStore();
-	const navigate = useNavigate();
 	const { handleTournamentComplete } = useTournamentHandlers({
 		userName: user.name,
 		tournamentActions,
@@ -139,21 +122,11 @@ function TournamentContent() {
 						onComplete={handleTournamentComplete as any}
 					/>
 				) : (
-					<div className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-black/30 px-6 py-10 text-center">
-						<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent uppercase tracking-tighter">
-							No contenders yet
-						</h2>
-						<p className="text-white/75 mb-6">
-							Choose at least two names in the picker to start your tournament bracket.
-						</p>
-						<div className="flex flex-wrap items-center justify-center gap-3">
-							<Button variant="glass" onClick={() => navigate("/")}>
-								Go to Name Picker
-							</Button>
-							<Button variant="glass" onClick={() => navigate("/analysis")}>
-								View Analysis
-							</Button>
-						</div>
+					<div className="text-center py-20">
+						<p className="text-xl text-white/70 mb-4">No names selected for tournament</p>
+						<Button variant="gradient" onClick={() => window.history.back()}>
+							Go Back
+						</Button>
 					</div>
 				)}
 			</Suspense>

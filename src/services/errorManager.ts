@@ -449,7 +449,7 @@ function formatError(
 // Retry & Circuit Breaker
 // ============================================================================
 
-export class CircuitBreaker {
+class CircuitBreaker {
 	failureThreshold: number;
 	resetTimeout: number;
 	failureCount: number = 0;

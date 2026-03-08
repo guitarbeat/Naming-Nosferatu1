@@ -97,7 +97,7 @@ function useEventListener<K extends keyof WindowEventMap>(
 /**
  * Subscribe to a CSS media query.
  */
-function useMediaQuery(query: string): boolean {
+export function useMediaQuery(query: string): boolean {
 	const [matches, setMatches] = useState(false);
 
 	useEffect(() => {
@@ -153,7 +153,8 @@ export function useBrowserState() {
  * useOfflineSync(); // no-op by default; attach sync logic via useOnlineStatus
  */
 export function useOfflineSync(): void {
-	useOnlineStatus();
+	// No-op stub — replace with `useOnlineStatus({ onReconnect: () => syncQueue.flush() })`
+	// when you have a real sync queue wired up.
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -163,7 +164,7 @@ export function useOfflineSync(): void {
 /**
  * Lightweight online/offline tracking with lifecycle callbacks.
  */
-function useOnlineStatus(options?: {
+export function useOnlineStatus(options?: {
 	onReconnect?: () => void;
 	onDisconnect?: () => void;
 }): boolean {

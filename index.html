@@ -56,6 +56,11 @@
   <!-- Custom cat favicon -->
   <link rel="icon" href="/assets/images/favicon.png" type="image/png" />
 
+  <!-- * Resource hints for better performance -->
+  <!-- * Prefetch for secondary routes -->
+  <link rel="prefetch" href="/assets/js/chunk-Dashboard-*.js" as="script" />
+  <link rel="prefetch" href="/assets/js/chunk-Tournament-*.js" as="script" />
+
   <!-- * Optimize painting performance with no-visible-paint directive -->
   <style>
     html {
@@ -76,20 +81,10 @@
         return;
       }
 
-      const storedTheme = localStorage.getItem("theme");
-      const themePreference = ["light", "dark", "system"].includes(storedTheme)
-        ? storedTheme
-        : "system";
-      const resolvedTheme =
-        themePreference === "system"
-          ? window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light"
-          : themePreference;
-
-      documentElement.dataset.theme = resolvedTheme;
+      const theme = "dark";
+      documentElement.dataset.theme = theme;
       if (body) {
-        body.dataset.theme = resolvedTheme;
+        body.dataset.theme = theme;
       }
     })();
   </script>

@@ -24,12 +24,6 @@ html {
 	scroll-behavior: smooth;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	html {
-		scroll-behavior: auto;
-	}
-}
-
 body {
 	font-family: var(--font-sans);
 	line-height: 1.6;
@@ -67,29 +61,14 @@ img {
 	height: auto;
 }
 
-/* Keep scrollbars visible and themed for orientation/accessibility */
+/* ! Hide scrollbars but maintain scrolling functionality */
 * {
-	scrollbar-width: thin;
-	scrollbar-color: color-mix(in srgb, var(--color-neutral-200, #e5e7eb) 35%, transparent)
-		transparent;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
 }
 
 *::-webkit-scrollbar {
-	width: 10px;
-	height: 10px;
-}
-
-*::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-	background: color-mix(in srgb, var(--color-neutral-200, #e5e7eb) 35%, transparent);
-	border-radius: 9999px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-	background: color-mix(in srgb, var(--color-neutral-200, #e5e7eb) 55%, transparent);
+	display: none; /* Chrome, Safari, Opera */
 }
 
 /* Remove outline on focused elements */
@@ -102,10 +81,10 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-	outline: 3px solid color-mix(in srgb, #2ff3e0 80%, white 20%);
+	outline: 3px solid var(--accent-color);
 	outline-offset: 3px;
 	border-radius: 4px;
-	box-shadow: 0 0 0 3px color-mix(in srgb, #2ff3e0 25%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-warning) 30%, transparent);
 }
 
 :root {
@@ -133,7 +112,6 @@ a:focus-visible {
 	--chart-3: hsl(197deg 37% 24%);
 	--chart-4: hsl(43deg 74% 66%);
 	--chart-5: hsl(27deg 87% 67%);
-	--accent-color: hsl(190deg 100% 50%);
 	--navbar: hsl(0deg 0% 98%);
 	--navbar-foreground: hsl(0deg 0% 0%);
 	--navbar-primary: hsl(0deg 0% 0%);
@@ -163,30 +141,30 @@ a:focus-visible {
 }
 
 @theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--color-card: var(--card);
-	--color-card-foreground: var(--card-foreground);
-	--color-popover: var(--popover);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-primary: var(--primary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-secondary: var(--secondary);
-	--color-secondary-foreground: var(--secondary-foreground);
-	--color-muted: var(--muted);
-	--color-muted-foreground: var(--muted-foreground);
-	--color-accent: var(--accent);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-destructive: var(--destructive);
-	--color-destructive-foreground: var(--destructive-foreground);
-	--color-border: var(--border);
-	--color-input: var(--input);
-	--color-ring: var(--ring);
-	--color-chart-1: var(--chart-1);
-	--color-chart-2: var(--chart-2);
-	--color-chart-3: var(--chart-3);
-	--color-chart-4: var(--chart-4);
-	--color-chart-5: var(--chart-5);
+	--color-background: var(----background);
+	--color-foreground: var(----foreground);
+	--color-card: var(----card);
+	--color-card-foreground: var(----card-foreground);
+	--color-popover: var(----popover);
+	--color-popover-foreground: var(----popover-foreground);
+	--color-primary: var(----primary);
+	--color-primary-foreground: var(----primary-foreground);
+	--color-secondary: var(----secondary);
+	--color-secondary-foreground: var(----secondary-foreground);
+	--color-muted: var(----muted);
+	--color-muted-foreground: var(----muted-foreground);
+	--color-accent: var(----accent);
+	--color-accent-foreground: var(----accent-foreground);
+	--color-destructive: var(----destructive);
+	--color-destructive-foreground: var(----destructive-foreground);
+	--color-border: var(----border);
+	--color-input: var(----input);
+	--color-ring: var(----ring);
+	--color-chart-1: var(----chart-1);
+	--color-chart-2: var(----chart-2);
+	--color-chart-3: var(----chart-3);
+	--color-chart-4: var(----chart-4);
+	--color-chart-5: var(----chart-5);
 	--color-navbar: hsl(0deg 0% 98%);
 	--color-navbar-foreground: hsl(0deg 0% 0%);
 	--color-navbar-primary: hsl(0deg 0% 0%);
@@ -195,20 +173,20 @@ a:focus-visible {
 	--color-navbar-accent-foreground: hsl(0deg 0% 0%);
 	--color-navbar-border: hsl(0deg 0% 0%);
 	--color-navbar-ring: hsl(0deg 0% 0%);
-	--font-sans: var(--font-sans);
-	--font-serif: var(--font-serif);
-	--font-mono: var(--font-mono);
-	--radius: var(--radius);
-	--shadow-2xs: var(--shadow-2xs);
-	--shadow-xs: var(--shadow-xs);
-	--shadow-sm: var(--shadow-sm);
-	--shadow: var(--shadow);
-	--shadow-md: var(--shadow-md);
-	--shadow-lg: var(--shadow-lg);
-	--shadow-xl: var(--shadow-xl);
-	--shadow-2xl: var(--shadow-2xl);
-	--tracking-normal: var(--tracking-normal);
-	--spacing: var(--spacing);
+	--font-sans: var(----font-sans);
+	--font-serif: var(----font-serif);
+	--font-mono: var(----font-mono);
+	--radius: var(----radius);
+	--shadow-2xs: var(----shadow-2xs);
+	--shadow-xs: var(----shadow-xs);
+	--shadow-sm: var(----shadow-sm);
+	--shadow: var(----shadow);
+	--shadow-md: var(----shadow-md);
+	--shadow-lg: var(----shadow-lg);
+	--shadow-xl: var(----shadow-xl);
+	--shadow-2xl: var(----shadow-2xl);
+	--tracking-normal: var(----tracking-normal);
+	--spacing: var(----spacing);
 }
 /* ==========================================================================
    BORDER RADIUS SYSTEM
@@ -289,7 +267,6 @@ a:focus-visible {
 :root {
 	--z-negative: -1;
 	--z-0: 0;
-	--z-1: 1;
 	--z-10: 10;
 	--z-20: 20;
 	--z-30: 30;
@@ -389,8 +366,8 @@ a:focus-visible {
 	--rose-pink: 322 81% 65%;
 	--lavender: 245 50% 90%;
 
-	/* Keep form controls coherent across user/browser theme contexts */
-	color-scheme: dark light;
+	/* * Enforced Dark/Celestial Theme */
+	color-scheme: dark;
 
 	/* * Theme-specific color overrides */
 	--primary-color: var(--primary-400);

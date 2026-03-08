@@ -9,6 +9,7 @@ import type React from "react";
 import { memo, Suspense, useMemo } from "react";
 import { cn } from "@/shared/lib/basic";
 import { Cat, Heart, PawPrint } from "@/shared/lib/icons";
+import { BongoCat } from "../LayoutEffects";
 
 const LOADING_ASSETS = ["/assets/images/cat.gif"];
 
@@ -20,7 +21,7 @@ type CatVariant = "paw" | "tail" | "bounce" | "spin" | "heartbeat" | "orbit";
 type CatColor = "neon" | "pastel" | "warm";
 type CardSkeletonVariant = "name-card" | "elevated-card" | "mosaic-card";
 
-interface LoadingProps {
+export interface LoadingProps {
 	variant?: "spinner" | "cat" | "bongo" | "suspense" | "skeleton" | "card-skeleton";
 	catVariant?: CatVariant;
 	catColor?: CatColor;
@@ -219,11 +220,8 @@ export const Loading: React.FC<LoadingProps> = memo(
 
 		if (variant === "bongo") {
 			return (
-				<div className={containerClasses} role="status" aria-label="Loading">
-					<div className="relative flex items-center justify-center p-4 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm">
-						<CatSpinnerContent catVariant="bounce" showFace={true} size={size} />
-					</div>
-					{text && <p className="text-sm font-medium text-white/70 animate-pulse">{text}</p>}
+				<div className={containerClasses}>
+					<BongoCat size={size} text={text} />
 				</div>
 			);
 		}

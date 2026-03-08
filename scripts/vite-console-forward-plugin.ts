@@ -105,7 +105,7 @@ function createLogEntry(level, args) {
   const message = args.map((arg) => {
     if (arg === undefined) return "undefined";
     if (typeof arg === "string") return arg;
-    if (arg instanceof Error || (arg !== null && typeof arg.stack === "string")) {
+    if (arg instanceof Error || typeof arg.stack === "string") {
       let stringifiedError = arg.toString();
       if (arg.stack) {
         let stack = arg.stack.toString();

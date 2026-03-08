@@ -13,6 +13,8 @@
  * - Never duplicate a type — import it.
  */
 
+import type React from "react";
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Identifiers
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -84,6 +86,11 @@ export interface RatingData {
 	losses: number;
 }
 
+/** A named rating entry (for arrays/lists). */
+export interface RatingItem extends RatingData {
+	name: string;
+}
+
 /**
  * Flexible rating input — accepts either a full RatingData object or a
  * bare number (interpreted as rating with 0 wins/losses).
@@ -95,32 +102,10 @@ export type RatingInput = RatingData | number;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** A single match pairing. */
-export type TournamentMode = "1v1" | "2v2";
-
-export interface Team {
-	id: string;
-	memberIds: string[];
-	memberNames: string[];
-}
-
-export interface TeamMatch {
-	leftTeamId: string;
-	rightTeamId: string;
-}
-
-export interface HeadToHeadMatch {
-	mode: "1v1";
+export interface Match {
 	left: NameItem | string;
 	right: NameItem | string;
 }
-
-export interface TeamVersusMatch {
-	mode: "2v2";
-	left: Team;
-	right: Team;
-}
-
-export type Match = HeadToHeadMatch | TeamVersusMatch;
 
 /** Serialized record of a completed match. */
 export interface MatchRecord {
@@ -134,7 +119,7 @@ export interface MatchRecord {
 }
 
 /** A vote participant with outcome metadata. */
-interface VoteParticipant {
+export interface VoteParticipant {
 	name: string;
 	id: IdType | null;
 	description: string;
@@ -169,6 +154,19 @@ export interface TournamentProps {
 	onVote?: (voteData: VoteData) => Promise<void> | void;
 }
 
+/** UI-facing tournament state (for display components). */
+export interface TournamentUIState {
+	currentMatch: Match | null;
+	currentMatchNumber: number;
+	roundNumber: number;
+	totalMatches: number;
+	currentRatings: Record<string, RatingData>;
+	isTransitioning: boolean;
+	isError: boolean;
+	canUndo: boolean;
+	sorter: unknown;
+}
+
 /** Persisted tournament progress (for resume-after-refresh). */
 export interface PersistentTournamentState {
 	matchHistory: MatchRecord[];
@@ -178,12 +176,103 @@ export interface PersistentTournamentState {
 	userName: string;
 	lastUpdated: number;
 	namesKey: string;
-	ratings: Record<string, number>;
-	mode: TournamentMode;
-	teams: Team[];
-	teamMatches: TeamMatch[];
-	teamMatchIndex: number;
-	bracketEntrants: string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Filter Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TournamentFilters {
+	category?: string;
+	filterStatus?: "all" | "visible" | "hidden";
+	userFilter?: "all" | "user" | "other";
+	selectionFilter?: "all" | "selected" | "unselected";
+	dateFilter?: "all" | "today" | "week" | "month";
+	searchTerm?: string;
+}
+
+export type NameManagementViewExtensions = {
+	header?: React.ReactNode | (() => React.ReactNode);
+	dashboard?: React.ReactNode | React.ComponentType | (() => React.ReactNode);
+	contextLogic?: React.ReactNode | (() => React.ReactNode);
+	bulkActions?: React.ReactNode | React.ComponentType | (() => React.ReactNode);
+} & Record<string, unknown>;
+
+export interface UseNameManagementViewProps {
+	mode: "tournament" | "profile";
+	userName?: string;
+	profileProps?: Record<string, unknown>;
+	tournamentProps?: Record<string, unknown>;
+	analysisMode: boolean;
+	setAnalysisMode: React.Dispatch<React.SetStateAction<boolean>>;
+	extensions?: NameManagementViewExtensions;
+}
+
+export interface UseNameManagementViewResult {
+	names: NameItem[];
+	filteredNames: NameItem[];
+	filteredNamesForSwipe: NameItem[];
+	sortedNames: NameItem[];
+
+	isLoading: boolean;
+	isError: boolean;
+	error: Error | null;
+	dataError: Error | null;
+	refetch: () => void;
+	clearErrors: () => void;
+
+	setNames: (updater: NameItem[] | ((prev: NameItem[]) => NameItem[])) => void;
+	setHiddenIds: (ids: Set<string | number>) => void;
+
+	selectedNames: NameItem[];
+	selectedIds: Set<IdType>;
+	selectedCount: number;
+	isSelected: (id: IdType) => boolean;
+
+	isSelectionMode: boolean;
+	setIsSelectionMode: (value: boolean) => void;
+
+	toggleName: (name: NameItem) => void;
+	toggleNameById: (id: IdType) => void;
+	toggleNamesByIds: (ids: IdType[]) => void;
+	clearSelection: () => void;
+	selectAll: () => void;
+
+	filterStatus: "all" | "visible" | "hidden";
+	setFilterStatus: React.Dispatch<React.SetStateAction<"all" | "visible" | "hidden">>;
+	showSelectedOnly: boolean;
+	setShowSelectedOnly: React.Dispatch<React.SetStateAction<boolean>>;
+	selectionFilter: "all" | "selected" | "unselected";
+	setSelectionFilter: React.Dispatch<React.SetStateAction<"all" | "selected" | "unselected">>;
+	userFilter: "all" | "user" | "other";
+	setUserFilter: React.Dispatch<React.SetStateAction<"all" | "user" | "other">>;
+	dateFilter: "all" | "today" | "week" | "month";
+	setDateFilter: React.Dispatch<React.SetStateAction<"all" | "today" | "week" | "month">>;
+	searchTerm: string;
+	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+
+	isSwipeMode: boolean;
+	showCatPictures: boolean;
+
+	activeTab: string;
+	setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+
+	stats: {
+		total: number;
+		visible: number;
+		hidden: number;
+		selected: number;
+	};
+
+	filterConfig: TournamentFilters;
+	handleFilterChange: (name: keyof TournamentFilters, value: string | number | boolean) => void;
+	handleAnalysisModeToggle: () => void;
+
+	profileProps: Record<string, unknown>;
+	tournamentProps: Record<string, unknown>;
+	analysisMode: boolean;
+	setAnalysisMode: React.Dispatch<React.SetStateAction<boolean>>;
+	extensions: NameManagementViewExtensions;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -209,6 +298,12 @@ export interface UserPreferences {
 	notifications?: boolean;
 	showCatPictures?: boolean;
 	matrixMode?: boolean;
+}
+
+export interface UserBubbleProfile {
+	username: string;
+	display_name?: string;
+	avatar_url?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

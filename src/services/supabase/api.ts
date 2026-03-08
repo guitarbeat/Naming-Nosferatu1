@@ -42,13 +42,10 @@ function mapNameRow(item: ApiNameRow): NameItem {
 
 async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]> {
 	try {
-		console.log("[v0] getNamesFromSupabase called, includeHidden:", includeHidden);
 		const client = await resolveSupabaseClient();
 		if (!client) {
-			console.log("[v0] getNamesFromSupabase: no Supabase client available");
 			return [];
 		}
-		console.log("[v0] getNamesFromSupabase: Supabase client obtained, querying...");
 
 		let query = client
 			.from("cat_name_options")
@@ -64,14 +61,11 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 
 		const { data, error } = await query.order("avg_rating", { ascending: false }).limit(1000);
 		if (error) {
-			console.log("[v0] getNamesFromSupabase: Supabase query error:", error.message);
 			return [];
 		}
 
-		console.log("[v0] getNamesFromSupabase: Got", data?.length ?? 0, "names from Supabase");
 		return (data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow));
-	} catch (err) {
-		console.log("[v0] getNamesFromSupabase: caught exception:", err);
+	} catch {
 		return [];
 	}
 }
@@ -110,16 +104,10 @@ export const coreAPI = {
 
 	getTrendingNames: async (includeHidden: boolean = false) => {
 		try {
-			console.log("[v0] getTrendingNames: trying Express API...");
 			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
-			console.log("[v0] getTrendingNames: Express API returned", data?.length ?? 0, "names");
 			return (data ?? []).map((item) => mapNameRow(item));
-		} catch (apiErr) {
+		} catch {
 			// Fallback when /api is not available (static-only deployments).
-			console.log(
-				"[v0] getTrendingNames: Express API failed, falling back to Supabase. Error:",
-				apiErr,
-			);
 			return await getNamesFromSupabase(includeHidden);
 		}
 	},
@@ -221,6 +209,78 @@ export const hiddenNamesAPI = {
 
 	unhideName: async (_userName: string, nameId: string | number) => {
 		return coreAPI.hideName(_userName, nameId, false);
+	},
+};
+
+export const siteSettingsAPI = {
+	getSettings: async () => {
+		return {};
+	},
+	updateSettings: async (_updates: Record<string, unknown>) => {
+		return { success: true };
+	},
+};
+
+// --- Analytics APIs ---
+
+export const analyticsAPI = {
+	getTopSelectedNames: async (_period: any) => {
+		try {
+			// Returns { nameId, name, count }
+			const data = await api.get<any[]>("/analytics/popularity");
+			return (data || []).map((item) => ({
+				name_id: item.nameId,
+				name: item.name,
+				times_selected: item.count,
+			}));
+		} catch {
+			return [];
+		}
+	},
+	getPopularityScores: async (_period: any, _filter: any, _user: any) => {
+		try {
+			// Using popularity endpoint as a proxy for scores for now
+			const data = await api.get<any[]>("/analytics/popularity?limit=100");
+			return (data || []).map((item) => ({
+				name_id: item.nameId,
+				name: item.name,
+				total_wins: 0,
+				times_selected: item.count,
+				avg_rating: 0, // Not available in this endpoint
+			}));
+		} catch {
+			return [];
+		}
+	},
+	getRankingHistory: async (_limit = 10, _periods = 7, _options: any = {}) => {
+		try {
+			const data = await api.get<any[]>("/analytics/ranking-history");
+			return (data || []).map((item) => ({
+				name_id: item.nameId,
+				name: item.name,
+				avg_rating: item.avgRating,
+			}));
+		} catch {
+			return [];
+		}
+	},
+};
+
+export const leaderboardAPI = {
+	getLeaderboard: async (_period: any) => {
+		try {
+			// Returns { nameId, avgRating, totalWins, totalLosses }
+			const data = await api.get<any[]>("/analytics/leaderboard");
+			return (data || []).map((item) => ({
+				name_id: item.nameId,
+				name: item.name,
+				avg_rating: item.avgRating,
+				wins: item.totalWins,
+				losses: item.totalLosses,
+			}));
+		} catch {
+			return [];
+		}
 	},
 };
 

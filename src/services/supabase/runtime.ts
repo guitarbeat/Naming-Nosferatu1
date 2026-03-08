@@ -24,15 +24,14 @@ declare global {
 }
 
 // Get Supabase credentials from environment variables (publishable/anon keys are safe to embed)
-const getSupabaseCredentials = (): { url: string; key: string } | null => {
+const getSupabaseCredentials = (): { url: string; key: string } => {
 	const url = import.meta.env.VITE_SUPABASE_URL;
 	const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 	if (!url || !key) {
-		console.warn(
-			"[Supabase] Credentials not found. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable Supabase features.",
+		throw new Error(
+			"Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.",
 		);
-		return null;
 	}
 
 	return { url, key };
@@ -43,12 +42,8 @@ let supabaseInstance: SupabaseClient<Database> | null =
 let initializationPromise: Promise<SupabaseClient<Database> | null> | null = null;
 
 const createSupabaseClient = async (): Promise<SupabaseClient<Database> | null> => {
-	// Validate and get credentials (returns null if missing)
-	const credentials = getSupabaseCredentials();
-	if (!credentials) {
-		return null;
-	}
-	const { url: SupabaseUrl, key: SupabaseAnonKey } = credentials;
+	// Validate and get credentials (throws if missing)
+	const { url: SupabaseUrl, key: SupabaseAnonKey } = getSupabaseCredentials();
 
 	try {
 		const { createClient } = await import("@supabase/supabase-js");
@@ -160,7 +155,7 @@ export const updateSupabaseUserContext = (
 
 const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
 
-const isSupabaseAvailable = async () => {
+export const isSupabaseAvailable = async () => {
 	const client = await resolveSupabaseClient();
 	if (!client) {
 		if (isDev) {
@@ -194,3 +189,6 @@ export async function withSupabase<T>(
 		return fallback;
 	}
 }
+
+// Re-export client for modern usage
+export { resolveSupabaseClient as supabase };

@@ -1,11 +1,15 @@
 /**
  * @module FloatingNavbar
- * @description Accessible, bottom-fixed primary navigation for key app flows.
+ * @description modern, bottom-fixed floating navigation bar with hover-expand logic
  */
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/app/providers/Providers";
+import { useNameSuggestion } from "@/hooks/useNames";
+import Button from "@/shared/components/layout/Button";
+import { Input, Textarea } from "@/shared/components/layout/FormPrimitives";
 import { cn, hapticNavTap, hapticTournamentStart } from "@/shared/lib/basic";
 import {
 	BarChart3,
@@ -13,23 +17,28 @@ import {
 	Layers,
 	LayoutGrid,
 	Lightbulb,
+	LogOut,
 	Trophy,
 	User,
 } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
 
-type NavSection = "pick" | "suggest" | "profile";
-
-const keyToId: Record<NavSection, string> = {
+// Map nav keys to Section IDs
+const keyToId: Record<string, string> = {
 	pick: "pick",
+	play: "play",
+	analyze: "analysis",
 	suggest: "suggest",
 	profile: "profile",
 };
 
+/**
+ * Floating Navigation Item Component
+ */
 function FloatingNavItem({
 	icon: Icon,
 	label,
-	isActive = false,
+	isActive,
 	onClick,
 	customIcon,
 	className,
@@ -42,25 +51,21 @@ function FloatingNavItem({
 	className?: string;
 }) {
 	return (
-		<motion.button
-			type="button"
-			whileTap={{ scale: 0.97 }}
+		<motion.div
 			className={cn(
-				"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-white/75 transition-all duration-200 ease-in-out hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-				isActive && "bg-white/15 text-white",
+				"group flex items-center justify-center gap-2 p-2.5 cursor-pointer transition-all duration-300 ease-in-out rounded-full overflow-hidden min-w-[44px] bg-transparent text-white/70 hover:text-white hover:bg-white/20",
+				isActive && "bg-white/10 text-white",
 				className,
 			)}
 			onClick={onClick}
-			aria-pressed={isActive}
-			aria-label={label}
 		>
-			<span className="flex shrink-0 items-center justify-center">
-				{customIcon || <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
-			</span>
-			<span className="hidden whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm">
+			<div className="flex-shrink-0 flex items-center justify-center">
+				{customIcon || <Icon className="w-6 h-6" />}
+			</div>
+			<span className="text-xs sm:text-sm font-semibold whitespace-nowrap opacity-100 transition-opacity duration-300">
 				{label}
 			</span>
-		</motion.button>
+		</motion.div>
 	);
 }
 
@@ -68,37 +73,33 @@ export function FloatingNavbar() {
 	const appStore = useAppStore();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { tournament, tournamentActions, user, ui, uiActions } = appStore;
+	const { login, logout } = useAuth();
+	const { tournament, tournamentActions, user, ui, uiActions, userActions } = appStore;
 	const { selectedNames } = tournament;
 	const { isLoggedIn, name: userName, avatarUrl, isAdmin } = user;
 	const { isSwipeMode } = ui;
 	const { setSwipeMode } = uiActions;
-	const [activeSection, setActiveSection] = useState<NavSection>("pick");
+	const [activeSection, setActiveSection] = useState("pick");
+	const [isLoginExpanded, setIsLoginExpanded] = useState(false);
+	const [isSuggestExpanded, setIsSuggestExpanded] = useState(false);
+	const [editedName, setEditedName] = useState("");
+	const [isSaving, setIsSaving] = useState(false);
 	const [isNavVisible, setIsNavVisible] = useState(true);
 	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-	const isHomeRoute = location.pathname === "/";
 	const isAnalysisRoute = location.pathname === "/analysis";
 	const isTournamentRoute = location.pathname === "/tournament";
 
 	const selectedCount = selectedNames?.length || 0;
-	const isTournamentActive = Boolean(tournament.names);
-	const isComplete = tournament.isComplete;
-	const profileLabel = isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Profile";
+	const isTournamentActive = !!tournament?.names;
+	const isComplete = tournament?.isComplete;
 
-	const scrollToSection = (key: NavSection) => {
-		const id = keyToId[key];
-		const target = document.getElementById(id);
-		if (!target) {
-			window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
-			return;
-		}
-
-		target.scrollIntoView({
-			behavior: prefersReducedMotion ? "auto" : "smooth",
-			block: "start",
+	const { values, isSubmitting, handleChange, handleSubmit, globalError, successMessage } =
+		useNameSuggestion({
+			onSuccess: () => {
+				setTimeout(() => setIsSuggestExpanded(false), 2000);
+			},
 		});
-	};
 
 	const handleStartTournament = () => {
 		hapticTournamentStart();
@@ -108,49 +109,76 @@ export function FloatingNavbar() {
 		}
 	};
 
-	const handleNavClick = (key: NavSection | "analyze") => {
+	const handleNavClick = (key: string) => {
 		hapticNavTap();
 		if (key === "analyze") {
 			navigate("/analysis");
 			return;
 		}
-
-		if (!isHomeRoute) {
+		if (key === "pick" && isAnalysisRoute) {
 			navigate("/");
-			window.setTimeout(() => scrollToSection(key), 120);
 			return;
 		}
 
-		scrollToSection(key);
+		const id = keyToId[key];
+		if (id) {
+			if (location.pathname !== "/") {
+				navigate("/");
+				setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 100);
+			} else {
+				document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+			}
+		}
 	};
 
-	useEffect(() => {
-		if (!isHomeRoute) {
+	const handleLoginSave = async () => {
+		if (!editedName.trim()) {
 			return;
 		}
+		setIsSaving(true);
+		try {
+			const success = await login({ name: editedName.trim() });
+			if (success) {
+				userActions.login(editedName.trim());
+				setIsLoginExpanded(false);
+				setEditedName("");
+			}
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
+	const handleLogout = async () => {
+		await logout();
+		userActions.logout();
+		setIsLoginExpanded(false);
+	};
+
+	// Track active section on scroll (home route only)
+	useEffect(() => {
+		if (location.pathname !== "/" || isAnalysisRoute) {
+			return;
+		}
 		let rafId: number | null = null;
-		const sections: NavSection[] = ["pick", "suggest", "profile"];
-
 		const handleScroll = () => {
 			if (rafId) {
 				return;
 			}
 			rafId = requestAnimationFrame(() => {
 				rafId = null;
-				let current: NavSection = "pick";
-				let minDistance = Number.POSITIVE_INFINITY;
+				const sections = ["pick", "play", "suggest", "profile"];
+				let current = "pick";
+				let minDistance = Infinity;
 
-				for (const section of sections) {
-					const element = document.getElementById(section);
-					if (!element) {
-						continue;
-					}
-					const rect = element.getBoundingClientRect();
-					const distance = Math.abs(rect.top);
-					if (distance < minDistance && rect.top < window.innerHeight * 0.7) {
-						minDistance = distance;
-						current = section;
+				for (const id of sections) {
+					const element = document.getElementById(id);
+					if (element) {
+						const rect = element.getBoundingClientRect();
+						const distance = Math.abs(rect.top);
+						if (distance < minDistance && distance < window.innerHeight * 0.6) {
+							minDistance = distance;
+							current = id;
+						}
 					}
 				}
 				setActiveSection(current);
@@ -165,7 +193,7 @@ export function FloatingNavbar() {
 				cancelAnimationFrame(rafId);
 			}
 		};
-	}, [isHomeRoute]);
+	}, [location.pathname, isAnalysisRoute]);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -228,73 +256,192 @@ export function FloatingNavbar() {
 		return null;
 	}
 
+	const shouldShowNav = isNavVisible || isLoginExpanded || isSuggestExpanded;
+
 	return (
-		<nav
-			aria-label="Primary"
-			className={cn(
-				"fixed bottom-5 left-1/2 z-[100] flex max-w-[95vw] -translate-x-1/2 items-center gap-1 rounded-full border border-white/20 bg-white/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5",
-				!prefersReducedMotion && "transition-transform transition-opacity duration-300",
-				prefersReducedMotion && "transition-none",
-				isNavVisible
-					? "translate-y-0 opacity-100"
-					: "translate-y-[calc(100%+1.25rem)] opacity-0 pointer-events-none",
-			)}
-		>
-			{!isComplete && !isTournamentActive && (
+		<>
+			<nav
+				className={cn(
+					"fixed bottom-5 left-1/2 -translate-x-1/2 z-[100]",
+					"bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1.5 flex gap-1 sm:gap-1.5 transition-all duration-300",
+					"shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+					"max-w-[95vw] sm:max-w-none",
+					!prefersReducedMotion && "transition-transform transition-opacity duration-300",
+					prefersReducedMotion && "transition-none",
+					shouldShowNav
+						? "translate-y-0 opacity-100"
+						: "translate-y-[calc(100%+1.25rem)] opacity-0 pointer-events-none",
+				)}
+			>
+				{/* Tournament Controller */}
+				{!isComplete && !isTournamentActive && (
+					<FloatingNavItem
+						icon={selectedCount >= 2 ? Trophy : CheckCircle}
+						label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
+						isActive={activeSection === "pick"}
+						onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
+						className={cn(selectedCount >= 2 && "text-amber-400 hover:text-amber-300")}
+					/>
+				)}
+
+				{isComplete && (
+					<FloatingNavItem
+						icon={BarChart3}
+						label="Analyze"
+						isActive={isAnalysisRoute}
+						onClick={() => handleNavClick("analyze")}
+					/>
+				)}
+
+				{/* View Toggle */}
 				<FloatingNavItem
-					icon={selectedCount >= 2 ? Trophy : CheckCircle}
-					label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
-					isActive={isHomeRoute && activeSection === "pick"}
-					onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
-					className={cn(selectedCount >= 2 && "text-amber-300 hover:text-amber-200")}
+					icon={isSwipeMode ? Layers : LayoutGrid}
+					label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
+					onClick={() => setSwipeMode(!isSwipeMode)}
 				/>
-			)}
 
-			{isComplete && (
+				{/* Suggest */}
 				<FloatingNavItem
-					icon={BarChart3}
-					label="Analyze"
-					isActive={isAnalysisRoute}
-					onClick={() => handleNavClick("analyze")}
+					icon={Lightbulb}
+					label="Add Idea"
+					isActive={isSuggestExpanded}
+					onClick={() => {
+						setIsSuggestExpanded(!isSuggestExpanded);
+						setIsLoginExpanded(false);
+					}}
 				/>
-			)}
 
-			<FloatingNavItem
-				icon={isSwipeMode ? Layers : LayoutGrid}
-				label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
-				onClick={() => setSwipeMode(!isSwipeMode)}
-			/>
+				{/* Profile */}
+				<FloatingNavItem
+					icon={User}
+					label={isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Login"}
+					isActive={isLoginExpanded}
+					onClick={() => {
+						setIsLoginExpanded(!isLoginExpanded);
+						setIsSuggestExpanded(false);
+					}}
+					customIcon={
+						isLoggedIn && avatarUrl ? (
+							<img
+								src={avatarUrl}
+								alt={userName}
+								className="w-6 h-6 rounded-full object-cover border border-white/20"
+							/>
+						) : (
+							<User
+								className={cn(
+									"w-6 h-6",
+									isLoggedIn && isAdmin && "text-amber-400",
+									isLoggedIn && !isAdmin && "text-purple-400",
+								)}
+							/>
+						)
+					}
+				/>
+			</nav>
 
-			<FloatingNavItem
-				icon={Lightbulb}
-				label="Suggest"
-				isActive={isHomeRoute && activeSection === "suggest"}
-				onClick={() => handleNavClick("suggest")}
-			/>
+			{/* Shared Modal Backdrops and Panels (Reused from FluidNav logic) */}
+			<AnimatePresence>
+				{isLoginExpanded && (
+					<motion.div
+						initial={{ y: 20, opacity: 0 }}
+						animate={{ y: 0, opacity: 1 }}
+						exit={{ y: 20, opacity: 0 }}
+						className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[101] w-[90vw] max-w-md bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl"
+					>
+						{isLoggedIn ? (
+							<div className="flex flex-col items-center gap-6">
+								<h3 className="text-xl font-bold text-white">
+									Hi, {userName}! {isAdmin && "👑"}
+								</h3>
+								<Button variant="ghost" className="text-red-400" onClick={handleLogout}>
+									<LogOut size={18} className="mr-2" /> Logout
+								</Button>
+							</div>
+						) : (
+							<div className="space-y-6">
+								<div className="text-center">
+									<h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+										Login
+									</h3>
+									<p className="text-white/60 text-sm">Join the tournament!</p>
+								</div>
+								<Input
+									value={editedName}
+									onChange={(e) => setEditedName(e.target.value)}
+									placeholder="Your name..."
+									className="text-lg"
+								/>
+								<Button
+									variant="gradient"
+									className="w-full h-12"
+									onClick={handleLoginSave}
+									disabled={!editedName || isSaving}
+									loading={isSaving}
+								>
+									Continue
+								</Button>
+							</div>
+						)}
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-			<FloatingNavItem
-				icon={User}
-				label={profileLabel}
-				isActive={isHomeRoute && activeSection === "profile"}
-				onClick={() => handleNavClick("profile")}
-				customIcon={
-					isLoggedIn && avatarUrl ? (
-						<img
-							src={avatarUrl}
-							alt={profileLabel}
-							className="h-6 w-6 rounded-full border border-white/20 object-cover"
-						/>
-					) : (
-						<User
-							className={cn(
-								"h-6 w-6",
-								isLoggedIn && isAdmin && "text-amber-300",
-								isLoggedIn && !isAdmin && "text-purple-300",
+			<AnimatePresence>
+				{isSuggestExpanded && (
+					<motion.div
+						initial={{ y: 20, opacity: 0 }}
+						animate={{ y: 0, opacity: 1 }}
+						exit={{ y: 20, opacity: 0 }}
+						className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[101] w-[95%] max-w-md bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-2xl"
+					>
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								handleSubmit();
+							}}
+							className="space-y-4"
+						>
+							<div className="text-center space-y-1">
+								<h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+									Got a name?
+								</h3>
+								<p className="text-sm text-white/60">Share your brilliant idea</p>
+							</div>
+							<Input
+								value={values.name}
+								onChange={(e) => handleChange("name", e.target.value)}
+								placeholder="Name..."
+							/>
+							<Textarea
+								value={values.description}
+								onChange={(e) => handleChange("description", e.target.value)}
+								placeholder="Why is it good?"
+								rows={3}
+							/>
+							{globalError && (
+								<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-200 text-sm font-medium text-center">
+									{globalError}
+								</div>
 							)}
-						/>
-					)
-				}
-			/>
-		</nav>
+							{successMessage && (
+								<div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-200 text-sm font-medium text-center">
+									{successMessage}
+								</div>
+							)}
+							<Button
+								variant="gradient"
+								className="w-full"
+								type="submit"
+								disabled={!values.name || isSubmitting}
+								loading={isSubmitting}
+							>
+								Suggest
+							</Button>
+						</form>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</>
 	);
 }

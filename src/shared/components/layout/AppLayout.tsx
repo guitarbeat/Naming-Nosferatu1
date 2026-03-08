@@ -1,6 +1,6 @@
 /**
  * @module AppLayout
- * @description Main application layout component with floating primary nav
+ * @description Main application layout component with FluidNav
  */
 
 import { useMemo } from "react";

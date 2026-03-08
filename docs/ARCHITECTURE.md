@@ -84,7 +84,8 @@ src/
 ├── shared/               # Shared UI, hooks, libs, types, service re-exports
 ├── store/                # Zustand store slices and actions
 ├── styles/               # CSS layers and visual effects
-└── types/                # App-level type definitions
+├── types/                # App-level type definitions
+└── routes.tsx            # Route definitions
 
 supabase/                 # Database
 ├── migrations/           # SQL migrations
@@ -108,7 +109,7 @@ config/                   # Tool configuration
 | `hooks/` | Shared React hooks for browser state, forms, data fetching |
 | `services/` | API clients, error handling, offline sync |
 | `store/appStore.ts` | Global state management with Zustand |
-| `shared/types/index.ts` | Shared domain type definitions |
+| `types/appTypes.ts` | App type definitions |
 | `shared/lib/` | Pure utilities, constants, cache, metrics, formatting |
 
 ---
@@ -133,26 +134,28 @@ config/                   # Tool configuration
 |-----------|-------------|
 | `Button` | Primary button with CVA variants |
 | `Card` | Container component with variants |
-| `ErrorBoundary` | Error boundary with fallback UI |
+| `Error` | Error boundary with fallback UI |
 | `FormPrimitives` | Input, Select, Label components |
 | `LiquidGlass` | Glassmorphism effect |
-| `Loading` | Loading states and skeletons |
-| `OfflineIndicator` | Online/offline status indicator |
+| `StatusIndicators` | Loading spinners, badges |
+| `Toast` | Notification system |
+| `Charts` | Data visualization components |
 
 #### Layout Components (`shared/components/layout/`)
 
 | Component | Description |
 |-----------|-------------|
 | `AppLayout` | Main app shell and structure |
-| `FloatingNavbar` | Primary bottom navigation and quick actions |
-| `CollapsibleContent` | Collapsible content wrapper |
-| `Lightbox` | Fullscreen image viewer |
+| `AdaptiveNav` | Responsive navigation (mobile/desktop) |
+| `CollapsibleHeader` | Collapsible section headers |
+| `CatBackground` | Animated cat background |
+| `FloatingBubbles` | User bubble animations |
 
 #### Feature Components
 
 | Feature | Key Components |
 |---------|----------------|
-| **Tournament** | `Tournament` (setup/mode/flow), `TournamentFlow`, `NameSelector`, `NameSuggestion`, `ProfileSection` |
+| **Tournament** | `Tournament` (setup/mode/flow), `SwipeableCards`, `RankingAdjustment`, `NameGrid`, `NameManagementView` |
 | **Analytics** | `Dashboard` and analytics components/services |
 | **Admin** | `AdminDashboard` |
 
@@ -193,15 +196,16 @@ Services are located in `src/services/`:
 | Service | Purpose |
 |---------|---------|
 | `errorManager.ts` | Centralized error handling with retry logic |
+| `SyncQueue.ts` | Offline-first queue for failed operations |
 | `supabase/client.ts` | Re-exports runtime/api modules |
 | `supabase/runtime.ts` | Supabase runtime and wrappers (`withSupabase`) |
-| `supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `statsAPI`) |
+| `supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `siteSettingsAPI`) |
 | `apiClient.ts` | Shared HTTP client utilities |
 
 All Supabase calls use `withSupabase()` for consistent error handling and offline support.
 
 The Supabase integration is split across:
-- `supabase/client.ts` for the generated client entrypoint
+- `src/integrations/supabase/client.ts` for the generated client
 - `src/services/supabase/runtime.ts` for execution wrappers and runtime behavior
 - `src/services/supabase/api.ts` for domain-specific operations
 
@@ -216,6 +220,6 @@ The Supabase integration is split across:
 5. **Path Aliases** - `@/features/*`, `@/shared/*`, `@/services/*` for clean imports
 6. **Layered Modules** - Shared utilities/components separated from domain features:
    - `src/store/appStore.ts` - Global Zustand state
-   - `src/shared/types/index.ts` - Type definitions
+   - `src/types/appTypes.ts` + `src/shared/types/` - Type definitions
    - `src/shared/components/layout/` - reusable UI and layout primitives
-   - `src/services/supabase/*` + `supabase/*` - runtime + generated client split
+   - `src/services/supabase/*` + `src/integrations/supabase/*` - runtime + generated client split

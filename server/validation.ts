@@ -24,7 +24,7 @@ export const batchHideSchema = z.object({
 });
 
 export const saveRatingsSchema = z.object({
-	userId: z.string(),
+	userId: z.string().uuid(),
 	ratings: z
 		.array(
 			z.object({

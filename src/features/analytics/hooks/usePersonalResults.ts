@@ -14,15 +14,6 @@ export function usePersonalResults({
 		if (!personalRatings) {
 			return;
 		}
-		const nameToIdMap = new Map<string, string | number>();
-		if (currentTournamentNames) {
-			for (const n of currentTournamentNames) {
-				if (n.id !== undefined) {
-					nameToIdMap.set(n.name, n.id);
-				}
-			}
-		}
-
 		const processed = Object.entries(personalRatings)
 			.map(([name, rating]: [string, unknown]) => {
 				const r = rating as { rating?: number; wins?: number; losses?: number } | number;
@@ -31,7 +22,7 @@ export function usePersonalResults({
 					rating: Math.round(typeof r === "number" ? r : r?.rating || 1500),
 					wins: typeof r === "number" ? 0 : r?.wins || 0,
 					losses: typeof r === "number" ? 0 : r?.losses || 0,
-					id: nameToIdMap.get(name),
+					id: currentTournamentNames?.find((n: NameItem) => n.name === name)?.id,
 				};
 			})
 			.sort((a, b) => b.rating - a.rating);

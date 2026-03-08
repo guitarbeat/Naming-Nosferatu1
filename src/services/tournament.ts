@@ -1,5 +1,5 @@
-import { ELO_RATING } from "@/shared/lib/constants";
-import type { Team, TeamMatch, TournamentMode } from "@/shared/types";
+import { getRandomCatImage as getRandomCatImageFromLib } from "@/shared/lib/basic";
+import { CAT_IMAGES, ELO_RATING } from "@/shared/lib/constants";
 /* =========================================================================
    SERVICE
    ========================================================================= */
@@ -10,14 +10,13 @@ import type { Team, TeamMatch, TournamentMode } from "@/shared/types";
 
 export class EloRating {
 	constructor(
-		public defaultRating: number = ELO_RATING.DEFAULT_RATING,
-		public kFactor: number = ELO_RATING.DEFAULT_K_FACTOR,
+		public defaultRating = ELO_RATING.DEFAULT_RATING,
+		public kFactor = ELO_RATING.DEFAULT_K_FACTOR,
 	) {}
 	getExpectedScore(ra: number, rb: number) {
 		return 1 / (1 + 10 ** ((rb - ra) / ELO_RATING.RATING_DIVISOR));
 	}
 	updateRating(r: number, exp: number, act: number, games = 0) {
-		// Double K-factor for new players (< 15 games) for faster convergence
 		const k = games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD ? this.kFactor * 2 : this.kFactor;
 		const updated = Math.round(r + k * (act - exp));
 		return Math.max(ELO_RATING.MIN_RATING, Math.min(ELO_RATING.MAX_RATING, updated));
@@ -49,107 +48,108 @@ export class EloRating {
 	}
 }
 
-const clampRating = (rating: number): number =>
-	Math.max(ELO_RATING.MIN_RATING, Math.min(ELO_RATING.MAX_RATING, rating));
+/* =========================================================================
+   PREFERENCE SORTER
+   ========================================================================= */
 
-export function resolveTournamentMode(selectedCount: number): TournamentMode {
-	return selectedCount >= 4 && selectedCount % 4 === 0 ? "2v2" : "1v1";
-}
+export class PreferenceSorter {
+	preferences = new Map<string, number>();
+	currentIndex = 0;
+	private matchHistory: string[] = [];
 
-function shuffleArray<T>(items: T[]): T[] {
-	const shuffled = [...items];
-	for (let i = shuffled.length - 1; i > 0; i -= 1) {
-		const j = Math.floor(Math.random() * (i + 1));
-		const temp = shuffled[i];
-		shuffled[i] = shuffled[j] as T;
-		shuffled[j] = temp as T;
-	}
-	return shuffled;
-}
+	// Total possible pairs is N * (N - 1) / 2
+	// We no longer store the `pairs` array to save memory (O(N^2) -> O(1))
+	constructor(public items: string[]) {}
 
-export function generateRandomTeams(participants: Array<{ id: string; name: string }>): Team[] {
-	const shuffled = shuffleArray(participants);
-	const teams: Team[] = [];
-
-	for (let i = 0; i + 1 < shuffled.length; i += 2) {
-		const first = shuffled[i];
-		const second = shuffled[i + 1];
-		if (!first || !second) {
-			continue;
-		}
-		teams.push({
-			id: `team-${teams.length + 1}`,
-			memberIds: [first.id, second.id],
-			memberNames: [first.name, second.name],
-		});
-	}
-
-	return teams;
-}
-
-export function buildTeamMatches(teams: Team[]): TeamMatch[] {
-	const matches: TeamMatch[] = [];
-	for (let i = 0; i < teams.length - 1; i += 1) {
-		for (let j = i + 1; j < teams.length; j += 1) {
-			const left = teams[i];
-			const right = teams[j];
-			if (!left || !right) {
-				continue;
+	/**
+	 * Calculates the pair indices (i, j) corresponding to the linear index k.
+	 * This avoids generating the O(N^2) pairs array.
+	 */
+	private getIndicesFromIndex(index: number, n: number) {
+		let current = index;
+		// Iterate through rows (i)
+		for (let i = 0; i < n - 1; i++) {
+			const pairsInRow = n - 1 - i;
+			if (current < pairsInRow) {
+				return { i, j: i + 1 + current };
 			}
-			matches.push({ leftTeamId: left.id, rightTeamId: right.id });
+			current -= pairsInRow;
 		}
+		return null; // Index out of bounds
 	}
-	return matches;
+
+	addPreference(a: string, b: string, val: number) {
+		const key = `${a}-${b}`;
+		this.preferences.set(key, val);
+		this.matchHistory.push(key);
+		this.currentIndex++;
+	}
+
+	undoLastPreference() {
+		const lastMatch = this.matchHistory.pop();
+		if (!lastMatch) {
+			return;
+		}
+		this.preferences.delete(lastMatch);
+		// Reset currentIndex to the number of remaining preferences so that
+		// getNextMatch() re-scans from the correct position after an undo.
+		this.currentIndex = this.matchHistory.length;
+	}
+
+	getNextMatch() {
+		// Calculate total pairs: N * (N - 1) / 2
+		const n = this.items.length;
+		const totalPairs = (n * (n - 1)) / 2;
+
+		if (n < 2) {
+			return null;
+		}
+
+		// We can optimize this loop by keeping track of i, j statefuly if needed,
+		// but since we usually just step forward, recalculating from currentIndex is fine
+		// unless currentIndex is very large, but the inner calculation is O(N) max.
+		// For N=1000, calculating indices is cheap.
+
+		// However, to iterate efficiently from currentIndex forward:
+		// We calculate initial (i, j) for currentIndex
+		const indices = this.getIndicesFromIndex(this.currentIndex, n);
+		if (!indices) {
+			return null;
+		}
+
+		let { i, j } = indices;
+
+		while (this.currentIndex < totalPairs) {
+			const a = this.items[i];
+			const b = this.items[j];
+
+			if (a && b) {
+				if (!this.preferences.has(`${a}-${b}`) && !this.preferences.has(`${b}-${a}`)) {
+					return { left: a, right: b };
+				}
+			}
+
+			// Advance to next pair
+			this.currentIndex++;
+			j++;
+			if (j >= n) {
+				i++;
+				j = i + 1;
+			}
+		}
+		return null;
+	}
 }
 
-export function applyTeamMatchElo({
-	elo,
-	ratings,
-	leftTeam,
-	rightTeam,
-	winnerSide,
-}: {
-	elo: EloRating;
-	ratings: Record<string, number>;
-	leftTeam: Team;
-	rightTeam: Team;
-	winnerSide: "left" | "right";
-}): Record<string, number> {
-	const leftRatings = leftTeam.memberIds.map((id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING);
-	const rightRatings = rightTeam.memberIds.map((id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING);
-	const leftAverage = leftRatings.reduce((sum, value) => sum + value, 0) / leftRatings.length;
-	const rightAverage = rightRatings.reduce((sum, value) => sum + value, 0) / rightRatings.length;
+/* =========================================================================
+   GENERAL UTILS
+   ========================================================================= */
 
-	const teamResult = elo.calculateNewRatings(leftAverage, rightAverage, winnerSide);
-	const leftDeltaPerMember = (teamResult.newRatingA - leftAverage) / leftTeam.memberIds.length;
-	const rightDeltaPerMember = (teamResult.newRatingB - rightAverage) / rightTeam.memberIds.length;
-
-	const nextRatings = { ...ratings };
-	for (const memberId of leftTeam.memberIds) {
-		const current = ratings[memberId] ?? ELO_RATING.DEFAULT_RATING;
-		nextRatings[memberId] = clampRating(Math.round(current + leftDeltaPerMember));
-	}
-	for (const memberId of rightTeam.memberIds) {
-		const current = ratings[memberId] ?? ELO_RATING.DEFAULT_RATING;
-		nextRatings[memberId] = clampRating(Math.round(current + rightDeltaPerMember));
-	}
-
-	return nextRatings;
+export function getRandomCatImage(
+	id?: string | number | null,
+	images: readonly string[] = CAT_IMAGES,
+): string {
+	return getRandomCatImageFromLib(id, images);
 }
 
-export function getBracketStageLabel(round: number, totalRounds: number): string {
-	const safeRound = Math.max(1, round);
-	const safeTotal = Math.max(1, totalRounds);
-	const remaining = safeTotal - safeRound;
-
-	if (remaining <= 0) {
-		return "Final";
-	}
-	if (remaining === 1) {
-		return "Semifinal";
-	}
-	if (remaining === 2) {
-		return "Quarterfinal";
-	}
-	return `Round ${safeRound}`;
-}
+export { CAT_IMAGES };

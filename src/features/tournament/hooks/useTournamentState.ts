@@ -1,44 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EloRating, PreferenceSorter } from "@/services/tournament";
 import { useToast } from "@/app/providers/Providers";
-import { EloRating, generateRandomTeams, resolveTournamentMode } from "@/services/tournament";
 import { useLocalStorage } from "@/shared/hooks";
-import type {
-	Match,
-	MatchRecord,
-	NameItem,
-	PersistentTournamentState,
-	TournamentMode,
-} from "@/shared/types";
-import {
-	calculateTournamentMetrics,
-	computeUpdatedRatings,
-	createIdToNameMap,
-	createMatchRecord,
-	createTeamsById,
-	deriveBracketState,
-	type HistoryEntry,
-	resolveCurrentMatch,
-} from "./tournamentEngine";
-import {
-	buildInitialRatings,
-	createBracketEntrants,
-	createDefaultPersistentState,
-	createNamesKey,
-	createTournamentId,
-	sanitizePersistentState,
-} from "./tournamentPersistence";
+import type { Match, MatchRecord, NameItem } from "@/shared/types";
 import { useAudioManager } from "./useHelpers";
 
-interface UseTournamentStateResult {
+export interface UseTournamentStateResult {
 	currentMatch: Match | null;
 	ratings: Record<string, number>;
 	round: number;
-	totalRounds: number;
-	bracketStage: string;
 	matchNumber: number;
 	totalMatches: number;
 	isComplete: boolean;
-	tournamentMode: TournamentMode;
 	handleVote: (winnerId: string, loserId: string) => void;
 	handleUndo: () => void;
 	canUndo: boolean;
@@ -47,32 +20,65 @@ interface UseTournamentStateResult {
 	etaMinutes: number;
 	isVoting: boolean;
 	handleVoteWithAnimation: (winnerId: string, loserId: string) => void;
-	matchHistory: MatchRecord[];
 }
 
 const VOTE_COOLDOWN = 300;
 
-function haveSameIds(a: string[], b: string[]): boolean {
-	if (a.length !== b.length) {
-		return false;
-	}
-	const left = [...a].sort();
-	const right = [...b].sort();
-	return left.every((id, index) => id === right[index]);
+interface HistoryEntry {
+	match: Match;
+	ratings: Record<string, number>;
+	round: number;
+	matchNumber: number;
+}
+
+interface PersistentTournamentState {
+	matchHistory: MatchRecord[];
+	currentRound: number;
+	currentMatch: number;
+	totalMatches: number;
+	userName: string;
+	lastUpdated: number;
+	namesKey: string;
+	ratings: Record<string, number>;
+}
+
+function createDefaultPersistentState(userName: string): PersistentTournamentState {
+	return {
+		matchHistory: [],
+		currentRound: 1,
+		currentMatch: 1,
+		totalMatches: 0,
+		userName: userName || "anonymous",
+		lastUpdated: Date.now(),
+		namesKey: "",
+		ratings: {},
+	};
 }
 
 export function useTournamentState(names: NameItem[], userName?: string): UseTournamentStateResult {
 	const toast = useToast();
 	const audioManager = useAudioManager();
 	const [isVoting, setIsVoting] = useState(false);
-	const [ratings, setRatings] = useState<Record<string, number>>({});
-	const [history, setHistory] = useState<HistoryEntry[]>([]);
-	const [refreshKey, setRefreshKey] = useState(0);
-	const [elo] = useState(() => new EloRating());
-	const tournamentMode = useMemo(() => resolveTournamentMode(names.length), [names.length]);
 
-	const namesKey = useMemo(() => createNamesKey(names), [names]);
-	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
+	const namesKey = useMemo(
+		() =>
+			names
+				.map((n) => n?.id || n?.name || "")
+				.filter(Boolean)
+				.sort()
+				.join(","),
+		[names],
+	);
+
+	// --- Persistence setup ---
+	const tournamentId = useMemo(() => {
+		const sortedNames = names
+			.map((n) => n.name || String(n.id))
+			.sort()
+			.join("-");
+		const prefix = userName || "anonymous";
+		return `tournament-${prefix}-${sortedNames}`;
+	}, [names, userName]);
 
 	const defaultPersistentState = useMemo(
 		() => createDefaultPersistentState(userName || "anonymous"),
@@ -85,11 +91,23 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		{ debounceWait: 1000 },
 	);
 
-	const persistentState = useMemo(
-		(): PersistentTournamentState =>
-			sanitizePersistentState(persistentStateRaw, userName || "anonymous"),
-		[persistentStateRaw, userName],
-	);
+	const persistentState = useMemo((): PersistentTournamentState => {
+		if (!persistentStateRaw || typeof persistentStateRaw !== "object" || Array.isArray(persistentStateRaw)) {
+			return createDefaultPersistentState(userName || "anonymous");
+		}
+
+		const merged = {
+			...createDefaultPersistentState(userName || "anonymous"),
+			...persistentStateRaw,
+		};
+
+		return {
+			...merged,
+			matchHistory: Array.isArray(merged.matchHistory) ? merged.matchHistory : [],
+			ratings: merged.ratings && typeof merged.ratings === "object" ? merged.ratings : {},
+			namesKey: typeof merged.namesKey === "string" ? merged.namesKey : "",
+		};
+	}, [persistentStateRaw, userName]);
 
 	const updatePersistentState = useCallback(
 		(
@@ -110,13 +128,15 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		[setPersistentState, userName],
 	);
 
-	const ratingsRef = useRef(ratings);
+	// --- In-memory state ---
+	const [ratings, setRatings] = useState<Record<string, number>>({});
+	const [history, setHistory] = useState<HistoryEntry[]>([]);
+	const sorter = useMemo(() => new PreferenceSorter(names.map((n) => String(n.id))), [names]);
+	const [elo] = useState(() => new EloRating());
+	const [_refreshKey, setRefreshKey] = useState(0);
+
 	const initializedRef = useRef(false);
 	const lastNamesKeyRef = useRef("");
-
-	useEffect(() => {
-		ratingsRef.current = ratings;
-	}, [ratings]);
 
 	useEffect(() => {
 		const isNewNames = lastNamesKeyRef.current !== namesKey;
@@ -133,104 +153,94 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			return;
 		}
 
-		const hasValidPersistence =
-			persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
-		const initialRatings = buildInitialRatings(names);
-
-		let teams = persistentState.teams;
-		if (tournamentMode === "2v2" && teams.length < 2) {
-			teams = generateRandomTeams(names.map((name) => ({ id: String(name.id), name: name.name })));
-		}
-
-		const participantIds =
-			tournamentMode === "2v2"
-				? teams.map((team) => team.id)
-				: names.map((name) => String(name.id));
-		const shouldResetBracket =
-			!hasValidPersistence ||
-			persistentState.bracketEntrants.length === 0 ||
-			!haveSameIds(
-				persistentState.bracketEntrants.filter((id) => !id.startsWith("__BYE__")),
-				participantIds,
-			);
-		const bracketEntrants = shouldResetBracket
-			? createBracketEntrants(participantIds)
-			: persistentState.bracketEntrants;
+		const hasValidPersistence = persistentState.namesKey === namesKey;
 
 		if (hasValidPersistence) {
+			if (sorter.currentIndex === 0 && persistentState.matchHistory.length > 0) {
+				persistentState.matchHistory.forEach((record) => {
+					if (record.winner && record.loser) {
+						sorter.addPreference(record.winner, record.loser, 1);
+					}
+				});
+			}
+
 			if (persistentState.ratings && Object.keys(persistentState.ratings).length > 0) {
 				setRatings(persistentState.ratings);
 			} else {
-				setRatings(initialRatings);
-			}
-
-			if (shouldResetBracket || (tournamentMode === "2v2" && teams !== persistentState.teams)) {
-				updatePersistentState({
-					matchHistory: shouldResetBracket ? [] : persistentState.matchHistory,
-					currentRound: 1,
-					currentMatch: 1,
-					totalMatches: Math.max(0, participantIds.length - 1),
-					ratings: shouldResetBracket ? initialRatings : persistentState.ratings,
-					teams,
-					bracketEntrants,
+				const initial: Record<string, number> = {};
+				names.forEach((name) => {
+					initial[name.id] = name.rating || 1500;
 				});
+				setRatings(initial);
 			}
 		} else {
-			setRatings(initialRatings);
+			const estimatedMatches = (names.length * (names.length - 1)) / 2;
+
+			const initial: Record<string, number> = {};
+			names.forEach((name) => {
+				initial[name.id] = name.rating || 1500;
+			});
+			setRatings(initial);
+
 			updatePersistentState({
 				matchHistory: [],
 				currentRound: 1,
 				currentMatch: 1,
-				totalMatches: Math.max(0, participantIds.length - 1),
+				totalMatches: estimatedMatches,
 				namesKey,
-				ratings: initialRatings,
-				mode: tournamentMode,
-				teams: tournamentMode === "2v2" ? teams : [],
-				teamMatches: [],
-				teamMatchIndex: 0,
-				bracketEntrants,
+				ratings: initial,
 			});
 		}
 
 		initializedRef.current = true;
 		setRefreshKey((k) => k + 1);
-	}, [namesKey, persistentState, names, updatePersistentState, tournamentMode]);
+	}, [namesKey, persistentState, sorter, names, updatePersistentState]);
 
-	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
-	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
-	const bracketDerived = useMemo(
-		() => deriveBracketState(persistentState.bracketEntrants, persistentState.matchHistory),
-		[persistentState.bracketEntrants, persistentState.matchHistory],
-	);
+	const ratingsRef = useRef(ratings);
+	useEffect(() => {
+		ratingsRef.current = ratings;
+	}, [ratings]);
 
 	const currentMatch = useMemo(() => {
-		void refreshKey;
-		return resolveCurrentMatch({
-			tournamentMode,
-			pendingMatchIds: bracketDerived.pendingMatchIds,
-			teamsById,
-			idToNameMap,
-		});
-	}, [refreshKey, idToNameMap, tournamentMode, bracketDerived.pendingMatchIds, teamsById]);
+		void _refreshKey;
+		const nextMatch = sorter.getNextMatch();
+		if (!nextMatch) {
+			return null;
+		}
 
-	const isComplete = bracketDerived.isComplete;
-	const metrics = useMemo(
-		() =>
-			calculateTournamentMetrics({
-				derived: bracketDerived,
-			}),
-		[bracketDerived],
-	);
-	const {
-		totalMatches,
-		matchNumber,
-		round,
-		totalRounds,
-		stageLabel,
-		roundSize,
-		progress,
-		etaMinutes,
-	} = metrics;
+		return {
+			left: names.find((n) => String(n.id) === nextMatch.left) || {
+				id: nextMatch.left,
+				name: nextMatch.left,
+			},
+			right: names.find((n) => String(n.id) === nextMatch.right) || {
+				id: nextMatch.right,
+				name: nextMatch.right,
+			},
+		} as Match;
+	}, [sorter, names, _refreshKey]);
+
+	const isComplete = currentMatch === null;
+	const totalPairs = (names.length * (names.length - 1)) / 2;
+	const completedMatches = persistentState.matchHistory.length;
+	const matchNumber = isComplete ? completedMatches : completedMatches + 1;
+	const roundMatchIndex = Math.max(1, matchNumber);
+	const round = Math.floor((roundMatchIndex - 1) / Math.max(1, names.length)) + 1;
+
+	const progress = useMemo(() => {
+		if (!totalPairs) {
+			return 0;
+		}
+		return Math.round((Math.min(completedMatches, totalPairs) / totalPairs) * 100);
+	}, [completedMatches, totalPairs]);
+
+	const etaMinutes = useMemo(() => {
+		if (!totalPairs || completedMatches >= totalPairs) {
+			return 0;
+		}
+		const remaining = totalPairs - completedMatches;
+		return Math.ceil((remaining * 3) / 60);
+	}, [completedMatches, totalPairs]);
 
 	const handleVote = useCallback(
 		(winnerId: string, loserId: string) => {
@@ -239,24 +249,33 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			}
 
 			const ratingsSnapshot = ratingsRef.current;
-			const newRatings = computeUpdatedRatings({
-				currentMatch,
-				tournamentMode,
-				elo,
-				ratingsSnapshot,
-				winnerId,
-				loserId,
-			});
+
+			const winnerRating = ratingsSnapshot[winnerId] || 1500;
+			const loserRating = ratingsSnapshot[loserId] || 1500;
+
+			const leftId = String(
+				typeof currentMatch.left === "object" ? currentMatch.left.id : currentMatch.left,
+			);
+			const outcome = winnerId === leftId ? "left" : "right";
+
+			const result = elo.calculateNewRatings(winnerRating, loserRating, outcome);
+			const newRatings = {
+				...ratingsSnapshot,
+				[winnerId]: result.newRatingA,
+				[loserId]: result.newRatingB,
+			};
 
 			setRatings(newRatings);
 
-			const matchRecord: MatchRecord = createMatchRecord({
-				currentMatch,
-				winnerId,
-				loserId,
+			const matchRecord: MatchRecord = {
+				match: currentMatch,
+				winner: winnerId,
+				loser: loserId,
+				voteType: "normal",
 				matchNumber,
-				round,
-			});
+				roundNumber: round,
+				timestamp: Date.now(),
+			};
 
 			setHistory((prev) => [
 				...prev,
@@ -271,13 +290,13 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			updatePersistentState((prev) => ({
 				matchHistory: [...(prev.matchHistory || []), matchRecord],
 				currentMatch: matchNumber + 1,
-				currentRound: round,
 				ratings: newRatings,
 			}));
 
+			sorter.addPreference(winnerId, loserId, 1);
 			setRefreshKey((k) => k + 1);
 		},
-		[currentMatch, elo, matchNumber, round, updatePersistentState, tournamentMode],
+		[currentMatch, elo, matchNumber, round, sorter, updatePersistentState],
 	);
 
 	const handleVoteWithAnimation = useCallback(
@@ -309,6 +328,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		audioManager.playUndoSound();
 		setRatings(lastEntry.ratings);
 		setHistory((prev) => prev.slice(0, -1));
+		sorter.undoLastPreference();
 		setRefreshKey((k) => k + 1);
 
 		updatePersistentState((prev) => {
@@ -316,14 +336,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			return {
 				matchHistory: newHistory,
 				currentMatch: Math.max(1, prev.currentMatch - 1),
-				currentRound: Math.max(
-					1,
-					prev.currentRound - (prev.currentMatch % roundSize === 0 ? 1 : 0),
-				),
 				ratings: lastEntry.ratings,
 			};
 		});
-	}, [audioManager, history, toast, updatePersistentState, roundSize]);
+	}, [audioManager, history, sorter, toast, updatePersistentState]);
 
 	const handleQuit = useCallback(() => {
 		updatePersistentState({
@@ -333,27 +349,17 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			totalMatches: 0,
 			namesKey: "",
 			ratings: {},
-			mode: "1v1",
-			teams: [],
-			teamMatches: [],
-			teamMatchIndex: 0,
-			bracketEntrants: [],
 		});
-		setHistory([]);
-		setRatings({});
-		setRefreshKey((key) => key + 1);
+		window.history.back();
 	}, [updatePersistentState]);
 
 	return {
 		currentMatch,
 		ratings,
 		round,
-		totalRounds,
-		bracketStage: stageLabel,
 		matchNumber,
-		totalMatches,
+		totalMatches: totalPairs,
 		isComplete,
-		tournamentMode,
 		handleVote,
 		handleUndo,
 		canUndo: history.length > 0,
@@ -362,6 +368,5 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		etaMinutes,
 		isVoting,
 		handleVoteWithAnimation,
-		matchHistory: persistentState.matchHistory,
 	};
 }
