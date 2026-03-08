@@ -167,3 +167,71 @@ These are React lifecycle/render methods and can be invoked implicitly by React,
 2. Remove or document `public/assets/images/gallery.json`.
 3. Delete unreferenced duplicate image variants (mostly `.webp`) after confirming no CDN/external usage.
 4. Prune `motion.css` keyframes that have no corresponding utility classes used in current components.
+
+## Third-Pass Scan (Tool-Assisted Expansion)
+
+This pass used additional analyzers to catch missed patterns:
+- `ts-prune` for potentially unused exports
+- `unimported` for unimported files/dependency hygiene
+- `depcheck` for dependency/package drift
+- `purgecss` for style-surface reduction signals
+
+### Tool Output Highlights
+
+1. `unimported` (with explicit entry points) found:
+   - 17 unimported files (mostly test files + bench file)
+   - 2 unused dependencies: `@types/cors`, `@types/express`
+
+2. `ts-prune` found many exported symbols from barrel files and generated types.
+   - Important caveat: it produced false positives under path aliases / runtime-loaded modules.
+   - Example false positive:
+     - `src/app/deployment.ts` was flagged, but is actually loaded by script tag in `index.html`:
+       - `<script type="module" src="/src/app/deployment.ts"></script>`
+
+3. `depcheck` JSON output:
+   - flagged dev dependencies:
+     - `@vitest/coverage-v8`, `autoprefixer`, `postcss`, `tailwindcss`
+   - Confidence is mixed:
+     - `@vitest/coverage-v8` appears unused in scripts (high confidence).
+     - `autoprefixer` / `postcss` may be consumed implicitly by Vite/PostCSS config (medium confidence).
+     - `tailwindcss` may be consumed by CSS import/toolchain even if static scan misses it (low-medium confidence).
+
+4. `purgecss` generated reduced CSS outputs, but no explicit rejected list suited for safe automated deletion.
+   - Good for directional signal only.
+   - Not safe as a direct deletion source because of dynamic class generation and framework utilities.
+
+### New Findings to Add (Post-Verification)
+
+1. `src/app/deployment.ts` is **not** unused
+   - Runtime-loaded from `index.html` via direct script tag.
+   - Keep it.
+
+2. `attached_assets/` content appears orphaned from app runtime
+   - Files currently present:
+     - `attached_assets/image_1772067120839.png`
+     - `attached_assets/image_1771898153808.png`
+     - `attached_assets/Pasted--Role-Objective-You-are-an-expert-full-stack-developer-_1771979042541.txt`
+   - No references found in source/docs/config.
+   - Treat as archival unless intentionally used outside repo runtime.
+
+3. Dependency hygiene candidates
+   - `@types/cors` and `@types/express` are in `dependencies` and not directly imported.
+   - Recommended action: move to `devDependencies` or remove if TypeScript compile remains clean.
+
+4. Coverage tooling candidate
+   - `@vitest/coverage-v8` not used by current npm scripts (`test:coverage` currently calls `vitest --coverage` without provider-specific config).
+   - Verify desired coverage provider before removal.
+
+### Confidence Matrix (Third Pass)
+
+High confidence:
+- `attached_assets/*` orphaned from runtime
+- `@types/cors`, `@types/express` should not be production dependencies
+
+Medium confidence:
+- `@vitest/coverage-v8` can be removed (if no intended provider lock-in)
+- `public/sw.js` and `public/assets/images/gallery.json` unused (no wiring found)
+
+Low/needs caution:
+- Any deletion based solely on `purgecss` output
+- `tailwindcss`, `postcss`, `autoprefixer` removal based only on `depcheck`
