@@ -119,10 +119,8 @@ export function NameSelectorGridSection({
 
 									<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 										<div className="flex flex-col gap-0.5">
-												<div className="flex items-center justify-between gap-2">
-													<span className={GRID_TITLE_CLASS}>
-														{nameItem.name}
-													</span>
+											<div className="flex items-center justify-between gap-2">
+												<span className={GRID_TITLE_CLASS}>{nameItem.name}</span>
 												{isSelected && (
 													<motion.div
 														initial={{ scale: 0, opacity: 0 }}
@@ -133,16 +131,12 @@ export function NameSelectorGridSection({
 													</motion.div>
 												)}
 											</div>
-												{nameItem.pronunciation && (
-													<span className={GRID_PRONUNCIATION_CLASS}>
-														[{nameItem.pronunciation}]
-													</span>
-												)}
-												{nameItem.description && (
-													<p className={GRID_DESCRIPTION_CLASS}>
-														{nameItem.description}
-													</p>
-												)}
+											{nameItem.pronunciation && (
+												<span className={GRID_PRONUNCIATION_CLASS}>[{nameItem.pronunciation}]</span>
+											)}
+											{nameItem.description && (
+												<p className={GRID_DESCRIPTION_CLASS}>{nameItem.description}</p>
+											)}
 										</div>
 									</div>
 
@@ -387,9 +381,7 @@ export function NameSelectorGridSection({
 													<div className="name-grid-card__overlay absolute inset-x-0 bottom-0 p-2 sm:p-3 flex flex-col justify-end pointer-events-none">
 														<div className="flex flex-col gap-0.5">
 															<div className="flex items-center justify-between gap-2">
-																<span className={GRID_TITLE_CLASS}>
-																	{nameItem.name}
-																</span>
+																<span className={GRID_TITLE_CLASS}>{nameItem.name}</span>
 																{isSelected && (
 																	<motion.div
 																		initial={{ scale: 0, opacity: 0 }}
@@ -400,16 +392,14 @@ export function NameSelectorGridSection({
 																	</motion.div>
 																)}
 															</div>
-																{nameItem.pronunciation && (
-																	<span className={GRID_PRONUNCIATION_CLASS}>
-																		[{nameItem.pronunciation}]
-																	</span>
-																)}
-																{nameItem.description && (
-																	<p className={GRID_DESCRIPTION_CLASS}>
-																		{nameItem.description}
-																	</p>
-																)}
+															{nameItem.pronunciation && (
+																<span className={GRID_PRONUNCIATION_CLASS}>
+																	[{nameItem.pronunciation}]
+																</span>
+															)}
+															{nameItem.description && (
+																<p className={GRID_DESCRIPTION_CLASS}>{nameItem.description}</p>
+															)}
 														</div>
 													</div>
 

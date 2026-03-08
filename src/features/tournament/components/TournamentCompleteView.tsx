@@ -29,7 +29,7 @@ export function TournamentCompleteView({
 					<div className="mb-6 flex justify-center">
 						<Trophy className="size-16 text-green-400" />
 					</div>
-					<h1 className="font-whimsical text-4xl text-foreground tracking-wide mb-4">
+					<h1 className="name-card-title name-card-title--hero text-foreground mb-4">
 						Tournament Complete!
 					</h1>
 					<p className="text-foreground/80 mb-6">

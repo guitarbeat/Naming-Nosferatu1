@@ -181,16 +181,16 @@ export function NameSelectorSwipeSection({
 												)}
 
 												<div className="name-swipe-card__overlay relative z-10 p-8 flex flex-col justify-end pointer-events-none">
-													<h3 className="font-whimsical text-4xl lg:text-5xl text-white tracking-wide drop-shadow-2xl break-words w-full">
+													<h3 className="name-card-title name-card-title--swipe break-words w-full">
 														{nameItem.name}
 														{nameItem.pronunciation && (
-															<span className="ml-3 text-amber-400 text-2xl lg:text-3xl font-bold italic opacity-90">
+															<span className="name-card-pronunciation name-card-pronunciation--swipe ml-3 opacity-90">
 																[{nameItem.pronunciation}]
 															</span>
 														)}
 													</h3>
 													{nameItem.description && (
-														<p className="text-white/85 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3">
+														<p className="name-card-description name-card-description--swipe mt-3 drop-shadow-sm line-clamp-3">
 															{nameItem.description}
 														</p>
 													)}

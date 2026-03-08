@@ -146,6 +146,58 @@
 	text-shadow: 0 1px 8px rgb(2 6 23 / 62%);
 }
 
+.name-card-title--grid {
+	font-size: 0.8125rem;
+}
+
+.name-card-pronunciation--grid {
+	font-size: 0.6875rem;
+	line-height: 1.2;
+}
+
+.name-card-description--grid {
+	font-size: 0.6875rem;
+	line-height: 1.35;
+}
+
+.name-card-title--swipe {
+	font-size: clamp(2rem, 3.2vw, 3rem);
+	letter-spacing: 0.02em;
+	text-shadow: 0 4px 20px rgb(2 6 23 / 75%);
+}
+
+.name-card-pronunciation--swipe {
+	font-size: clamp(1.15rem, 2vw, 1.8rem);
+	color: rgb(251 191 36 / 95%);
+}
+
+.name-card-description--swipe {
+	font-size: 0.95rem;
+	line-height: 1.55;
+	max-width: 32rem;
+}
+
+.name-card-title--match {
+	font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+	color: rgb(248 250 252);
+}
+
+.name-card-pronunciation--match {
+	font-size: clamp(1rem, 1.65vw, 1.25rem);
+	color: rgb(251 191 36 / 92%);
+}
+
+.name-card-description--match {
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	color: rgb(241 245 249 / 92%);
+}
+
+.name-card-title--hero {
+	font-size: clamp(2.2rem, 4vw, 3rem);
+	letter-spacing: 0.03em;
+}
+
 .name-swipe-card {
 	border-radius: 1.4rem;
 	border: 1px solid rgb(255 255 255 / 18%);
@@ -194,7 +246,18 @@
 }
 
 .name-swipe-card__surface {
-	background: color-mix(in srgb, var(--color-neutral-950) 25%, transparent);
+	background: transparent;
+}
+
+@media (width >= 640px) {
+	.name-card-title--grid {
+		font-size: 1rem;
+	}
+
+	.name-card-pronunciation--grid,
+	.name-card-description--grid {
+		font-size: 0.875rem;
+	}
 }
 
 /* ==========================================================================

@@ -128,7 +128,7 @@ export function TournamentMatchSideCard({
 							</div>
 						)}
 						<h3
-							className={`font-whimsical text-2xl sm:text-3xl text-foreground tracking-wide break-words drop-shadow-md leading-tight ${headingTextClass}`}
+							className={`name-card-title name-card-title--match break-words drop-shadow-md ${headingTextClass}`}
 						>
 							{name}
 						</h3>
@@ -147,7 +147,7 @@ export function TournamentMatchSideCard({
 					</div>
 					{pronunciation && (
 						<span
-							className={`${pronunciationClass} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}
+							className={`name-card-pronunciation name-card-pronunciation--match ${pronunciationClass} opacity-90`}
 						>
 							[{pronunciation}]
 						</span>
@@ -165,7 +165,7 @@ export function TournamentMatchSideCard({
 						</div>
 					) : description ? (
 						<p
-							className={`text-xs sm:text-sm text-foreground/90 italic line-clamp-2 mt-1 drop-shadow-sm ${overlayTextAlign}`}
+							className={`name-card-description name-card-description--match italic line-clamp-2 mt-1 drop-shadow-sm ${overlayTextAlign}`}
 						>
 							{description}
 						</p>
