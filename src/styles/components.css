@@ -582,30 +582,6 @@
 	}
 }
 
-.cat-background__sky,
-#sky {
-	position: absolute;
-	inset: 0;
-	width: 100vw;
-	height: 100vh;
-	overflow: hidden;
-	pointer-events: none;
-	z-index: var(--z-0);
-}
-
-.cat-background__star {
-	position: absolute;
-	color: color-mix(in srgb, var(--color-neutral-50) 95%, transparent);
-	font-family: Georgia, serif;
-	user-select: none;
-	will-change: transform, opacity, filter;
-	filter: blur(var(--twinkle-blur, 0));
-	opacity: var(--twinkle-alpha, 0.8);
-	transform: scale(var(--twinkle-scale, 1));
-	animation: twinkle var(--twinkle-duration, 3.2s) ease-in-out infinite;
-	animation-delay: var(--twinkle-delay, 0s);
-}
-
 /* ==========================================================================
    RANDOM GENERATOR
    ========================================================================== */
