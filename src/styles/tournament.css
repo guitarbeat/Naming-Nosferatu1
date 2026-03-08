@@ -59,6 +59,17 @@
 		inset 0 1px 0 rgb(255 255 255 / 20%);
 }
 
+.name-grid-card--resting {
+	border-color: rgb(255 255 255 / 15%);
+	background: color-mix(in srgb, var(--color-neutral-950) 60%, transparent);
+}
+
+.name-grid-card--resting:hover,
+.name-grid-card--resting:focus-visible {
+	border-color: rgb(255 255 255 / 34%);
+	background: color-mix(in srgb, var(--color-neutral-900) 62%, transparent);
+}
+
 .name-grid-card--selected::before {
 	background: linear-gradient(
 		145deg,
@@ -70,6 +81,8 @@
 }
 
 .name-grid-card--selected {
+	border-color: rgb(74 222 128 / 60%);
+	background: rgb(34 197 94 / 15%);
 	box-shadow:
 		0 26px 52px rgb(21 128 61 / 34%),
 		0 10px 24px rgb(2 6 23 / 54%),
@@ -157,6 +170,10 @@
 		rgb(2 6 23 / 0%) 100%
 	);
 	padding-top: 6rem;
+}
+
+.name-swipe-card__surface {
+	background: color-mix(in srgb, var(--color-neutral-950) 25%, transparent);
 }
 
 /* ==========================================================================

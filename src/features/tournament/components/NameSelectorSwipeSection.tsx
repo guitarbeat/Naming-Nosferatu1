@@ -157,7 +157,7 @@ export function NameSelectorSwipeSection({
 												</>
 											)}
 
-											<div className="relative w-full h-full flex flex-col justify-end bg-slate-950/25">
+											<div className="name-swipe-card__surface relative w-full h-full flex flex-col justify-end">
 												<CatImage
 													src={catImage}
 													alt={nameItem.name}

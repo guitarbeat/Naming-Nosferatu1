@@ -16,6 +16,11 @@ import {
 import type { IdType, NameItem } from "@/shared/types";
 import type { AdminActionRequest } from "./NameSelectorSwipeSection";
 
+const GRID_CARD_BASE_CLASS =
+	"mobile-readable-card name-grid-card relative rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
+const GRID_CARD_RESTING_CLASS = "name-grid-card--resting";
+const GRID_CARD_SELECTED_CLASS = "name-grid-card--selected ring-2 ring-primary/45";
+
 interface HiddenPanelController {
 	isCollapsed: boolean;
 	collapse: () => void;
@@ -94,10 +99,8 @@ export function NameSelectorGridSection({
 								whileHover={{ scale: 1.02 }}
 								whileTap={{ scale: 0.98 }}
 								transition={{ type: "spring", stiffness: 400, damping: 25 }}
-								className={`mobile-readable-card name-grid-card relative rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300 ${
-									isSelected
-										? "name-grid-card--selected border-primary/70 bg-primary/15 shadow-[0_18px_40px_rgba(34,197,94,0.26)] ring-2 ring-primary/45"
-										: "border-white/15 bg-slate-950/45 hover:border-white/35 hover:bg-slate-900/55 shadow-[0_12px_28px_rgba(2,6,23,0.5)]"
+								className={`${GRID_CARD_BASE_CLASS} ${
+									isSelected ? GRID_CARD_SELECTED_CLASS : GRID_CARD_RESTING_CLASS
 								} ${nameItem.lockedIn || nameItem.locked_in ? "opacity-75" : ""}`}
 							>
 								<div className="name-grid-card__media w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
@@ -363,10 +366,8 @@ export function NameSelectorGridSection({
 												}}
 												role="button"
 												tabIndex={0}
-												className={`mobile-readable-card name-grid-card relative rounded-xl sm:rounded-2xl border-2 transition-all overflow-hidden group transform hover:scale-105 active:scale-95 cursor-pointer ${
-													isSelected
-														? "name-grid-card--selected border-primary/70 bg-primary/15 shadow-[0_18px_40px_rgba(34,197,94,0.26)] ring-2 ring-primary/45"
-														: "border-white/15 bg-slate-950/45 hover:border-white/35 hover:bg-slate-900/55 shadow-[0_12px_28px_rgba(2,6,23,0.5)]"
+												className={`${GRID_CARD_BASE_CLASS} group transform hover:scale-105 active:scale-95 ${
+													isSelected ? GRID_CARD_SELECTED_CLASS : GRID_CARD_RESTING_CLASS
 												}`}
 											>
 												<div className="name-grid-card__media aspect-[5/4] sm:aspect-[4/3] w-full relative group/hidden">
