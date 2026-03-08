@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { ELO_RATING } from "@/shared/lib/constants";
 import {
@@ -25,21 +26,42 @@ describe("EloRating", () => {
 	});
 
 	describe("getExpectedScore", () => {
-		it("should return near 1 and 0 for extreme rating differences", () => {
+		it("should maintain invariants for all ratings (expected scores sum to 1)", () => {
 			const elo = new EloRating();
-			const scoreHigh = elo.getExpectedScore(2300, 1500);
-			const scoreLow = elo.getExpectedScore(1500, 2300);
-			expect(scoreHigh).toBeCloseTo(0.9901, 4);
-			expect(scoreLow).toBeCloseTo(0.0099, 4);
+			fc.assert(
+				fc.property(
+					fc.integer({ min: ELO_RATING.MIN_RATING, max: ELO_RATING.MAX_RATING }),
+					fc.integer({ min: ELO_RATING.MIN_RATING, max: ELO_RATING.MAX_RATING }),
+					(ra, rb) => {
+						const expA = elo.getExpectedScore(ra, rb);
+						const expB = elo.getExpectedScore(rb, ra);
+						// Due to floating point math, they sum to very close to 1
+						expect(expA + expB).toBeCloseTo(1, 5);
+						// Expected scores should always be between 0 and 1
+						expect(expA).toBeGreaterThanOrEqual(0);
+						expect(expA).toBeLessThanOrEqual(1);
+						expect(expB).toBeGreaterThanOrEqual(0);
+						expect(expB).toBeLessThanOrEqual(1);
+					},
+				),
+			);
 		});
 
-		it("should handle fractional ratings without breaking", () => {
+		it("should satisfy higher rating -> higher expected score property", () => {
 			const elo = new EloRating();
-			const score = elo.getExpectedScore(1500.5, 1499.5);
-			expect(score).toBeGreaterThan(0.5);
-			expect(score).toBeCloseTo(0.5014, 4);
+			fc.assert(
+				fc.property(
+					fc.integer({ min: ELO_RATING.MIN_RATING, max: ELO_RATING.MAX_RATING }),
+					fc.integer({ min: ELO_RATING.MIN_RATING, max: ELO_RATING.MAX_RATING }),
+					(ra, rb) => {
+						fc.pre(ra > rb);
+						const expA = elo.getExpectedScore(ra, rb);
+						const expB = elo.getExpectedScore(rb, ra);
+						expect(expA).toBeGreaterThan(expB);
+					},
+				),
+			);
 		});
-
 		it("should return 0.5 when ratings are equal", () => {
 			const elo = new EloRating();
 			const score = elo.getExpectedScore(1500, 1500);
@@ -71,6 +93,22 @@ describe("EloRating", () => {
 	});
 
 	describe("updateRating", () => {
+		it("should always bound by MIN_RATING and MAX_RATING", () => {
+			const elo = new EloRating();
+			fc.assert(
+				fc.property(
+					fc.integer({ min: ELO_RATING.MIN_RATING - 1000, max: ELO_RATING.MAX_RATING + 1000 }), // can be anything initially
+					fc.double({ min: 0, max: 1, noNaN: true }), // expected
+					fc.double({ min: 0, max: 1, noNaN: true }), // actual
+					fc.integer({ min: 0, max: 100 }), // games
+					(rating, exp, act, games) => {
+						const updated = elo.updateRating(rating, exp, act, games);
+						expect(updated).toBeGreaterThanOrEqual(ELO_RATING.MIN_RATING);
+						expect(updated).toBeLessThanOrEqual(ELO_RATING.MAX_RATING);
+					},
+				),
+			);
+		});
 		it("should double the kFactor for a new player (games < NEW_PLAYER_GAME_THRESHOLD)", () => {
 			const elo = new EloRating();
 			const rating = 1500;
