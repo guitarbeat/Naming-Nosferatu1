@@ -1,8 +1,6 @@
-import { rateLimit } from "express-rate-limit";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { type NextFunction, type Request, type Response, Router } from "express";
+import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
-import jwt from "jsonwebtoken";
 import { ZodError } from "zod";
 import {
 	catAppUsers,
@@ -13,13 +11,6 @@ import {
 } from "../shared/schema";
 import { requireAdmin } from "./auth";
 import { db } from "./db";
-
-const JWT_SECRET = process.env.JWT_SECRET || "default-dev-secret";
-const authRateLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000,
-	max: 100,
-	message: { error: "Too many requests, please try again later." },
-});
 
 import {
 	batchHideSchema,

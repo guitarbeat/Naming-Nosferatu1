@@ -332,3 +332,6 @@ export function useCollapsible(defaultValue = false, storageKey?: string): Colla
 
 	return { isCollapsed: value, toggle, collapse, expand, set };
 }
+
+export { useNameSuggestion } from "./useNameSuggestion";
+export { useNamesCache } from "./useNamesCache";

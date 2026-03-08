@@ -14,8 +14,15 @@ const { dbMocks } = vi.hoisted(() => {
 	const limitMock = vi.fn().mockResolvedValue([]);
 	const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
 	const groupByMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
-	const whereMock = vi.fn().mockReturnValue({ groupBy: groupByMock, orderBy: orderByMock, limit: limitMock });
-	const innerJoinMock = vi.fn().mockReturnValue({ groupBy: groupByMock, where: vi.fn().mockReturnValue({ groupBy: groupByMock, orderBy: orderByMock, limit: limitMock }) });
+	const whereMock = vi
+		.fn()
+		.mockReturnValue({ groupBy: groupByMock, orderBy: orderByMock, limit: limitMock });
+	const innerJoinMock = vi.fn().mockReturnValue({
+		groupBy: groupByMock,
+		where: vi
+			.fn()
+			.mockReturnValue({ groupBy: groupByMock, orderBy: orderByMock, limit: limitMock }),
+	});
 	const fromMock = vi.fn().mockReturnValue({
 		where: whereMock,
 		orderBy: orderByMock,

@@ -78,57 +78,11 @@ function InlineNameSuggestion() {
 							/>
 						</div>
 
-						<div className="grid gap-5">
-							<div className="flex flex-col gap-2">
-								<label htmlFor="suggest-name" className="text-sm font-semibold text-white/90">
-									Name suggestion <span className="text-rose-300">*</span>
-								</label>
-								<Input
-									id="suggest-name"
-									type="text"
-									value={values.name}
-									onChange={(e) => handleChange("name", e.target.value)}
-									placeholder="e.g. Count Whiskula"
-									className="w-full h-14 px-4 text-base font-semibold bg-white/5 border-white/20 focus-visible:ring-cyan-300/45"
-									disabled={isSubmitting}
-									maxLength={50}
-								/>
-							</div>
-
-							<div className="flex flex-col gap-2">
-								<div className="flex items-center justify-between gap-3">
-									<label
-										htmlFor="suggest-description"
-										className="text-sm font-semibold text-white/90"
-									>
-										Why this name? <span className="text-rose-300">*</span>
-									</label>
-									<span className="text-xs text-white/55">Help voters understand the vibe</span>
-								</div>
-								<Textarea
-									id="suggest-description"
-									value={values.description}
-									onChange={(e) => handleChange("description", e.target.value)}
-									placeholder="Share the meaning, story, or personality fit..."
-									rows={4}
-									className="w-full px-4 py-3 font-medium bg-white/5 border-white/20 focus-visible:ring-cyan-300/45 resize-none"
-									disabled={isSubmitting}
-									maxLength={500}
-									showCount={true}
-								/>
-							</div>
-
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-								<p className="text-xs sm:text-sm text-slate-300/80">
-									Your suggestion is added to the shared discovery pool.
-								</p>
-								<Button
-									type="submit"
-									variant="glass"
-									size="xl"
-									disabled={!values.name.trim() || !values.description.trim() || isSubmitting}
-									loading={isSubmitting}
-									className="w-full sm:w-auto sm:min-w-[190px] font-extrabold"
+						<div className="flex flex-col gap-2">
+							<div className="flex items-center justify-between gap-3">
+								<label
+									htmlFor="suggest-description"
+									className="text-sm font-semibold text-foreground/90"
 								>
 									Why this name? <span className="text-destructive">*</span>
 								</label>
