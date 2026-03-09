@@ -1,0 +1,190 @@
+/**
+ * @file background.css
+ * @description Cat background effects: gradient, moiré, blur, vignette, stars
+ */
+
+.cat-background {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-negative);
+	overflow: hidden;
+	pointer-events: none;
+	background: var(--color-neutral-900);
+}
+
+.cat-background__gradient {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(
+			circle at 50% 120%,
+			color-mix(in srgb, var(--color-neutral-50) 5%, transparent) 0%,
+			transparent 60%
+		),
+		radial-gradient(
+			circle at 80% 0%,
+			color-mix(in srgb, var(--color-info) 25%, transparent) 0%,
+			transparent 50%
+		),
+		radial-gradient(
+			circle at 20% -10%,
+			color-mix(in srgb, var(--color-hot-pink) 25%, transparent) 0%,
+			transparent 45%
+		),
+		linear-gradient(
+			to bottom,
+			var(--color-neutral-900) 0%,
+			var(--color-neutral-900) 30%,
+			var(--color-neutral-900) 60%,
+			var(--color-neutral-900) 100%
+		);
+	background-attachment: fixed;
+	color: var(--color-neutral-50);
+}
+
+.cat-background__moire {
+	position: absolute;
+	inset: -12%;
+	background-image:
+		repeating-radial-gradient(
+			circle at 50% 50%,
+			color-mix(in srgb, var(--color-neon-cyan) 32%, transparent) 0 1px,
+			transparent 1px 14px
+		),
+		repeating-linear-gradient(
+			115deg,
+			color-mix(in srgb, var(--color-hot-pink) 22%, transparent) 0 1px,
+			transparent 1px 18px
+		);
+	mix-blend-mode: soft-light;
+	opacity: var(--pw-fx-moire-opacity);
+	transform: translate3d(0, 0, 0) scale(var(--pw-fx-moire-scale));
+	animation: moire-drift var(--pw-fx-moire-duration) linear infinite alternate;
+	will-change: transform, opacity;
+}
+
+.cat-background__soft-blur {
+	position: absolute;
+	inset: -16%;
+	background:
+		radial-gradient(
+			circle at 30% 18%,
+			color-mix(in srgb, hsl(var(--pw-sage-hsl)) 34%, transparent) 0%,
+			transparent 52%
+		),
+		radial-gradient(
+			circle at 76% 14%,
+			color-mix(in srgb, hsl(var(--pw-coral-hsl)) 30%, transparent) 0%,
+			transparent 56%
+		),
+		radial-gradient(
+			circle at 56% 104%,
+			color-mix(in srgb, hsl(var(--pw-info-hsl)) 24%, transparent) 0%,
+			transparent 56%
+		);
+	filter: blur(var(--pw-fx-blur-radius)) saturate(var(--pw-fx-blur-saturation));
+	opacity: var(--pw-fx-blur-opacity);
+	mix-blend-mode: screen;
+	animation: soft-blur-float var(--pw-fx-blur-duration) ease-in-out infinite;
+	will-change: transform, opacity;
+}
+
+.cat-background__vignette {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		circle at center,
+		transparent var(--pw-fx-vignette-inner-stop),
+		rgb(var(--pw-fx-vignette-mid-rgb) / var(--pw-fx-vignette-mid-alpha))
+			var(--pw-fx-vignette-mid-stop),
+		rgb(var(--pw-fx-vignette-outer-rgb) / var(--pw-fx-vignette-outer-alpha))
+			var(--pw-fx-vignette-outer-stop)
+	);
+}
+
+@keyframes moire-drift {
+	0% {
+		transform: translate3d(-2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.02)) rotate(-0.2deg);
+	}
+	50% {
+		transform: translate3d(1%, 2%, 0) scale(calc(var(--pw-fx-moire-scale) + 0.02)) rotate(0.2deg);
+	}
+	100% {
+		transform: translate3d(2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.01)) rotate(-0.1deg);
+	}
+}
+
+@keyframes soft-blur-float {
+	0%,
+	100% {
+		transform: translate3d(-1.5%, -1%, 0) scale(var(--pw-fx-blur-scale-base));
+		opacity: calc(var(--pw-fx-blur-opacity) - 0.04);
+	}
+	50% {
+		transform: translate3d(1.5%, 2%, 0) scale(var(--pw-fx-blur-scale-peak));
+		opacity: calc(var(--pw-fx-blur-opacity) + 0.08);
+	}
+}
+
+@media (width <= 768px) {
+	.cat-background__gradient {
+		background-attachment: scroll;
+	}
+
+	.cat-background__moire {
+		opacity: var(--pw-fx-moire-opacity-mobile);
+	}
+
+	.cat-background__soft-blur {
+		opacity: var(--pw-fx-blur-opacity-mobile);
+		filter: blur(var(--pw-fx-blur-radius-mobile)) saturate(var(--pw-fx-blur-saturation-mobile));
+	}
+}
+
+:root[data-theme="light"] .cat-background__moire {
+	mix-blend-mode: multiply;
+}
+
+:root[data-theme="light"] .cat-background__soft-blur {
+	mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cat-background__moire,
+	.cat-background__soft-blur {
+		animation: none;
+		transform: none;
+	}
+
+	.cat-background__moire {
+		opacity: var(--pw-fx-moire-opacity-reduced);
+	}
+
+	.cat-background__soft-blur {
+		opacity: var(--pw-fx-blur-opacity-reduced);
+	}
+}
+
+.cat-background__sky,
+#sky {
+	position: absolute;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: var(--z-0);
+}
+
+.cat-background__star {
+	position: absolute;
+	color: color-mix(in srgb, var(--color-neutral-50) 95%, transparent);
+	font-family: Georgia, serif;
+	user-select: none;
+	will-change: transform, opacity, filter;
+	filter: blur(var(--twinkle-blur, 0));
+	opacity: var(--twinkle-alpha, 0.8);
+	transform: scale(var(--twinkle-scale, 1));
+	animation: twinkle var(--twinkle-duration, 3.2s) ease-in-out infinite;
+	animation-delay: var(--twinkle-delay, 0s);
+}

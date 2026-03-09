@@ -6,7 +6,7 @@
    3. Reset (normalize + scrollbars + focus)
    4. Typography utilities
    5. Layout primitives & responsive
-   6. Component styles
+   6. Component styles (modular)
    7. Motion & animation system
    8. Glass morphism effects
 */
@@ -16,6 +16,10 @@
 @import "./reset.css";
 @import "./typography.css";
 @import "./layout.css";
+@import "./badges.css";
+@import "./indicators.css";
+@import "./background.css";
 @import "./components.css";
+@import "./toolbar.css";
 @import "./motion.css";
 @import "./liquid-glass.css";

@@ -1,0 +1,96 @@
+/**
+ * @file indicators.css
+ * @description Trend indicators and offline/online status indicators
+ */
+
+/* ==========================================================================
+   TREND INDICATORS
+   ========================================================================== */
+
+.trend-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-medium);
+	padding: var(--space-1);
+	border-radius: var(--radius-sm);
+	transition: var(--transition-base);
+	white-space: nowrap;
+}
+
+.trend-icon {
+	font-size: 1em;
+	line-height: 1;
+}
+
+.trend-value {
+	font-size: 0.8em;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+
+@media (width <= 768px) {
+	.trend-indicator {
+		font-size: var(--text-xs);
+		padding: var(--space-1);
+	}
+
+	.trend-icon {
+		font-size: 0.9em;
+	}
+	.trend-value {
+		font-size: 0.75em;
+	}
+}
+
+/* ==========================================================================
+   OFFLINE / ONLINE INDICATOR
+   ========================================================================== */
+
+.indicator {
+	position: fixed;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: var(--z-sticky);
+	padding: var(--space-3) var(--space-6);
+	border-radius: var(--radius-md);
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-medium);
+	box-shadow: var(--shadow-md);
+	transition: var(--transition-base);
+	max-width: 90vw;
+}
+
+.indicator-content {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.indicator-dot {
+	width: var(--space-2);
+	height: var(--space-2);
+	border-radius: var(--radius-full);
+	flex-shrink: 0;
+}
+
+.indicator-message {
+	white-space: nowrap;
+}
+.indicator.offline .indicator-dot {
+	background: var(--color-error);
+}
+.indicator.online .indicator-dot {
+	background: var(--color-success);
+}
+.indicator.slow .indicator-dot {
+	background: var(--color-warning);
+}
+
+@media (max-width: 640px) {
+	.indicator {
+		font-size: var(--text-xs);
+		padding: var(--space-2) var(--space-4);
+	}
+}
