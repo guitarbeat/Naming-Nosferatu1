@@ -1,10 +1,6 @@
 /**
  * @file components.css
- * @description Core UI component styles. Specialized styles are split into:
- *   - badges.css (performance badges)
- *   - indicators.css (trend + offline indicators)
- *   - background.css (cat background effects)
- *   - toolbar.css (tournament toolbar + toolbar utilities)
+ * @description Core UI component styles (nav, scroll-to-top, random generator, locked name tooltip)
  */
 
 /* ==========================================================================
@@ -35,67 +31,8 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 }
 
 /* ==========================================================================
-   EMPTY STATE
+   SCROLL TO TOP
    ========================================================================== */
-
-.empty-state {
-	background: var(--glass-bg-light);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-lg);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: var(--space-12) var(--space-6);
-	text-align: center;
-	border-style: dashed;
-	color: var(--text-secondary);
-	min-height: var(--space-50);
-}
-
-.empty-state__icon {
-	font-size: var(--text-3xl);
-	margin-bottom: var(--space-4);
-	opacity: 0.8;
-	animation: float var(--duration-slower) var(--ease-in-out-expo) infinite;
-}
-
-.empty-state__title {
-	font-size: var(--text-xl);
-	font-weight: var(--font-weight-semibold);
-	background: linear-gradient(
-		120deg,
-		var(--pw-heading-gradient-from, var(--primary-color)),
-		var(--pw-heading-gradient-to, var(--accent-color))
-	);
-	background-clip: text;
-	-webkit-background-clip: text;
-	color: transparent;
-	margin-bottom: var(--space-2);
-}
-
-.empty-state__description {
-	font-size: var(--text-base);
-	max-width: var(--max-width-content);
-	margin-bottom: var(--space-6);
-	line-height: var(--leading-normal);
-}
-
-.empty-state__actions {
-	display: flex;
-	gap: var(--space-4);
-}
-
-/* ==========================================================================
-   BUTTON COMPONENTS
-   ========================================================================== */
-
-.btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
 
 .scroll-to-top {
 	position: fixed;
@@ -120,133 +57,6 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 	color: var(--white-rgb);
 	background: linear-gradient(45deg, var(--color-neon-cyan), var(--color-hot-pink));
 	border: var(--button-border-width) solid transparent;
-}
-
-/* ==========================================================================
-   CARD COMPONENTS
-   ========================================================================== */
-
-.card {
-	display: block;
-	padding: var(--card-padding-md);
-	background: var(--surface-color);
-	border: var(--card-border-width) solid var(--border-color);
-	border-radius: var(--card-border-radius);
-	transition: all var(--duration-normal) var(--ease-standard);
-	position: relative;
-	overflow: hidden;
-}
-
-.card:focus-visible {
-	outline: 2px solid var(--color-neon-cyan);
-	outline-offset: 2px;
-}
-
-.card__media img {
-	width: 100%;
-	height: auto;
-	display: block;
-}
-
-@media (width <= 640px) {
-	.card {
-		padding: var(--card-padding-sm);
-	}
-	.card__header {
-		padding: var(--space-2);
-	}
-}
-
-@media (width <= 480px) {
-	.card--xs,
-	.card--sm,
-	.card--md,
-	.card--lg {
-		padding: var(--space-2);
-	}
-}
-
-/* ==========================================================================
-   FORM COMPONENTS
-   ========================================================================== */
-
-.form {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-4);
-	width: 100%;
-}
-
-.form-checkbox,
-.form-checkbox-wrapper,
-.form-checkbox-label {
-	display: flex;
-	align-items: center;
-}
-
-.form-file input[type="file"] {
-	display: none;
-}
-
-/* ==========================================================================
-   ANALYSIS MODE COMPONENTS
-   ========================================================================== */
-
-.analysis-panel-toolbar .filtersContainer {
-	padding: var(--analysis-gap-md, 12px) var(--analysis-gap-lg, 16px);
-	padding-bottom: var(--analysis-gap-sm, 8px);
-	margin: 0;
-	background: var(
-		--analysis-surface-elevated,
-		color-mix(in srgb, var(--color-neutral-50) 3%, transparent)
-	);
-	border: none;
-	border-bottom: var(--card-border-width) solid
-		var(--analysis-border, color-mix(in srgb, var(--color-neutral-50) 8%, transparent));
-	border-radius: 0;
-	backdrop-filter: none;
-}
-
-.analysis-panel:has(.analysis-panel-toolbar) .collapsible-content .collapsible-content-inner {
-	padding-top: var(--analysis-gap-md, 12px);
-}
-
-.analysis-panel-toolbar .filtersContainer .resultsCount {
-	margin-bottom: var(--analysis-gap-sm, 8px);
-}
-
-.analysis-panel-toolbar .filtersContainer .filterRow {
-	margin-bottom: 0;
-}
-
-.analysis-panel > .collapsible-content {
-	padding: 0;
-	margin: 0;
-}
-
-.analysis-panel > .analysis-dashboard-content,
-.analysis-panel > .top-names-list,
-.analysis-panel
-	> *:not(
-		.collapsible-header,
-		.analysis-header,
-		.collapsible-content,
-		.analysis-dashboard-content,
-		.top-names-list,
-		.admin-analytics-table-container,
-		.collapsible-content-inner
-	) {
-	opacity: 1;
-}
-
-.analysis-btn span[aria-hidden="true"] {
-	font-size: 1em;
-	line-height: 1;
-}
-
-.analysis-input,
-.analysis-input:focus {
-	border-color: var(--analysis-border-accent);
 }
 
 /* ==========================================================================
