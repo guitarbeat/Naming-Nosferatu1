@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { coreAPI } from "@/services/supabase/client";
+import { coreAPI } from "@/services/supabase/api";
 
 interface UseNameSuggestionProps {
 	onSuccess?: () => void;

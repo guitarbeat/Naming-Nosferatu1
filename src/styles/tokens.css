@@ -11,39 +11,40 @@
    ========================================================================== */
 
 :root {
-	--background: hsl(0deg 0% 100%);
-	--foreground: hsl(0deg 0% 0%);
-	--card: hsl(0deg 0% 100%);
-	--card-foreground: hsl(0deg 0% 0%);
-	--popover: hsl(0deg 0% 100%);
-	--popover-foreground: hsl(0deg 0% 0%);
-	--primary: hsl(0deg 0% 0%);
-	--primary-foreground: hsl(0deg 0% 100%);
-	--secondary: hsl(0deg 0% 96%);
-	--secondary-foreground: hsl(0deg 0% 0%);
-	--muted: hsl(0deg 0% 96%);
-	--muted-foreground: hsl(0deg 0% 45%);
-	--accent: hsl(0deg 0% 90%);
-	--accent-foreground: hsl(0deg 0% 0%);
+	/* Dark-first semantic tokens aligned with the neon liquid theme. */
+	--background: hsl(222deg 84% 5%);
+	--foreground: hsl(210deg 40% 98%);
+	--card: hsl(222deg 47% 11%);
+	--card-foreground: hsl(210deg 40% 98%);
+	--popover: hsl(222deg 47% 11%);
+	--popover-foreground: hsl(210deg 40% 98%);
+	--primary: hsl(190deg 100% 50%);
+	--primary-foreground: hsl(222deg 84% 5%);
+	--secondary: hsl(217deg 33% 17%);
+	--secondary-foreground: hsl(210deg 40% 98%);
+	--muted: hsl(217deg 33% 14%);
+	--muted-foreground: hsl(215deg 20% 72%);
+	--accent: hsl(217deg 33% 20%);
+	--accent-foreground: hsl(210deg 40% 98%);
 	--destructive: hsl(0deg 84% 60%);
 	--destructive-foreground: hsl(0deg 0% 98%);
-	--border: hsl(0deg 0% 0%);
-	--input: hsl(0deg 0% 0%);
-	--ring: hsl(0deg 0% 0%);
+	--border: hsl(215deg 28% 28%);
+	--input: hsl(215deg 28% 28%);
+	--ring: hsl(190deg 100% 50%);
 	--chart-1: hsl(12deg 76% 61%);
 	--chart-2: hsl(173deg 58% 39%);
 	--chart-3: hsl(197deg 37% 24%);
 	--chart-4: hsl(43deg 74% 66%);
 	--chart-5: hsl(27deg 87% 67%);
 	--accent-color: hsl(190deg 100% 50%);
-	--navbar: hsl(0deg 0% 98%);
-	--navbar-foreground: hsl(0deg 0% 0%);
-	--navbar-primary: hsl(0deg 0% 0%);
-	--navbar-primary-foreground: hsl(0deg 0% 100%);
-	--navbar-accent: hsl(0deg 0% 90%);
-	--navbar-accent-foreground: hsl(0deg 0% 0%);
-	--navbar-border: hsl(0deg 0% 0%);
-	--navbar-ring: hsl(0deg 0% 0%);
+	--navbar: hsl(222deg 47% 11%);
+	--navbar-foreground: hsl(210deg 40% 98%);
+	--navbar-primary: hsl(190deg 100% 50%);
+	--navbar-primary-foreground: hsl(222deg 84% 5%);
+	--navbar-accent: hsl(217deg 33% 20%);
+	--navbar-accent-foreground: hsl(210deg 40% 98%);
+	--navbar-border: hsl(215deg 28% 28%);
+	--navbar-ring: hsl(190deg 100% 50%);
 	--font-sans:
 		"Space Grotesk", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
 		roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif;

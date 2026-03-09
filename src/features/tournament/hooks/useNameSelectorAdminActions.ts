@@ -72,14 +72,9 @@ export function useNameSelectorAdminActions({
 			});
 
 			try {
-				await withSupabase(async (_client) => {
+				await withSupabase(async (client) => {
 					try {
-						const client = await (
-							await import("@/services/supabase/client")
-						).resolveSupabaseClient();
-						if (client) {
-							await client.rpc("set_user_context", { user_name_param: userName.trim() });
-						}
+						await client.rpc("set_user_context", { user_name_param: userName.trim() });
 					} catch {
 						/* ignore */
 					}

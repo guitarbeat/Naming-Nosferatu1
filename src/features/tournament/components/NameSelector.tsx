@@ -13,7 +13,7 @@ import { coreAPI } from "@/services/supabase/api";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
-import { Loading } from "@/shared/components/layout/Feedback";
+import { Loading } from "@/shared/components/layout/Feedback/Loading";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible, useNamesCache } from "@/shared/hooks";
 import { getRandomCatImage } from "@/shared/lib/basic";

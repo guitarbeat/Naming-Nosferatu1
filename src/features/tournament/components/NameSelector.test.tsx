@@ -85,7 +85,7 @@ vi.mock("@/shared/components/layout/Button", () => ({
 	default: ({ children, ...props }: any) => <button {...props}>{children}</button>,
 }));
 
-vi.mock("@/shared/components/layout/Feedback", () => ({
+vi.mock("@/shared/components/layout/Feedback/Loading", () => ({
 	Loading: () => <div>Loading...</div>,
 }));
 

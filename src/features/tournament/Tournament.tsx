@@ -10,7 +10,7 @@ import {
 	type HeatLevel,
 	STREAK_THRESHOLDS,
 } from "@/features/tournament/lib/tournamentUi";
-import { ErrorComponent } from "@/shared/components/layout/Feedback";
+import { ErrorComponent } from "@/shared/components/layout/Feedback/ErrorBoundary";
 import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import type { NameItem, TournamentProps } from "@/shared/types";

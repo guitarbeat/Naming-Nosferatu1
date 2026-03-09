@@ -9,7 +9,7 @@ import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/services/supabas
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
-import { Loading } from "@/shared/components/layout/Feedback";
+import { Loading } from "@/shared/components/layout/Feedback/Loading";
 import { Input } from "@/shared/components/layout/FormPrimitives";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
 import type { NameItem } from "@/shared/types";
