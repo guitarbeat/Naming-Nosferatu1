@@ -19,7 +19,9 @@ import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
+import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
+
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 
@@ -36,16 +38,6 @@ interface NameWithStats extends NameItem {
 	votes?: number;
 	lastVoted?: string;
 	popularityScore?: number;
-}
-
-function isRpcSignatureError(message: string): boolean {
-	const normalized = message.toLowerCase();
-	return (
-		normalized.includes("function") &&
-		(normalized.includes("does not exist") ||
-			normalized.includes("no function matches") ||
-			normalized.includes("could not find"))
-	);
 }
 
 function toTimestamp(value: unknown): number {
