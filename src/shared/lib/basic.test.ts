@@ -1,5 +1,58 @@
 import { describe, expect, it } from "vitest";
-import { calculatePercentile } from "./basic";
+import type { NameItem } from "@/shared/types";
+import { calculatePercentile, getVisibleNames } from "./basic";
+
+describe("getVisibleNames", () => {
+	it("returns an empty array when input is null or undefined", () => {
+		expect(getVisibleNames(null)).toEqual([]);
+		expect(getVisibleNames(undefined)).toEqual([]);
+	});
+
+	it("returns an empty array when input is not an array", () => {
+		// @ts-expect-error Testing invalid runtime inputs
+		expect(getVisibleNames("not an array")).toEqual([]);
+		// @ts-expect-error Testing invalid runtime inputs
+		expect(getVisibleNames({ length: 5 })).toEqual([]);
+	});
+
+	it("returns all items when none are hidden", () => {
+		const names = [
+			{ id: 1, name: "Mittens" },
+			{ id: 2, name: "Socks", isHidden: false },
+			{ id: 3, name: "Luna", is_hidden: false },
+			{ id: 4, name: "Bella", isHidden: undefined, is_hidden: null },
+		] as unknown as NameItem[];
+		expect(getVisibleNames(names)).toEqual(names);
+	});
+
+	it("filters out items where isHidden is true", () => {
+		const names = [
+			{ id: 1, name: "Mittens", isHidden: true },
+			{ id: 2, name: "Socks", isHidden: false },
+		] as unknown as NameItem[];
+		expect(getVisibleNames(names)).toEqual([{ id: 2, name: "Socks", isHidden: false }]);
+	});
+
+	it("filters out items where is_hidden is true", () => {
+		const names = [
+			{ id: 1, name: "Mittens", is_hidden: true },
+			{ id: 2, name: "Socks", is_hidden: false },
+		] as unknown as NameItem[];
+		expect(getVisibleNames(names)).toEqual([{ id: 2, name: "Socks", is_hidden: false }]);
+	});
+
+	it("filters out items when either hidden flag is true", () => {
+		const names = [
+			{ id: 1, name: "Mittens", isHidden: true, is_hidden: false },
+			{ id: 2, name: "Socks", isHidden: false, is_hidden: true },
+			{ id: 3, name: "Luna", isHidden: true, is_hidden: true },
+			{ id: 4, name: "Bella", isHidden: false, is_hidden: false },
+		] as unknown as NameItem[];
+		expect(getVisibleNames(names)).toEqual([
+			{ id: 4, name: "Bella", isHidden: false, is_hidden: false },
+		]);
+	});
+});
 
 describe("calculatePercentile", () => {
 	describe("Higher is better (default)", () => {
