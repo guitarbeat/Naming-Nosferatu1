@@ -121,7 +121,6 @@ export function categorizeErrors(errors: BuildError[]): Map<string, BuildError[]
  * @returns Error category string
  */
 function getErrorCategory(code: string): string {
-	// Common TypeScript error code ranges
 	// Module resolution errors (TS27xx and some TS23xx)
 	if (code === "TS2307" || code === "TS2792" || code.startsWith("TS27")) {
 		return "module_resolution";

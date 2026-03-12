@@ -1,5 +1,18 @@
 # Bolt's Journal
 
+## 2026-03-12 - [Code Quality & Documentation Improvements]
+
+**Actions Taken:**
+- Removed unused Capacitor dependencies (@capacitor/android, @capacitor/cli, @capacitor/core, @capacitor/ios)
+- Removed unused dev dependency (@dyad-sh/react-vite-component-tagger)
+- Cleaned up redundant comments in integration service files
+- Added TODO for reference file tracking in rollback functionality
+- Updated DEPLOYMENT.md with admin role detection documentation
+- Added 14-day activity trend feature documentation
+- Documented platform support changes (web-first, removed native mobile)
+
+**Learning:** Regular dependency audits prevent bloat. Use `pnpm run check:deps` to identify unused packages. Comments should add value - remove redundant ones, convert implementation notes to TODOs.
+
 ## 2024-05-22 - [Refactoring useMagneticPull]
 
 **Learning:** React effects that add/remove global event listeners (like on `document`) based on rapidly changing state (like `isProcessing`) cause unnecessary overhead and layout thrashing.

@@ -492,13 +492,11 @@ export class IntegrationOrchestrator {
 	): Promise<void> {
 		const sourceDir = join(this.projectRoot, this.config.sourceDirectory);
 
-		// Check if source directory still exists
 		if (!directoryExists(sourceDir)) {
 			console.log("Source directory already removed");
 			return;
 		}
 
-		// Check if all reference files were successfully processed and deleted
 		const allFilesDeleted = referenceFiles.every((filePath) => !fileExists(filePath));
 
 		if (!allFilesDeleted) {
@@ -506,7 +504,6 @@ export class IntegrationOrchestrator {
 			return;
 		}
 
-		// Check if directory is empty (no remaining files)
 		try {
 			const remainingFiles = readdirSync(sourceDir);
 
@@ -517,7 +514,6 @@ export class IntegrationOrchestrator {
 				return;
 			}
 
-			// Directory is empty and all reference files were processed - safe to delete
 			console.log("\nCleaning up source directory...");
 			deleteDirectory(sourceDir);
 			console.log(`Successfully removed directory: ${this.config.sourceDirectory}`);
@@ -613,13 +609,10 @@ export class IntegrationOrchestrator {
 
 		console.log(`Rolling back ${state.backups.length} file modifications...`);
 
-		// Get list of deleted reference files (completed files that were deleted)
+		// TODO: Track deleted reference files and their content before deletion
+		// Currently we only restore from backups, not deleted reference files
 		const deletedReferenceFiles = new Map<string, string>();
 
-		// Note: In a real implementation, we would need to track deleted reference files
-		// and their content before deletion. For now, we'll work with what we have.
-
-		// Perform rollback
 		const result = rollback(state.backups, deletedReferenceFiles);
 
 		// Log results
