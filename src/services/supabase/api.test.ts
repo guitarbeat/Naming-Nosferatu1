@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/services/apiClient";
-import { coreAPI } from "./api";
+import { coreAPI, statsAPI } from "./api";
 import { resolveSupabaseClient } from "./runtime";
 
 // Mock dependencies
@@ -125,6 +125,51 @@ describe("Supabase Service API", () => {
 		});
 	});
 
+	describe("coreAPI.getTrendingNamesResult", () => {
+		it("should preserve a valid empty Supabase result without masking it as an error", async () => {
+			const mockQuery = {
+				select: vi.fn().mockReturnThis(),
+				eq: vi.fn().mockReturnThis(),
+				order: vi.fn().mockReturnThis(),
+				limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+			};
+			const mockClient = {
+				from: vi.fn().mockReturnValue(mockQuery),
+			};
+			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+
+			const result = await coreAPI.getTrendingNamesResult(true);
+
+			expect(api.get).not.toHaveBeenCalled();
+			expect(result).toEqual({
+				data: [],
+				error: null,
+				source: "supabase",
+			});
+		});
+
+		it("should expose a joined error message when all name sources fail", async () => {
+			const mockQuery = {
+				select: vi.fn().mockReturnThis(),
+				eq: vi.fn().mockReturnThis(),
+				order: vi.fn().mockReturnThis(),
+				limit: vi.fn().mockResolvedValue({ data: null, error: { message: "RPC exploded" } }),
+			};
+			const mockClient = {
+				from: vi.fn().mockReturnValue(mockQuery),
+			};
+			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+			(api.get as any).mockRejectedValue(new Error("Network down"));
+
+			const result = await coreAPI.getTrendingNamesResult(false);
+
+			expect(result.data).toEqual([]);
+			expect(result.source).toBe("unavailable");
+			expect(result.error).toContain("Supabase: RPC exploded");
+			expect(result.error).toContain("API: Network down");
+		});
+	});
+
 	describe("coreAPI.hideName", () => {
 		// This function tries RPC first, then API patch, then direct DB update.
 		// We'll test the primary RPC path.
@@ -178,6 +223,20 @@ describe("Supabase Service API", () => {
 			expect(mockRpc).toHaveBeenCalled();
 			expect(api.patch).toHaveBeenCalledWith("/names/123/hide", { isHidden: true });
 			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("statsAPI.getSiteStatsResult", () => {
+		it("should expose fetch failures for admin callers", async () => {
+			(api.get as any).mockRejectedValue(new Error("Stats unavailable"));
+
+			const result = await statsAPI.getSiteStatsResult();
+
+			expect(result).toEqual({
+				data: {},
+				error: "Stats unavailable",
+				source: "unavailable",
+			});
 		});
 	});
 });

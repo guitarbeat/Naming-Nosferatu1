@@ -4,16 +4,16 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/services/supabase/api";
+import { coreAPI, hiddenNamesAPI, statsAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
 import { isRpcSignatureError } from "@/shared/lib/errors";
-import { BarChart3, Eye, EyeOff, Lock } from "@/shared/lib/icons";
+import { BarChart3, Clock, Eye, EyeOff, Lock, User } from "@/shared/lib/icons";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 
@@ -38,14 +38,12 @@ interface SiteStatsSnapshot {
 	recentVotes: number;
 }
 
-type AdminTab = "overview" | "names" | "users" | "analytics";
+type AdminTab = "overview" | "names";
 type AdminBulkAction = "hide" | "unhide" | "lock" | "unlock";
 
 const tabs: { id: AdminTab; label: string }[] = [
 	{ id: "overview", label: "Overview" },
 	{ id: "names", label: "Names" },
-	{ id: "users", label: "Users" },
-	{ id: "analytics", label: "Analytics" },
 ];
 
 function toFiniteNumber(value: unknown): number {
@@ -124,7 +122,6 @@ export function AdminDashboard() {
 	const [filterStatus, setFilterStatus] = useState<"all" | "active" | "hidden" | "locked">("all");
 	const [isLoading, setIsLoading] = useState(true);
 	const [isRefreshing, setIsRefreshing] = useState(false);
-	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 	const [pendingHiddenIds, setPendingHiddenIds] = useState<Set<string>>(new Set());
@@ -154,6 +151,31 @@ export function AdminDashboard() {
 				name.description?.toLowerCase().includes(normalizedSearch),
 		);
 	}, [filterStatus, names, searchTerm]);
+	const topVisibleNames = useMemo(
+		() =>
+			[...names]
+				.filter((name) => !name.isHidden)
+				.sort(
+					(a, b) =>
+						(b.popularityScore ?? b.votes ?? 0) - (a.popularityScore ?? a.votes ?? 0) ||
+						(b.votes ?? 0) - (a.votes ?? 0),
+				)
+				.slice(0, 5),
+		[names],
+	);
+	const attentionNames = useMemo(
+		() =>
+			[...names]
+				.filter((name) => name.isHidden || isNameLocked(name))
+				.sort(
+					(a, b) =>
+						Number(Boolean(b.isHidden)) - Number(Boolean(a.isHidden)) ||
+						Number(isNameLocked(b)) - Number(isNameLocked(a)) ||
+						(b.popularityScore ?? b.votes ?? 0) - (a.popularityScore ?? a.votes ?? 0),
+				)
+				.slice(0, 5),
+		[names],
+	);
 
 	const updateNameLocally = useCallback(
 		(nameId: string, updater: (name: NameWithStats) => NameWithStats) => {
@@ -173,14 +195,31 @@ export function AdminDashboard() {
 			}
 
 			try {
-				const [allNames, siteStatsResponse] = await Promise.all([
-					coreAPI.getTrendingNames(true),
-					statsAPI.getSiteStats(),
+				const [namesResult, siteStatsResult] = await Promise.all([
+					coreAPI.getTrendingNamesResult(true),
+					statsAPI.getSiteStatsResult(),
 				]);
+				const nextNames = namesResult.data.map((name) => mapAdminName(name));
+				const nextErrors = [namesResult.error, siteStatsResult.error].filter(
+					(message): message is string => Boolean(message),
+				);
 
-				setNames(allNames.map((name) => mapAdminName(name)));
-				setSiteStats(toSiteStatsSnapshot(siteStatsResponse));
-				setLoadError(null);
+				setNames(nextNames);
+				setSelectedNames((current) => {
+					const nextIds = new Set(nextNames.map((name) => String(name.id)));
+					return new Set([...current].filter((id) => nextIds.has(id)));
+				});
+				setSiteStats(toSiteStatsSnapshot(siteStatsResult.data));
+				setLoadError(nextErrors.length > 0 ? nextErrors.join(" | ") : null);
+
+				if (nextErrors.length > 0) {
+					const detail = nextErrors.join(" | ");
+					if (nextNames.length === 0) {
+						toast.showError(`Could not load admin data: ${detail}`);
+					} else {
+						toast.showWarning(`Admin data is partially unavailable: ${detail}`);
+					}
+				}
 			} catch (error) {
 				const detail = getErrorMessage(error, "Failed to load admin dashboard data.");
 				setLoadError(detail);
@@ -373,40 +412,10 @@ export function AdminDashboard() {
 		[handleToggleHidden, handleToggleLocked, names, selectedNames, toast],
 	);
 
-	const handleImageUpload = useCallback(
-		async (event: ChangeEvent<HTMLInputElement>) => {
-			const file = event.target.files?.[0];
-			if (!file) {
-				return;
-			}
-			if (!adminName) {
-				toast.showError("Admin image uploads require a valid user session.");
-				event.target.value = "";
-				return;
-			}
-
-			setIsUploadingImage(true);
-			try {
-				const result = await imagesAPI.upload(file, adminName);
-				if (!result.success) {
-					throw new Error(result.error || "Upload failed");
-				}
-				toast.showSuccess("Image uploaded successfully.");
-			} catch (error) {
-				const detail = getErrorMessage(error, "Unknown error");
-				console.error("Upload error:", error);
-				toast.showError(`Could not upload image: ${detail}`);
-			} finally {
-				setIsUploadingImage(false);
-				event.target.value = "";
-			}
-		},
-		[adminName, toast],
-	);
-
 	const hasPendingWrites =
 		pendingBulkAction !== null || pendingHiddenIds.size > 0 || pendingLockedIds.size > 0;
 	const hasActiveFilters = searchTerm.trim().length > 0 || filterStatus !== "all";
+	const hasHardLoadFailure = Boolean(loadError) && names.length === 0;
 
 	if (isLoading) {
 		return (
@@ -459,7 +468,7 @@ export function AdminDashboard() {
 				</Card>
 			)}
 
-			<div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+			<div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
 				<Card className="border-primary/30 bg-primary/10 p-6">
 					<div className="mb-2 flex items-center gap-3">
 						<BarChart3 className="text-primary" size={24} />
@@ -490,6 +499,22 @@ export function AdminDashboard() {
 						<h3 className="text-lg font-semibold text-destructive">Hidden</h3>
 					</div>
 					<p className="text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
+				</Card>
+
+				<Card className="border-accent/30 bg-accent/10 p-6">
+					<div className="mb-2 flex items-center gap-3">
+						<User className="text-accent" size={24} />
+						<h3 className="text-lg font-semibold text-accent">Users</h3>
+					</div>
+					<p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
+				</Card>
+
+				<Card className="border-chart-1/30 bg-chart-1/10 p-6">
+					<div className="mb-2 flex items-center gap-3">
+						<Clock className="text-chart-1" size={24} />
+						<h3 className="text-lg font-semibold text-chart-1">Recent Votes</h3>
+					</div>
+					<p className="text-3xl font-bold text-foreground">{stats.recentVotes}</p>
 				</Card>
 			</div>
 
@@ -597,13 +622,32 @@ export function AdminDashboard() {
 						{filteredNames.length === 0 ? (
 							<Card className="p-8 text-center">
 								<h2 className="text-lg font-semibold text-foreground">
-									{hasActiveFilters ? "No names match this filter" : "No names available"}
+									{hasHardLoadFailure
+										? "Could not load names"
+										: hasActiveFilters
+											? "No names match this filter"
+											: "No names available"}
 								</h2>
 								<p className="mt-2 text-sm text-muted-foreground">
-									{hasActiveFilters
-										? "Try a different search or status filter."
-										: "Refresh the dashboard after new names are added."}
+									{hasHardLoadFailure
+										? loadError
+										: hasActiveFilters
+											? "Try a different search or status filter."
+											: "Refresh the dashboard after new names are added."}
 								</p>
+								{hasHardLoadFailure && (
+									<div className="mt-4">
+										<Button
+											onClick={() => void loadAdminData("refresh")}
+											variant="outline"
+											size="small"
+											loading={isRefreshing}
+											disabled={isRefreshing || hasPendingWrites}
+										>
+											Try again
+										</Button>
+									</div>
+								)}
 							</Card>
 						) : (
 							<div className="space-y-2">
@@ -712,76 +756,119 @@ export function AdminDashboard() {
 						exit={{ opacity: 0, y: -20 }}
 					>
 						<Card className="p-6">
-							<h2 className="mb-4 text-2xl font-bold">Quick Actions</h2>
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 								<div>
-									<h3 className="mb-2 text-lg font-semibold">Image Upload</h3>
-									<input
-										type="file"
-										accept="image/*"
-										onChange={(event) => void handleImageUpload(event)}
-										className="w-full rounded border border-border/20 bg-foreground/10 p-2"
-										disabled={isUploadingImage}
-									/>
+									<h2 className="text-2xl font-bold text-foreground">Operations Snapshot</h2>
+									<p className="text-sm text-muted-foreground">
+										{loadError
+											? "Some admin sources are unavailable. The dashboard is showing the latest data it could load."
+											: "Moderation, visibility, and health checks are all live from this screen."}
+									</p>
+								</div>
+								<Button onClick={() => setActiveTab("names")} size="small">
+									Review Names
+								</Button>
+							</div>
+
+							<div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr,1fr,1fr]">
+								<div className="rounded-lg border border-border/20 bg-foreground/5 p-5">
+									<p className="text-sm text-muted-foreground">Current operator</p>
+									<p className="mt-2 text-2xl font-semibold text-foreground">
+										{adminName || "Unknown session"}
+									</p>
 									<p className="mt-2 text-sm text-muted-foreground">
-										{isUploadingImage
-											? "Uploading image..."
-											: "Uploads report success or failure through toast notifications."}
+										{adminName
+											? "Bulk actions and visibility changes are available."
+											: "Admin writes stay disabled until a valid user session is available."}
 									</p>
+
+									<div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+										<div className="rounded-lg border border-border/20 bg-background/70 p-3">
+											<p className="text-muted-foreground">Visible</p>
+											<p className="mt-1 text-xl font-semibold text-foreground">
+												{stats.activeNames}
+											</p>
+										</div>
+										<div className="rounded-lg border border-border/20 bg-background/70 p-3">
+											<p className="text-muted-foreground">Selected</p>
+											<p className="mt-1 text-xl font-semibold text-foreground">
+												{selectedNames.size}
+											</p>
+										</div>
+										<div className="rounded-lg border border-border/20 bg-background/70 p-3">
+											<p className="text-muted-foreground">Hidden</p>
+											<p className="mt-1 text-xl font-semibold text-foreground">
+												{stats.hiddenNames}
+											</p>
+										</div>
+										<div className="rounded-lg border border-border/20 bg-background/70 p-3">
+											<p className="text-muted-foreground">Locked</p>
+											<p className="mt-1 text-xl font-semibold text-foreground">
+												{stats.lockedInNames}
+											</p>
+										</div>
+									</div>
 								</div>
-								<div>
-									<h3 className="mb-2 text-lg font-semibold">Recent Activity</h3>
-									<p className="text-muted-foreground">
-										Admin writes now surface success and error feedback. A dedicated audit log is
-										still the next step.
+
+								<div className="rounded-lg border border-border/20 bg-foreground/5 p-5">
+									<h3 className="text-lg font-semibold text-foreground">Top Right Now</h3>
+									<p className="mt-1 text-sm text-muted-foreground">
+										Current leaders by popularity score and vote volume.
 									</p>
+									<div className="mt-4 space-y-3">
+										{topVisibleNames.length === 0 ? (
+											<p className="text-sm text-muted-foreground">
+												No visible names are available yet.
+											</p>
+										) : (
+											topVisibleNames.map((name, index) => (
+												<div
+													key={name.id}
+													className="flex items-center justify-between gap-3 rounded-lg border border-border/20 bg-background/70 p-3"
+												>
+													<div>
+														<p className="font-medium text-foreground">
+															{index + 1}. {name.name}
+														</p>
+														<p className="text-xs text-muted-foreground">{name.votes ?? 0} votes</p>
+													</div>
+													<p className="text-sm font-semibold text-primary">
+														{(name.popularityScore ?? 0).toFixed(1)}
+													</p>
+												</div>
+											))
+										)}
+									</div>
+								</div>
+
+								<div className="rounded-lg border border-border/20 bg-foreground/5 p-5">
+									<h3 className="text-lg font-semibold text-foreground">Needs Attention</h3>
+									<p className="mt-1 text-sm text-muted-foreground">
+										Hidden or locked names that may need a moderation pass.
+									</p>
+									<div className="mt-4 space-y-3">
+										{attentionNames.length === 0 ? (
+											<p className="text-sm text-muted-foreground">
+												No hidden or locked names need review right now.
+											</p>
+										) : (
+											attentionNames.map((name) => (
+												<div
+													key={name.id}
+													className="rounded-lg border border-border/20 bg-background/70 p-3"
+												>
+													<p className="font-medium text-foreground">{name.name}</p>
+													<p className="mt-1 text-xs text-muted-foreground">
+														{[name.isHidden ? "Hidden" : null, isNameLocked(name) ? "Locked" : null]
+															.filter(Boolean)
+															.join(" • ")}
+													</p>
+												</div>
+											))
+										)}
+									</div>
 								</div>
 							</div>
-						</Card>
-					</motion.div>
-				)}
-
-				{activeTab === "users" && (
-					<motion.div
-						key="users"
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-					>
-						<Card className="p-6">
-							<h2 className="mb-4 text-2xl font-bold">User Analytics</h2>
-							<p className="text-muted-foreground">
-								Total users: <span className="font-medium text-foreground">{stats.totalUsers}</span>
-							</p>
-							<p className="mt-2 text-muted-foreground">
-								Role management and user activity drill-down are still pending.
-							</p>
-						</Card>
-					</motion.div>
-				)}
-
-				{activeTab === "analytics" && (
-					<motion.div
-						key="analytics"
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-					>
-						<Card className="p-6">
-							<h2 className="mb-4 text-2xl font-bold">Site Analytics</h2>
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<div className="rounded-lg border border-border/20 bg-foreground/5 p-4">
-									<p className="text-sm text-muted-foreground">Recent votes</p>
-									<p className="mt-2 text-3xl font-bold text-foreground">{stats.recentVotes}</p>
-								</div>
-								<div className="rounded-lg border border-border/20 bg-foreground/5 p-4">
-									<p className="text-sm text-muted-foreground">Locked-in names</p>
-									<p className="mt-2 text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
-								</div>
-							</div>
-							<p className="mt-4 text-muted-foreground">
-								Time-series analytics and audit history are still not implemented.
-							</p>
 						</Card>
 					</motion.div>
 				)}

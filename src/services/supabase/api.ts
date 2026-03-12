@@ -39,6 +39,12 @@ interface SupabaseNamesClient {
 	from(table: string): SupabaseNamesQuery;
 }
 
+interface FetchResult<T> {
+	data: T;
+	error: string | null;
+	source: "supabase" | "api" | "unavailable";
+}
+
 function mapNameRow(item: ApiNameRow): NameItem {
 	return {
 		id: String(item.id),
@@ -56,10 +62,19 @@ function mapNameRow(item: ApiNameRow): NameItem {
 	};
 }
 
-async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]> {
+function toErrorMessage(error: unknown, fallback: string): string {
+	if (error instanceof Error && error.message) {
+		return error.message;
+	}
+	return fallback;
+}
+
+async function getNamesFromSupabase(
+	includeHidden: boolean,
+): Promise<FetchResult<NameItem[]> | null> {
 	const client = (await resolveSupabaseClient()) as unknown as SupabaseNamesClient | null;
 	if (!client) {
-		return [];
+		return null;
 	}
 
 	const selectColumns =
@@ -77,10 +92,64 @@ async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]>
 	const result = await query.order("avg_rating", { ascending: false }).limit(1000);
 	if (result.error) {
 		console.warn("[coreAPI.getTrendingNames] Supabase fallback failed:", result.error.message);
-		return [];
+		return {
+			data: [],
+			error: result.error.message || "Supabase query failed",
+			source: "supabase",
+		};
 	}
 
-	return (result.data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow));
+	return {
+		data: (result.data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow)),
+		error: null,
+		source: "supabase",
+	};
+}
+
+async function getTrendingNamesResult(includeHidden: boolean): Promise<FetchResult<NameItem[]>> {
+	const supabaseResult = await getNamesFromSupabase(includeHidden);
+	if (supabaseResult && !supabaseResult.error) {
+		return supabaseResult;
+	}
+
+	try {
+		const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
+		return {
+			data: (data ?? []).map((item) => mapNameRow(item)),
+			error: null,
+			source: "api",
+		};
+	} catch (error) {
+		const failures: string[] = [];
+		if (supabaseResult?.error) {
+			failures.push(`Supabase: ${supabaseResult.error}`);
+		} else if (!supabaseResult) {
+			failures.push("Supabase: client unavailable");
+		}
+		failures.push(`API: ${toErrorMessage(error, "Failed to fetch names")}`);
+		return {
+			data: [],
+			error: failures.join(" | "),
+			source: "unavailable",
+		};
+	}
+}
+
+async function getSiteStatsResult(): Promise<FetchResult<Record<string, unknown>>> {
+	try {
+		const data = await api.get<Record<string, unknown>>("/analytics/site-stats");
+		return {
+			data: data ?? {},
+			error: null,
+			source: "api",
+		};
+	} catch (error) {
+		return {
+			data: {},
+			error: toErrorMessage(error, "Failed to fetch site stats"),
+			source: "unavailable",
+		};
+	}
 }
 
 export const imagesAPI = {
@@ -116,19 +185,11 @@ export const coreAPI = {
 	},
 
 	getTrendingNames: async (includeHidden: boolean = false) => {
-		// Primary path: query Supabase directly (no Express backend needed)
-		const supabaseResult = await getNamesFromSupabase(includeHidden);
-		if (supabaseResult.length > 0) {
-			return supabaseResult;
-		}
+		return (await getTrendingNamesResult(includeHidden)).data;
+	},
 
-		// Fallback: try API server if Supabase returned nothing
-		try {
-			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
-			return (data ?? []).map((item) => mapNameRow(item));
-		} catch {
-			return [];
-		}
+	getTrendingNamesResult: async (includeHidden: boolean = false) => {
+		return getTrendingNamesResult(includeHidden);
 	},
 
 	getHiddenNames: async () => {
@@ -233,10 +294,10 @@ export const hiddenNamesAPI = {
 
 export const statsAPI = {
 	getSiteStats: async () => {
-		try {
-			return await api.get<any>("/analytics/site-stats");
-		} catch {
-			return {};
-		}
+		return (await getSiteStatsResult()).data;
+	},
+
+	getSiteStatsResult: async () => {
+		return getSiteStatsResult();
 	},
 };
