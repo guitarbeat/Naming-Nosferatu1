@@ -75,6 +75,31 @@ describe("statsAPI", () => {
 		vi.clearAllMocks();
 	});
 
+	it("maps site stats from mixed field names", async () => {
+		vi.mocked(api.get).mockResolvedValueOnce({
+			total_names: 11,
+			activeNames: 9,
+			hidden_names: 2,
+			totalUsers: 6,
+			total_ratings: 33,
+			totalSelections: 14,
+			avg_rating: 1524,
+		} as never);
+
+		const result = await statsAPI.getSiteStats();
+
+		expect(api.get).toHaveBeenCalledWith("/analytics/site-stats");
+		expect(result).toEqual({
+			totalNames: 11,
+			activeNames: 9,
+			hiddenNames: 2,
+			totalUsers: 6,
+			totalRatings: 33,
+			totalSelections: 14,
+			avgRating: 1524,
+		});
+	});
+
 	it("calls activity trend endpoint and maps mixed field names", async () => {
 		vi.mocked(api.get).mockResolvedValueOnce([
 			{
@@ -117,5 +142,14 @@ describe("statsAPI", () => {
 
 		expect(api.get).toHaveBeenCalledWith("/analytics/activity-trend?days=7");
 		expect(result).toEqual([]);
+	});
+
+	it("returns null site stats on API failure", async () => {
+		vi.mocked(api.get).mockRejectedValueOnce(new Error("boom"));
+
+		const result = await statsAPI.getSiteStats();
+
+		expect(api.get).toHaveBeenCalledWith("/analytics/site-stats");
+		expect(result).toBeNull();
 	});
 });

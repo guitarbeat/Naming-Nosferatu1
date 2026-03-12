@@ -571,26 +571,74 @@ router.get("/api/analytics/leaderboard", async (req, res) => {
 router.get("/api/analytics/site-stats", async (_req, res) => {
 	try {
 		if (!db) {
+			const totalNames = mockNames.length;
+			const hiddenNames = mockNames.filter((name) => name.isHidden).length;
+			const activeNames = mockNames.filter((name) => name.isActive && !name.isHidden).length;
+			const averageRating =
+				mockNames.length > 0
+					? Math.round(
+							mockNames.reduce((sum, name) => sum + toCount(name.avgRating), 0) / mockNames.length,
+						)
+					: 0;
+
 			return res.json({
-				totalNames: mockNames.length,
-				totalRatings: Math.floor(Math.random() * 500),
-				totalUsers: Math.floor(Math.random() * 50),
+				totalNames,
+				activeNames,
+				hiddenNames,
+				totalUsers: 8,
+				totalRatings: 48,
+				totalSelections: 22,
+				avgRating: averageRating,
 			});
 		}
 
-		const [totalNames, totalRatings, totalUsers] = await Promise.all([
+		const [
+			totalNames,
+			activeNames,
+			hiddenNames,
+			totalUsers,
+			totalRatings,
+			totalSelections,
+			avgRating,
+		] = await Promise.all([
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(catNameOptions)
 				.where(eq(catNameOptions.isDeleted, false)),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(catNameOptions)
+				.where(
+					and(
+						eq(catNameOptions.isDeleted, false),
+						eq(catNameOptions.isActive, true),
+						eq(catNameOptions.isHidden, false),
+					),
+				),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(catNameOptions)
+				.where(and(eq(catNameOptions.isDeleted, false), eq(catNameOptions.isHidden, true))),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(catAppUsers)
+				.where(eq(catAppUsers.isDeleted, false)),
 			db.select({ count: sql<number>`count(*)` }).from(catNameRatings),
-			db.select({ count: sql<number>`count(distinct user_id)` }).from(catNameRatings),
+			db.select({ count: sql<number>`count(*)` }).from(catTournamentSelections),
+			db
+				.select({ value: sql<number>`round(avg(${catNameOptions.avgRating}))` })
+				.from(catNameOptions)
+				.where(eq(catNameOptions.isDeleted, false)),
 		]);
 
 		res.json({
 			totalNames: totalNames[0]?.count || 0,
-			totalRatings: totalRatings[0]?.count || 0,
+			activeNames: activeNames[0]?.count || 0,
+			hiddenNames: hiddenNames[0]?.count || 0,
 			totalUsers: totalUsers[0]?.count || 0,
+			totalRatings: totalRatings[0]?.count || 0,
+			totalSelections: totalSelections[0]?.count || 0,
+			avgRating: avgRating[0]?.value || 0,
 		});
 	} catch (error) {
 		console.error("Error fetching site stats:", error);

@@ -62,26 +62,42 @@ describe("Analytics Routes", () => {
 		it("should return correct site stats", async () => {
 			// Query 1: Total Names
 			const query1 = createMockQuery([{ count: 10 }]);
-			// Query 2: Total Ratings
-			const query2 = createMockQuery([{ count: 20 }]);
-			// Query 3: Total Users
-			const query3 = createMockQuery([{ count: 5 }]);
+			// Query 2: Active Names
+			const query2 = createMockQuery([{ count: 8 }]);
+			// Query 3: Hidden Names
+			const query3 = createMockQuery([{ count: 2 }]);
+			// Query 4: Total Users
+			const query4 = createMockQuery([{ count: 5 }]);
+			// Query 5: Total Ratings
+			const query5 = createMockQuery([{ count: 20 }]);
+			// Query 6: Total Selections
+			const query6 = createMockQuery([{ count: 13 }]);
+			// Query 7: Avg Rating
+			const query7 = createMockQuery([{ value: 1512 }]);
 
 			dbMocks.select
 				.mockReturnValueOnce(query1)
 				.mockReturnValueOnce(query2)
-				.mockReturnValueOnce(query3);
+				.mockReturnValueOnce(query3)
+				.mockReturnValueOnce(query4)
+				.mockReturnValueOnce(query5)
+				.mockReturnValueOnce(query6)
+				.mockReturnValueOnce(query7);
 
 			const res = await request(app).get("/api/analytics/site-stats");
 
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
 				totalNames: 10,
-				totalRatings: 20,
+				activeNames: 8,
+				hiddenNames: 2,
 				totalUsers: 5,
+				totalRatings: 20,
+				totalSelections: 13,
+				avgRating: 1512,
 			});
 
-			expect(dbMocks.select).toHaveBeenCalledTimes(3);
+			expect(dbMocks.select).toHaveBeenCalledTimes(7);
 		});
 
 		it("should handle database errors gracefully", async () => {

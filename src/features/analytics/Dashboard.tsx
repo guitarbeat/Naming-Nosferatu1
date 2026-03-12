@@ -3,7 +3,7 @@
  * @description Dashboard component for analytics and results
  */
 
-import { type ReactNode, Suspense, useEffect, useState } from "react";
+import { type ReactNode, Suspense, useCallback, useEffect, useState } from "react";
 import {
 	type ActivityTrendPoint,
 	leaderboardAPI,
@@ -176,6 +176,9 @@ export function Dashboard({
 	const [_isLoadingStats, setIsLoadingStats] = useState(true);
 	const [isLoadingTrend, setIsLoadingTrend] = useState(true);
 	const [hiddenNames, setHiddenNames] = useState<Array<{ id: string | number; name: string }>>([]);
+	const [isLoadingHiddenNames, setIsLoadingHiddenNames] = useState(false);
+	const [hiddenNamesError, setHiddenNamesError] = useState<string | null>(null);
+	const [pendingUnhideIds, setPendingUnhideIds] = useState<Set<string>>(new Set());
 	const [showHiddenNames, setShowHiddenNames] = useState(false);
 
 	// Fetch leaderboard
@@ -229,33 +232,65 @@ export function Dashboard({
 		fetchStats();
 	}, [userName]);
 
+	const loadHiddenNames = useCallback(async () => {
+		setIsLoadingHiddenNames(true);
+		setHiddenNamesError(null);
+
+		try {
+			const data = await hiddenNamesAPI.getHiddenNames();
+			setHiddenNames(data);
+		} catch (error) {
+			console.error("Failed to fetch hidden names:", error);
+			setHiddenNamesError(error instanceof Error ? error.message : "Failed to fetch hidden names");
+		} finally {
+			setIsLoadingHiddenNames(false);
+		}
+	}, []);
+
 	// Fetch hidden names (admin only)
 	useEffect(() => {
 		if (isAdmin && showHiddenNames) {
-			const fetchHidden = async () => {
-				try {
-					const data = await hiddenNamesAPI.getHiddenNames();
-					setHiddenNames(data);
-				} catch (error) {
-					console.error("Failed to fetch hidden names:", error);
-				}
-			};
-			fetchHidden();
+			void loadHiddenNames();
 		}
-	}, [isAdmin, showHiddenNames]);
+	}, [isAdmin, showHiddenNames, loadHiddenNames]);
 
 	const handleUnhideName = async (nameId: string | number) => {
 		if (!userName) {
 			return;
 		}
+
+		const id = String(nameId);
+		setPendingUnhideIds((prev) => {
+			const next = new Set(prev);
+			next.add(id);
+			return next;
+		});
+		setHiddenNamesError(null);
+
 		try {
 			const result = await hiddenNamesAPI.unhideName(userName, nameId);
 			if (!result.success) {
 				throw new Error(result.error || "Failed to unhide name");
 			}
 			setHiddenNames((prev) => prev.filter((n) => n.id !== nameId));
+			setSiteStats((prev) =>
+				prev
+					? {
+							...prev,
+							hiddenNames: Math.max(prev.hiddenNames - 1, 0),
+							activeNames: prev.activeNames + 1,
+						}
+					: prev,
+			);
 		} catch (error) {
 			console.error("Failed to unhide name:", error);
+			setHiddenNamesError(error instanceof Error ? error.message : "Failed to unhide name");
+		} finally {
+			setPendingUnhideIds((prev) => {
+				const next = new Set(prev);
+				next.delete(id);
+				return next;
+			});
 		}
 	};
 
@@ -340,7 +375,7 @@ export function Dashboard({
 				{
 					label: "Total Users",
 					value: siteStats.totalUsers,
-					hint: "People who have contributed voting data.",
+					hint: "Profiles currently stored in the app.",
 					toneClassName: "border-secondary/25 bg-secondary/20",
 					icon: <User size={18} />,
 				},
@@ -370,7 +405,7 @@ export function Dashboard({
 							{
 								label: "Hidden Names",
 								value: siteStats.hiddenNames,
-								hint: "Entries removed from public tournament flows.",
+								hint: "Entries currently removed from public tournament flows.",
 								toneClassName: "border-chart-4/25 bg-chart-4/12",
 								icon: <EyeOff size={18} />,
 							},
@@ -378,6 +413,7 @@ export function Dashboard({
 					: []),
 			]
 		: [];
+	const hiddenNamesTotal = siteStats?.hiddenNames ?? hiddenNames.length;
 
 	return (
 		<div className="dashboard-container space-y-4">
@@ -762,21 +798,51 @@ export function Dashboard({
 						</div>
 						<div className="flex flex-wrap items-center gap-2">
 							<div className="inline-flex items-center rounded-full border border-chart-4/20 bg-background/75 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-								{showHiddenNames ? `${hiddenNames.length} visible` : "List hidden"}
+								{isLoadingHiddenNames ? "Loading hidden names" : `${hiddenNamesTotal} hidden total`}
 							</div>
+							{showHiddenNames && (
+								<Button
+									variant="ghost"
+									size="small"
+									onClick={() => {
+										void loadHiddenNames();
+									}}
+									loading={isLoadingHiddenNames}
+								>
+									Refresh
+								</Button>
+							)}
 							<Button
 								variant="ghost"
 								size="small"
 								onClick={() => setShowHiddenNames(!showHiddenNames)}
 							>
-								{showHiddenNames ? "Hide List" : "Show List"}
+								{showHiddenNames ? "Hide Hidden Names" : "Show Hidden Names"}
 							</Button>
 						</div>
 					</div>
 
 					{showHiddenNames && (
 						<div className="space-y-3 rounded-2xl border border-chart-4/20 bg-background/70 p-3 shadow-sm">
-							{hiddenNames.length > 0 ? (
+							{isLoadingHiddenNames ? (
+								<Loading variant="skeleton" height={140} />
+							) : hiddenNamesError ? (
+								<div className="rounded-xl border border-dashed border-chart-4/25 bg-background/75 p-6 text-center">
+									<p className="font-semibold text-foreground">Hidden names could not load</p>
+									<p className="mt-2 text-sm text-muted-foreground">{hiddenNamesError}</p>
+									<div className="mt-4">
+										<Button
+											variant="ghost"
+											size="small"
+											onClick={() => {
+												void loadHiddenNames();
+											}}
+										>
+											Try Again
+										</Button>
+									</div>
+								</div>
+							) : hiddenNames.length > 0 ? (
 								hiddenNames.map((name) => (
 									<div
 										key={name.id}
@@ -793,6 +859,7 @@ export function Dashboard({
 											size="small"
 											onClick={() => handleUnhideName(name.id)}
 											className="text-chart-2 hover:text-chart-2/80"
+											loading={pendingUnhideIds.has(String(name.id))}
 										>
 											<Eye size={16} className="mr-1" />
 											Unhide

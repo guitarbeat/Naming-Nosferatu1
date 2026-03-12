@@ -101,13 +101,13 @@ export const statsAPI = {
 				return null;
 			}
 			return {
-				totalNames: toNumber(stats.totalNames),
-				activeNames: toNumber(stats.activeNames),
-				hiddenNames: toNumber(stats.hiddenNames),
-				totalUsers: toNumber(stats.totalUsers),
-				totalRatings: toNumber(stats.totalRatings),
-				totalSelections: toNumber(stats.totalSelections),
-				avgRating: toNumber(stats.avgRating),
+				totalNames: toNumber(stats.totalNames ?? stats.total_names),
+				activeNames: toNumber(stats.activeNames ?? stats.active_names),
+				hiddenNames: toNumber(stats.hiddenNames ?? stats.hidden_names),
+				totalUsers: toNumber(stats.totalUsers ?? stats.total_users),
+				totalRatings: toNumber(stats.totalRatings ?? stats.total_ratings),
+				totalSelections: toNumber(stats.totalSelections ?? stats.total_selections),
+				avgRating: toNumber(stats.avgRating ?? stats.avg_rating),
 			};
 		} catch {
 			return null;
