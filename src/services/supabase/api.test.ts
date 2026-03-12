@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/services/apiClient";
-import { adminAuditAPI, adminUsersAPI, coreAPI, statsAPI } from "./api";
+import { coreAPI } from "./api";
 import { resolveSupabaseClient } from "./runtime";
 
 // Mock dependencies
@@ -125,51 +125,6 @@ describe("Supabase Service API", () => {
 		});
 	});
 
-	describe("coreAPI.getTrendingNamesResult", () => {
-		it("should preserve a valid empty Supabase result without masking it as an error", async () => {
-			const mockQuery = {
-				select: vi.fn().mockReturnThis(),
-				eq: vi.fn().mockReturnThis(),
-				order: vi.fn().mockReturnThis(),
-				limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-			};
-			const mockClient = {
-				from: vi.fn().mockReturnValue(mockQuery),
-			};
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
-
-			const result = await coreAPI.getTrendingNamesResult(true);
-
-			expect(api.get).not.toHaveBeenCalled();
-			expect(result).toEqual({
-				data: [],
-				error: null,
-				source: "supabase",
-			});
-		});
-
-		it("should expose a joined error message when all name sources fail", async () => {
-			const mockQuery = {
-				select: vi.fn().mockReturnThis(),
-				eq: vi.fn().mockReturnThis(),
-				order: vi.fn().mockReturnThis(),
-				limit: vi.fn().mockResolvedValue({ data: null, error: { message: "RPC exploded" } }),
-			};
-			const mockClient = {
-				from: vi.fn().mockReturnValue(mockQuery),
-			};
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
-			(api.get as any).mockRejectedValue(new Error("Network down"));
-
-			const result = await coreAPI.getTrendingNamesResult(false);
-
-			expect(result.data).toEqual([]);
-			expect(result.source).toBe("unavailable");
-			expect(result.error).toContain("Supabase: RPC exploded");
-			expect(result.error).toContain("API: Network down");
-		});
-	});
-
 	describe("coreAPI.hideName", () => {
 		// This function tries RPC first, then API patch, then direct DB update.
 		// We'll test the primary RPC path.
@@ -223,140 +178,6 @@ describe("Supabase Service API", () => {
 			expect(mockRpc).toHaveBeenCalled();
 			expect(api.patch).toHaveBeenCalledWith("/names/123/hide", { isHidden: true });
 			expect(result.success).toBe(true);
-		});
-	});
-
-	describe("adminAuditAPI.getRecentActionsResult", () => {
-		it("should map recent admin actions from the audit RPC", async () => {
-			const mockRpc = vi.fn().mockResolvedValue({
-				data: [
-					{
-						id: "audit-1",
-						created_at: "2026-03-12T09:45:00.000Z",
-						operation: "HIDE",
-						table_name: "cat_name_options",
-						user_name: "admin",
-						target_name: "Luna",
-						old_values: { id: "123", name: "Luna", is_hidden: false },
-						new_values: { id: "123", name: "Luna", is_hidden: true },
-					},
-				],
-				error: null,
-			});
-			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
-
-			const result = await adminAuditAPI.getRecentActionsResult(5);
-
-			expect(mockRpc).toHaveBeenCalledWith("get_recent_admin_actions", { p_limit: 5 });
-			expect(result).toEqual({
-				data: [
-					{
-						id: "audit-1",
-						createdAt: "2026-03-12T09:45:00.000Z",
-						operation: "HIDE",
-						tableName: "cat_name_options",
-						userName: "admin",
-						targetName: "Luna",
-						oldValues: { id: "123", name: "Luna", is_hidden: false },
-						newValues: { id: "123", name: "Luna", is_hidden: true },
-					},
-				],
-				error: null,
-				source: "supabase",
-			});
-		});
-
-		it("should surface audit RPC failures without crashing the dashboard", async () => {
-			const mockRpc = vi.fn().mockResolvedValue({
-				data: null,
-				error: { message: "Function not found" },
-			});
-			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
-
-			const result = await adminAuditAPI.getRecentActionsResult(10);
-
-			expect(result).toEqual({
-				data: [],
-				error: "Function not found",
-				source: "supabase",
-			});
-		});
-	});
-
-	describe("adminUsersAPI.getUserActivityResult", () => {
-		it("should map admin user activity from the activity RPC", async () => {
-			const mockRpc = vi.fn().mockResolvedValue({
-				data: [
-					{
-						user_id: "user-1",
-						user_name: "alice",
-						role_label: "admin",
-						created_at: "2026-03-10T10:00:00.000Z",
-						total_ratings: 12,
-						total_selections: 5,
-						total_wins: 20,
-						total_losses: 8,
-						last_rating_at: "2026-03-12T08:00:00.000Z",
-						last_selection_at: "2026-03-11T07:00:00.000Z",
-						last_active_at: "2026-03-12T08:00:00.000Z",
-					},
-				],
-				error: null,
-			});
-			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
-
-			const result = await adminUsersAPI.getUserActivityResult(25);
-
-			expect(mockRpc).toHaveBeenCalledWith("get_admin_user_activity", { p_limit: 25 });
-			expect(result).toEqual({
-				data: [
-					{
-						userId: "user-1",
-						userName: "alice",
-						roleLabel: "admin",
-						createdAt: "2026-03-10T10:00:00.000Z",
-						totalRatings: 12,
-						totalSelections: 5,
-						totalWins: 20,
-						totalLosses: 8,
-						lastRatingAt: "2026-03-12T08:00:00.000Z",
-						lastSelectionAt: "2026-03-11T07:00:00.000Z",
-						lastActiveAt: "2026-03-12T08:00:00.000Z",
-					},
-				],
-				error: null,
-				source: "supabase",
-			});
-		});
-
-		it("should expose activity RPC failures for the users view", async () => {
-			const mockRpc = vi.fn().mockResolvedValue({
-				data: null,
-				error: { message: "Permission denied" },
-			});
-			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
-
-			const result = await adminUsersAPI.getUserActivityResult(50);
-
-			expect(result).toEqual({
-				data: [],
-				error: "Permission denied",
-				source: "supabase",
-			});
-		});
-	});
-
-	describe("statsAPI.getSiteStatsResult", () => {
-		it("should expose fetch failures for admin callers", async () => {
-			(api.get as any).mockRejectedValue(new Error("Stats unavailable"));
-
-			const result = await statsAPI.getSiteStatsResult();
-
-			expect(result).toEqual({
-				data: {},
-				error: "Stats unavailable",
-				source: "unavailable",
-			});
 		});
 	});
 });

@@ -1,10 +1,10 @@
 /**
  * @module authAdapter
- * @description Username-based authentication adapter backed by persisted user
- * records and role checks from Supabase/server data.
+ * @description Simple authentication adapter for the naming tournament app.
  *
- * Authentication is still lightweight, but admin detection is resolved from
- * the actual role sources instead of hard-coded heuristics.
+ * This is a basic auth implementation that recognizes "Aaron" as an admin
+ * and treats any other username as a regular user. No real authentication
+ * - just username-based role detection for demo purposes.
  */
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
@@ -12,82 +12,26 @@ import { api } from "@/services/apiClient";
 import { resolveSupabaseClient } from "@/services/supabase/runtime";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 
-type RoleResponse = { role?: string | null };
-
-function normalizeRole(value: unknown): AuthUser["role"] {
-	return value === "admin" || value === "moderator" ? value : "user";
-}
-
-function looksLikeJwt(value: string): boolean {
-	return value.split(".").length === 3;
-}
-
-async function getSupabaseAdminStatus(userName: string): Promise<boolean | null> {
+async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {
 		const client = await resolveSupabaseClient();
-		if (!client) {
-			return null;
+		if (!client) return false;
+
+		const { data, error } = await (client as any)
+			.from("cat_user_roles")
+			.select("role")
+			.ilike("user_name", userName)
+			.eq("role", "admin")
+			.limit(1);
+
+		if (error) {
+			return false;
 		}
 
-		const roleChecks = [
-			{
-				fn: "check_user_role_by_name",
-				args: { user_name_param: userName, required_role: "admin" },
-			},
-			{
-				fn: "has_role",
-				args: { _user_name: userName, _role: "admin" },
-			},
-		] as const;
-
-		for (const roleCheck of roleChecks) {
-			const { data, error } = await (client as any).rpc(roleCheck.fn, roleCheck.args);
-			if (!error && typeof data === "boolean") {
-				return data;
-			}
-		}
-
-		return null;
+		return Array.isArray(data) && data.length > 0;
 	} catch {
-		return null;
+		return false;
 	}
-}
-
-async function getServerAdminStatus(userIdToken: string): Promise<boolean | null> {
-	try {
-		const roles = await api.get<RoleResponse[]>(`/users/${encodeURIComponent(userIdToken)}/roles`);
-		if (!Array.isArray(roles)) {
-			return null;
-		}
-
-		return roles.some((role) => normalizeRole(role.role) === "admin");
-	} catch {
-		return null;
-	}
-}
-
-async function resolveAdminStatus({
-	userName,
-	userIdToken,
-}: {
-	userName?: string | null;
-	userIdToken?: string | null;
-}): Promise<boolean> {
-	if (userName) {
-		const supabaseAdminStatus = await getSupabaseAdminStatus(userName);
-		if (supabaseAdminStatus !== null) {
-			return supabaseAdminStatus;
-		}
-	}
-
-	if (userIdToken) {
-		const serverAdminStatus = await getServerAdminStatus(userIdToken);
-		if (serverAdminStatus !== null) {
-			return serverAdminStatus;
-		}
-	}
-
-	return false;
 }
 
 export const authAdapter: AuthAdapter = {
@@ -106,10 +50,7 @@ export const authAdapter: AuthAdapter = {
 			return null;
 		}
 
-		const isAdmin = await resolveAdminStatus({
-			userName,
-			userIdToken: userId,
-		});
+		const isAdmin = await getSupabaseAdminStatus(userName);
 
 		return {
 			id: userId || userName,
@@ -173,16 +114,6 @@ export const authAdapter: AuthAdapter = {
 			return false;
 		}
 
-		const storedUserId =
-			typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.USER_ID) : null;
-
-		if (looksLikeJwt(normalized)) {
-			return resolveAdminStatus({ userIdToken: normalized });
-		}
-
-		return resolveAdminStatus({
-			userName: normalized,
-			userIdToken: storedUserId,
-		});
+		return getSupabaseAdminStatus(normalized);
 	},
 };

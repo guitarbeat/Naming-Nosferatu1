@@ -163,17 +163,7 @@ function generateErrorId() {
 	if (scope.crypto?.randomUUID) {
 		return `error_${scope.crypto.randomUUID()}`;
 	}
-
-	if (scope.crypto?.getRandomValues) {
-		const buffer = new Uint8Array(16);
-		scope.crypto.getRandomValues(buffer);
-		const hexString = Array.from(buffer)
-			.map((value) => value.toString(16).padStart(2, "0"))
-			.join("");
-		return `error_${Date.now()}_${hexString}`;
-	}
-
-	return `error_${Date.now()}_fallback`;
+	return `error_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
 function determineErrorType(error: unknown): string {

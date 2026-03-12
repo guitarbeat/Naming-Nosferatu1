@@ -47,8 +47,6 @@
 	--font-sans:
 		"Space Grotesk", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
 		roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif;
-	--font-ui: "Inter", var(--font-sans);
-	--font-display: "Syne", var(--font-sans);
 	--font-serif: ui-serif, georgia, cambria, "Times New Roman", times, serif;
 	--font-mono:
 		"Space Mono", ui-monospace, sfmono-regular, menlo, monaco, consolas, "Liberation Mono",
@@ -100,8 +98,6 @@
 	--color-navbar-border: hsl(0deg 0% 0%);
 	--color-navbar-ring: hsl(0deg 0% 0%);
 	--font-sans: var(--font-sans);
-	--font-ui: var(--font-ui);
-	--font-display: var(--font-display);
 	--font-serif: var(--font-serif);
 	--font-mono: var(--font-mono);
 	--radius: var(--radius);
@@ -173,15 +169,11 @@
 	--font-weight-medium: 500;
 	--font-weight-semibold: 600;
 	--font-weight-bold: 700;
-	--font-weight-extrabold: 800;
 
-	--tracking-tight: -0.02em;
 	--tracking-wide: 0.025em;
 	--tracking-wider: 0.05em;
-	--tracking-caps: 0.11em;
 
 	--leading-normal: 1.5;
-	--leading-copy: 1.6;
 	--max-width-content: 65ch;
 }
 

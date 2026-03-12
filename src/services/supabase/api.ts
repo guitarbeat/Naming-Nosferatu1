@@ -39,60 +39,11 @@ interface SupabaseNamesClient {
 	from(table: string): SupabaseNamesQuery;
 }
 
-interface FetchResult<T> {
-	data: T;
-	error: string | null;
-	source: "supabase" | "api" | "unavailable";
-}
-
-interface AdminAuditLogRow {
-	id: string;
-	created_at?: string | null;
-	operation?: string | null;
-	table_name?: string | null;
-	user_name?: string | null;
-	target_name?: string | null;
-	old_values?: unknown;
-	new_values?: unknown;
-}
-
-export interface AdminAuditEntry {
-	id: string;
-	createdAt: string | null;
-	operation: string;
-	tableName: string;
-	userName: string | null;
-	targetName: string | null;
-	oldValues: Record<string, unknown> | null;
-	newValues: Record<string, unknown> | null;
-}
-
-interface AdminUserActivityRow {
-	user_id: string;
-	user_name?: string | null;
-	role_label?: string | null;
-	created_at?: string | null;
-	total_ratings?: number | null;
-	total_selections?: number | null;
-	total_wins?: number | null;
-	total_losses?: number | null;
-	last_rating_at?: string | null;
-	last_selection_at?: string | null;
-	last_active_at?: string | null;
-}
-
-export interface AdminUserActivity {
-	userId: string;
-	userName: string;
-	roleLabel: string;
-	createdAt: string | null;
-	totalRatings: number;
-	totalSelections: number;
-	totalWins: number;
-	totalLosses: number;
-	lastRatingAt: string | null;
-	lastSelectionAt: string | null;
-	lastActiveAt: string | null;
+function toErrorMessage(error: unknown): string {
+	if (error instanceof Error && error.message) {
+		return error.message;
+	}
+	return String(error);
 }
 
 function mapNameRow(item: ApiNameRow): NameItem {
@@ -112,59 +63,10 @@ function mapNameRow(item: ApiNameRow): NameItem {
 	};
 }
 
-function toErrorMessage(error: unknown, fallback: string): string {
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
-	return fallback;
-}
-
-function toFiniteNumber(value: unknown): number {
-	const numeric = typeof value === "number" ? value : Number(value);
-	return Number.isFinite(numeric) ? numeric : 0;
-}
-
-function toJsonRecord(value: unknown): Record<string, unknown> | null {
-	return value && typeof value === "object" && !Array.isArray(value)
-		? (value as Record<string, unknown>)
-		: null;
-}
-
-function mapAdminAuditRow(item: AdminAuditLogRow): AdminAuditEntry {
-	return {
-		id: item.id,
-		createdAt: item.created_at ?? null,
-		operation: item.operation ?? "UNKNOWN",
-		tableName: item.table_name ?? "unknown",
-		userName: item.user_name ?? null,
-		targetName: item.target_name ?? null,
-		oldValues: toJsonRecord(item.old_values),
-		newValues: toJsonRecord(item.new_values),
-	};
-}
-
-function mapAdminUserActivityRow(item: AdminUserActivityRow): AdminUserActivity {
-	return {
-		userId: item.user_id,
-		userName: item.user_name?.trim() || "Unknown user",
-		roleLabel: item.role_label?.trim() || "user",
-		createdAt: item.created_at ?? null,
-		totalRatings: toFiniteNumber(item.total_ratings),
-		totalSelections: toFiniteNumber(item.total_selections),
-		totalWins: toFiniteNumber(item.total_wins),
-		totalLosses: toFiniteNumber(item.total_losses),
-		lastRatingAt: item.last_rating_at ?? null,
-		lastSelectionAt: item.last_selection_at ?? null,
-		lastActiveAt: item.last_active_at ?? null,
-	};
-}
-
-async function getNamesFromSupabase(
-	includeHidden: boolean,
-): Promise<FetchResult<NameItem[]> | null> {
+async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]> {
 	const client = (await resolveSupabaseClient()) as unknown as SupabaseNamesClient | null;
 	if (!client) {
-		return null;
+		return [];
 	}
 
 	const selectColumns =
@@ -182,146 +84,10 @@ async function getNamesFromSupabase(
 	const result = await query.order("avg_rating", { ascending: false }).limit(1000);
 	if (result.error) {
 		console.warn("[coreAPI.getTrendingNames] Supabase fallback failed:", result.error.message);
-		return {
-			data: [],
-			error: result.error.message || "Supabase query failed",
-			source: "supabase",
-		};
+		return [];
 	}
 
-	return {
-		data: (result.data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow)),
-		error: null,
-		source: "supabase",
-	};
-}
-
-async function getTrendingNamesResult(includeHidden: boolean): Promise<FetchResult<NameItem[]>> {
-	const supabaseResult = await getNamesFromSupabase(includeHidden);
-	if (supabaseResult && !supabaseResult.error) {
-		return supabaseResult;
-	}
-
-	try {
-		const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
-		return {
-			data: (data ?? []).map((item) => mapNameRow(item)),
-			error: null,
-			source: "api",
-		};
-	} catch (error) {
-		const failures: string[] = [];
-		if (supabaseResult?.error) {
-			failures.push(`Supabase: ${supabaseResult.error}`);
-		} else if (!supabaseResult) {
-			failures.push("Supabase: client unavailable");
-		}
-		failures.push(`API: ${toErrorMessage(error, "Failed to fetch names")}`);
-		return {
-			data: [],
-			error: failures.join(" | "),
-			source: "unavailable",
-		};
-	}
-}
-
-async function getSiteStatsResult(): Promise<FetchResult<Record<string, unknown>>> {
-	try {
-		const data = await api.get<Record<string, unknown>>("/analytics/site-stats");
-		return {
-			data: data ?? {},
-			error: null,
-			source: "api",
-		};
-	} catch (error) {
-		return {
-			data: {},
-			error: toErrorMessage(error, "Failed to fetch site stats"),
-			source: "unavailable",
-		};
-	}
-}
-
-async function getRecentAdminActionsResult(limit: number): Promise<FetchResult<AdminAuditEntry[]>> {
-	const client = await resolveSupabaseClient();
-	if (!client) {
-		return {
-			data: [],
-			error: "Supabase client unavailable",
-			source: "unavailable",
-		};
-	}
-
-	const normalizedLimit = Math.min(Math.max(Math.trunc(limit) || 10, 1), 50);
-
-	try {
-		const rpcResult = await client.rpc("get_recent_admin_actions" as any, {
-			p_limit: normalizedLimit,
-		});
-
-		if (rpcResult.error) {
-			return {
-				data: [],
-				error: rpcResult.error.message || "Failed to fetch admin actions",
-				source: "supabase",
-			};
-		}
-
-		return {
-			data: (rpcResult.data ?? []).map((item) => mapAdminAuditRow(item as AdminAuditLogRow)),
-			error: null,
-			source: "supabase",
-		};
-	} catch (error) {
-		return {
-			data: [],
-			error: toErrorMessage(error, "Failed to fetch admin actions"),
-			source: "unavailable",
-		};
-	}
-}
-
-async function getAdminUserActivityResult(
-	limit: number,
-): Promise<FetchResult<AdminUserActivity[]>> {
-	const client = await resolveSupabaseClient();
-	if (!client) {
-		return {
-			data: [],
-			error: "Supabase client unavailable",
-			source: "unavailable",
-		};
-	}
-
-	const normalizedLimit = Math.min(Math.max(Math.trunc(limit) || 50, 1), 100);
-
-	try {
-		const rpcResult = await client.rpc("get_admin_user_activity" as any, {
-			p_limit: normalizedLimit,
-		});
-
-		if (rpcResult.error) {
-			return {
-				data: [],
-				error: rpcResult.error.message || "Failed to fetch user activity",
-				source: "supabase",
-			};
-		}
-
-		return {
-			data: (rpcResult.data ?? []).map((item) =>
-				mapAdminUserActivityRow(item as AdminUserActivityRow),
-			),
-			error: null,
-			source: "supabase",
-		};
-	} catch (error) {
-		return {
-			data: [],
-			error: toErrorMessage(error, "Failed to fetch user activity"),
-			source: "unavailable",
-		};
-	}
+	return (result.data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow));
 }
 
 export const imagesAPI = {
@@ -357,11 +123,19 @@ export const coreAPI = {
 	},
 
 	getTrendingNames: async (includeHidden: boolean = false) => {
-		return (await getTrendingNamesResult(includeHidden)).data;
-	},
+		// Primary path: query Supabase directly (no Express backend needed)
+		const supabaseResult = await getNamesFromSupabase(includeHidden);
+		if (supabaseResult.length > 0) {
+			return supabaseResult;
+		}
 
-	getTrendingNamesResult: async (includeHidden: boolean = false) => {
-		return getTrendingNamesResult(includeHidden);
+		// Fallback: try API server if Supabase returned nothing
+		try {
+			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
+			return (data ?? []).map((item) => mapNameRow(item));
+		} catch {
+			return [];
+		}
 	},
 
 	getHiddenNames: async () => {
@@ -464,32 +238,12 @@ export const hiddenNamesAPI = {
 	},
 };
 
-export const adminAuditAPI = {
-	getRecentActions: async (limit: number = 10) => {
-		return (await getRecentAdminActionsResult(limit)).data;
-	},
-
-	getRecentActionsResult: async (limit: number = 10) => {
-		return getRecentAdminActionsResult(limit);
-	},
-};
-
-export const adminUsersAPI = {
-	getUserActivity: async (limit: number = 50) => {
-		return (await getAdminUserActivityResult(limit)).data;
-	},
-
-	getUserActivityResult: async (limit: number = 50) => {
-		return getAdminUserActivityResult(limit);
-	},
-};
-
 export const statsAPI = {
 	getSiteStats: async () => {
-		return (await getSiteStatsResult()).data;
-	},
-
-	getSiteStatsResult: async () => {
-		return getSiteStatsResult();
+		try {
+			return await api.get<any>("/analytics/site-stats");
+		} catch {
+			return {};
+		}
 	},
 };

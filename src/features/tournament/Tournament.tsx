@@ -146,7 +146,7 @@ function MatchSideCard({
 			: "";
 
 	return (
-		<div className="w-full flex flex-col min-h-[250px] sm:min-h-0">
+		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
 			<Card
 				interactive={true}
 				padding="none"
@@ -783,7 +783,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				? { name: rightName, streak: rightStreak, heatLevel: rightHeatLevel ?? "warm" }
 				: null;
 	return (
-		<div className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
+		<div className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -947,7 +947,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				</Card>
 			</section>
 
-			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
+			<main className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 relative py-2 min-h-0">
 				{/* Animated blob backgrounds */}
 				<div className="absolute inset-0 overflow-hidden pointer-events-none">
 					<div className="absolute top-0 left-0 w-32 h-32 bg-primary/20 rounded-full animate-blob animation-delay-2000" />
@@ -1069,97 +1069,81 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(6px)" }
 						}
 						transition={{ duration: prefersReducedMotion ? 0.01 : 0.32 }}
-						className="relative z-10 mx-auto flex h-auto min-h-fit w-full max-w-5xl flex-col items-center gap-3 sm:gap-4"
+						className="relative flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-4 w-full max-w-5xl mx-auto z-10 items-stretch h-full min-h-0"
 					>
-						<div className="w-full rounded-2xl border border-border/20 bg-background/55 px-4 py-3 text-center shadow-sm backdrop-blur-md">
-							<p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/85">
-								Pick The Winner
-							</p>
-							<p className="mt-1 text-sm text-foreground/90 sm:hidden">
-								Tap a card to pick the winner. Use Undo if you miss.
-							</p>
-							<p className="mt-1 hidden text-sm text-foreground/90 sm:block">
-								Click a card to pick the winner, or focus it and press Enter or Space.
-							</p>
-						</div>
+						{/* Left Card */}
+						<MatchSideCard
+							side="left"
+							name={leftName}
+							img={leftImg}
+							heatLevel={leftHeatLevel}
+							streak={leftStreak}
+							isVoting={isVoting}
+							isSelected={leftSelected}
+							hasSelectionFeedback={hasSelectionFeedback}
+							isTeam={leftIsTeam}
+							members={leftMembers}
+							description={leftDescription}
+							pronunciation={leftPronunciation}
+							onKeyDown={(e) => handleKeyDown(e, "left")}
+							onVote={() => handleVoteForSide("left")}
+						/>
 
-						<div className="relative flex h-auto min-h-fit w-full flex-col items-center gap-4 sm:grid sm:h-full sm:min-h-0 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch sm:gap-4">
-							{/* Left Card */}
-							<MatchSideCard
-								side="left"
-								name={leftName}
-								img={leftImg}
-								heatLevel={leftHeatLevel}
-								streak={leftStreak}
-								isVoting={isVoting}
-								isSelected={leftSelected}
-								hasSelectionFeedback={hasSelectionFeedback}
-								isTeam={leftIsTeam}
-								members={leftMembers}
-								description={leftDescription}
-								pronunciation={leftPronunciation}
-								onKeyDown={(e) => handleKeyDown(e, "left")}
-								onVote={() => handleVoteForSide("left")}
-							/>
-
-							{/* VS Indicator */}
-							<div className="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 py-1 w-full sm:w-20">
-								<div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-border/30 bg-primary/20 backdrop-blur-md shadow-lg flex-shrink-0">
-									<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">VS</span>
-								</div>
-								{dominantStreak && (
-									<div
-										className={`rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-black tracking-wider uppercase ${getHeatTextClasses(dominantStreak.heatLevel)}`}
-									>
-										🔥 x{dominantStreak.streak}
-									</div>
-								)}
-								<div className="flex flex-row sm:flex-col gap-1.5 w-auto sm:w-full">
-									<button
-										type="button"
-										onClick={() => handleUndo()}
-										className={`glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center gap-2 border border-primary/20 transition-colors ${
-											canUndo ? "cursor-pointer hover:bg-white/5" : "cursor-not-allowed opacity-40"
-										}`}
-										aria-label="Undo last vote"
-										title="Undo last vote"
-										disabled={!canUndo}
-									>
-										<Undo2 className="size-3.5 text-primary" />
-										<span className="text-[11px] font-bold text-foreground sm:hidden">Undo</span>
-									</button>
-									<button
-										type="button"
-										onClick={quitTournament}
-										className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center gap-2 border border-destructive/20 cursor-pointer hover:bg-destructive/10 transition-colors"
-										aria-label="Quit tournament"
-										title="Quit tournament"
-									>
-										<LogOut className="size-3.5 text-destructive" />
-										<span className="text-[11px] font-bold text-foreground sm:hidden">Quit</span>
-									</button>
-								</div>
+						{/* VS Indicator */}
+						<div className="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 py-1 w-full sm:w-20">
+							<div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-border/30 bg-primary/20 backdrop-blur-md shadow-lg flex-shrink-0">
+								<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">VS</span>
 							</div>
-
-							{/* Right Card */}
-							<MatchSideCard
-								side="right"
-								name={rightName}
-								img={rightImg}
-								heatLevel={rightHeatLevel}
-								streak={rightStreak}
-								isVoting={isVoting}
-								isSelected={rightSelected}
-								hasSelectionFeedback={hasSelectionFeedback}
-								isTeam={rightIsTeam}
-								members={rightMembers}
-								description={rightDescription}
-								pronunciation={rightPronunciation}
-								onKeyDown={(e) => handleKeyDown(e, "right")}
-								onVote={() => handleVoteForSide("right")}
-								animationDelay="2s"
-							/>
+							{dominantStreak && (
+								<div
+									className={`rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-black tracking-wider uppercase ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+								>
+									🔥 x{dominantStreak.streak}
+								</div>
+							)}
+							<div className="flex flex-row sm:flex-col gap-1.5 w-auto sm:w-full">
+								<button
+									type="button"
+									onClick={() => handleUndo()}
+									className={`glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-primary/20 transition-colors ${
+										canUndo ? "cursor-pointer hover:bg-white/5" : "cursor-not-allowed opacity-40"
+									}`}
+									aria-label="Undo last vote"
+									title="Undo last vote"
+									disabled={!canUndo}
+								>
+									<Undo2 className="size-3.5 text-primary" />
+								</button>
+								<button
+									type="button"
+									onClick={quitTournament}
+									className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-destructive/20 cursor-pointer hover:bg-destructive/10 transition-colors"
+									aria-label="Quit tournament"
+									title="Quit tournament"
+								>
+									<LogOut className="size-3.5 text-destructive" />
+								</button>
+							</div>
 						</div>
+
+						{/* Right Card */}
+						<MatchSideCard
+							side="right"
+							name={rightName}
+							img={rightImg}
+							heatLevel={rightHeatLevel}
+							streak={rightStreak}
+							isVoting={isVoting}
+							isSelected={rightSelected}
+							hasSelectionFeedback={hasSelectionFeedback}
+							isTeam={rightIsTeam}
+							members={rightMembers}
+							description={rightDescription}
+							pronunciation={rightPronunciation}
+							onKeyDown={(e) => handleKeyDown(e, "right")}
+							onVote={() => handleVoteForSide("right")}
+							animationDelay="2s"
+						/>
 					</motion.div>
 				</AnimatePresence>
 			</main>

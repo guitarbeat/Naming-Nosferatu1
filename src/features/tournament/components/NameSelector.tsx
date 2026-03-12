@@ -6,6 +6,7 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
+import { useNamesCache } from "@/shared/hooks";
 import { api } from "@/services/apiClient";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
@@ -16,10 +17,9 @@ import { CollapsibleContent } from "@/shared/components/layout/CollapsibleHeader
 import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
-import { useCollapsible, useNamesCache } from "@/shared/hooks";
+import { useCollapsible } from "@/shared/hooks";
 import { getRandomCatImage } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
-import { isRpcSignatureError } from "@/shared/lib/errors";
 import {
 	Check,
 	CheckCircle,
@@ -78,6 +78,16 @@ const EXIT_SPRING_CONFIG = {
 	damping: 25,
 	velocity: 50,
 };
+
+function isRpcSignatureError(message: string): boolean {
+	const normalized = message.toLowerCase();
+	return (
+		normalized.includes("function") &&
+		(normalized.includes("does not exist") ||
+			normalized.includes("no function matches") ||
+			normalized.includes("could not find"))
+	);
+}
 
 type PendingAdminAction = {
 	type: "toggle-hidden" | "toggle-locked";
@@ -532,11 +542,10 @@ export function NameSelector() {
 		setPendingAdminAction(null);
 	}, [pendingAdminAction, handleToggleHidden, handleToggleLocked]);
 
-	const visibleCards = useMemo(
-		() => names.filter((name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in)),
-		[names, swipedIds],
+	const visibleCards = names.filter(
+		(name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in),
 	);
-	const cardsToRender = useMemo(() => visibleCards.slice(0, 3), [visibleCards]);
+	const cardsToRender = visibleCards.slice(0, 3);
 
 	const availableNames = useMemo(
 		() => names.filter((name) => !(name.lockedIn || name.locked_in) && !name.isHidden),
@@ -698,17 +707,17 @@ export function NameSelector() {
 
 	if (isLoading) {
 		return (
-			<div className="mx-auto w-full">
+			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
 				<div className="flex items-center justify-center py-20">
 					<Loading variant="spinner" text="Loading cat names..." />
 				</div>
-			</div>
+			</Card>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="mx-auto w-full">
+			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
 				<div className="flex flex-col items-center justify-center py-20 space-y-4">
 					<div className="text-destructive text-center">
 						<p className="text-lg font-medium">Failed to load names</p>
@@ -718,12 +727,12 @@ export function NameSelector() {
 						Try Again
 					</Button>
 				</div>
-			</div>
+			</Card>
 		);
 	}
 
 	return (
-		<div className="mx-auto w-full">
+		<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
 			<div className="space-y-6 mobile-nav-safe-bottom">
 				{(() => {
 					const lockedInNames = names.filter((name) => name.lockedIn || name.locked_in);
@@ -1547,6 +1556,6 @@ export function NameSelector() {
 				onCancel={() => setPendingAdminAction(null)}
 				onConfirm={handleConfirmAdminAction}
 			/>
-		</div>
+		</Card>
 	);
 }

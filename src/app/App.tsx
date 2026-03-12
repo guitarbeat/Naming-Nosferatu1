@@ -7,17 +7,19 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
-import { NameSuggestion } from "@/features/tournament/components/NameSuggestion";
-import { ProfileSection } from "@/features/tournament/components/ProfileSection";
+import { NameSuggestionInner } from "@/features/tournament/components/NameSuggestion";
+import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
 import { updateSupabaseUserContext } from "@/services/supabase/runtime";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
+import { LiquidGlass } from "@/shared/components/layout";
+import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useOfflineSync } from "@/shared/hooks";
 
 import {
@@ -96,19 +98,30 @@ function HomeContent() {
 	const { login } = useAuth();
 
 	return (
-		<div className="flex flex-col gap-10 pb-6 md:gap-14 md:pb-10">
+		<>
 			<Section id="pick" variant="minimal" padding="none" maxWidth="full">
 				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 					<TournamentFlow />
 				</Suspense>
 			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="full">
-				<NameSuggestion variant="inline" />
+			<Section id="suggest-and-profile" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
+				<LiquidGlass
+					className="w-full flex flex-col backdrop-blur-md rounded-3xl"
+					style={{ width: "100%", height: "auto", minHeight: "200px" }}
+					{...getGlassPreset("card")}
+				>
+					<div className="flex flex-col divide-y divide-border/20">
+						<div className="p-6 sm:p-8">
+							<NameSuggestionInner />
+						</div>
+						<div className="p-6 sm:p-8">
+							<ProfileInner onLogin={(name) => login({ name })} />
+						</div>
+					</div>
+				</LiquidGlass>
 			</Section>
-
-			<ProfileSection onLogin={(name) => login({ name })} />
-		</div>
+		</>
 	);
 }
 
@@ -182,7 +195,6 @@ function AnalysisContent() {
 function AdminContent() {
 	const { user } = useAppStore();
 
-	// Only allow admin users
 	if (!user.isAdmin) {
 		return (
 			<Section id="admin" variant="minimal" padding="none" maxWidth="full">

@@ -32,13 +32,6 @@ export interface UserStats {
 	[key: string]: unknown;
 }
 
-export interface ActivityTrendPoint {
-	date: string;
-	selectionCount: number;
-	activeUsers: number;
-	uniqueNames: number;
-}
-
 interface UserRatingRow {
 	nameId: IdType;
 	rating: number;
@@ -71,15 +64,6 @@ function mapLeaderboardRow(row: Record<string, unknown>): LeaderboardItem {
 	};
 }
 
-function mapActivityTrendRow(row: Record<string, unknown>): ActivityTrendPoint {
-	return {
-		date: String(row.date ?? ""),
-		selectionCount: toNumber(row.selectionCount ?? row.selection_count),
-		activeUsers: toNumber(row.activeUsers ?? row.active_users),
-		uniqueNames: toNumber(row.uniqueNames ?? row.unique_names),
-	};
-}
-
 export const leaderboardAPI = {
 	getLeaderboard: async (limit: number | null = 50): Promise<LeaderboardItem[]> => {
 		try {
@@ -101,13 +85,13 @@ export const statsAPI = {
 				return null;
 			}
 			return {
-				totalNames: toNumber(stats.totalNames ?? stats.total_names),
-				activeNames: toNumber(stats.activeNames ?? stats.active_names),
-				hiddenNames: toNumber(stats.hiddenNames ?? stats.hidden_names),
-				totalUsers: toNumber(stats.totalUsers ?? stats.total_users),
-				totalRatings: toNumber(stats.totalRatings ?? stats.total_ratings),
-				totalSelections: toNumber(stats.totalSelections ?? stats.total_selections),
-				avgRating: toNumber(stats.avgRating ?? stats.avg_rating),
+				totalNames: toNumber(stats.totalNames),
+				activeNames: toNumber(stats.activeNames),
+				hiddenNames: toNumber(stats.hiddenNames),
+				totalUsers: toNumber(stats.totalUsers),
+				totalRatings: toNumber(stats.totalRatings),
+				totalSelections: toNumber(stats.totalSelections),
+				avgRating: toNumber(stats.avgRating),
 			};
 		} catch {
 			return null;
@@ -159,17 +143,6 @@ export const statsAPI = {
 			};
 		} catch {
 			return null;
-		}
-	},
-
-	getActivityTrend: async (days = 14): Promise<ActivityTrendPoint[]> => {
-		try {
-			const rows = await api.get<Array<Record<string, unknown>>>(
-				`/analytics/activity-trend?days=${days}`,
-			);
-			return (rows ?? []).map(mapActivityTrendRow).filter((row) => row.date.length > 0);
-		} catch {
-			return [];
 		}
 	},
 };

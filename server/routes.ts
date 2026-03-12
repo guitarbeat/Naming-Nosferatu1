@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { type NextFunction, type Request, type Response, Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import jwt from "jsonwebtoken";
@@ -84,69 +84,6 @@ const mockNames = [
 		pronunciation: "MIT-enz",
 	},
 ];
-
-interface ActivityTrendPoint {
-	date: string;
-	selectionCount: number;
-	activeUsers: number;
-	uniqueNames: number;
-}
-
-function toCount(value: unknown): number {
-	const numeric = Number(value);
-	return Number.isFinite(numeric) ? numeric : 0;
-}
-
-function buildRecentDateKeys(days: number): string[] {
-	const endDate = new Date();
-	endDate.setUTCHours(0, 0, 0, 0);
-
-	return Array.from({ length: days }, (_, index) => {
-		const date = new Date(endDate);
-		date.setUTCDate(endDate.getUTCDate() - (days - 1 - index));
-		return date.toISOString().slice(0, 10);
-	});
-}
-
-function buildMockActivityTrend(days: number): ActivityTrendPoint[] {
-	return buildRecentDateKeys(days).map((date, index) => {
-		const selectionCount = Math.max(
-			0,
-			8 + ((index * 3) % 9) + (index % 4 === 0 ? 5 : 0) - (index % 6 === 0 ? 2 : 0),
-		);
-
-		return {
-			date,
-			selectionCount,
-			activeUsers: Math.max(0, Math.round(selectionCount / 3)),
-			uniqueNames: Math.max(0, Math.round(selectionCount / 2.5)),
-		};
-	});
-}
-
-function buildActivityTrend(
-	days: number,
-	selectionRows: Array<Record<string, unknown>>,
-	activeUserRows: Array<Record<string, unknown>>,
-	uniqueNameRows: Array<Record<string, unknown>>,
-): ActivityTrendPoint[] {
-	const selectionMap = new Map(
-		selectionRows.map((row) => [String(row.date ?? ""), toCount(row.selectionCount)]),
-	);
-	const activeUserMap = new Map(
-		activeUserRows.map((row) => [String(row.date ?? ""), toCount(row.activeUsers)]),
-	);
-	const uniqueNameMap = new Map(
-		uniqueNameRows.map((row) => [String(row.date ?? ""), toCount(row.uniqueNames)]),
-	);
-
-	return buildRecentDateKeys(days).map((date) => ({
-		date,
-		selectionCount: selectionMap.get(date) ?? 0,
-		activeUsers: activeUserMap.get(date) ?? 0,
-		uniqueNames: uniqueNameMap.get(date) ?? 0,
-	}));
-}
 
 // Basic endpoint to get all active names
 router.get("/api/names", async (req, res) => {
@@ -571,131 +508,30 @@ router.get("/api/analytics/leaderboard", async (req, res) => {
 router.get("/api/analytics/site-stats", async (_req, res) => {
 	try {
 		if (!db) {
-			const totalNames = mockNames.length;
-			const hiddenNames = mockNames.filter((name) => name.isHidden).length;
-			const activeNames = mockNames.filter((name) => name.isActive && !name.isHidden).length;
-			const averageRating =
-				mockNames.length > 0
-					? Math.round(
-							mockNames.reduce((sum, name) => sum + toCount(name.avgRating), 0) / mockNames.length,
-						)
-					: 0;
-
 			return res.json({
-				totalNames,
-				activeNames,
-				hiddenNames,
-				totalUsers: 8,
-				totalRatings: 48,
-				totalSelections: 22,
-				avgRating: averageRating,
+				totalNames: mockNames.length,
+				totalRatings: Math.floor(Math.random() * 500),
+				totalUsers: Math.floor(Math.random() * 50),
 			});
 		}
 
-		const [
-			totalNames,
-			activeNames,
-			hiddenNames,
-			totalUsers,
-			totalRatings,
-			totalSelections,
-			avgRating,
-		] = await Promise.all([
+		const [totalNames, totalRatings, totalUsers] = await Promise.all([
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(catNameOptions)
 				.where(eq(catNameOptions.isDeleted, false)),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(catNameOptions)
-				.where(
-					and(
-						eq(catNameOptions.isDeleted, false),
-						eq(catNameOptions.isActive, true),
-						eq(catNameOptions.isHidden, false),
-					),
-				),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(catNameOptions)
-				.where(and(eq(catNameOptions.isDeleted, false), eq(catNameOptions.isHidden, true))),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(catAppUsers)
-				.where(eq(catAppUsers.isDeleted, false)),
 			db.select({ count: sql<number>`count(*)` }).from(catNameRatings),
-			db.select({ count: sql<number>`count(*)` }).from(catTournamentSelections),
-			db
-				.select({ value: sql<number>`round(avg(${catNameOptions.avgRating}))` })
-				.from(catNameOptions)
-				.where(eq(catNameOptions.isDeleted, false)),
+			db.select({ count: sql<number>`count(distinct user_id)` }).from(catNameRatings),
 		]);
 
 		res.json({
 			totalNames: totalNames[0]?.count || 0,
-			activeNames: activeNames[0]?.count || 0,
-			hiddenNames: hiddenNames[0]?.count || 0,
-			totalUsers: totalUsers[0]?.count || 0,
 			totalRatings: totalRatings[0]?.count || 0,
-			totalSelections: totalSelections[0]?.count || 0,
-			avgRating: avgRating[0]?.value || 0,
+			totalUsers: totalUsers[0]?.count || 0,
 		});
 	} catch (error) {
 		console.error("Error fetching site stats:", error);
 		res.status(500).json({ error: "Failed to fetch site stats" });
-	}
-});
-
-// Get analytics - recent selection activity trend
-router.get("/api/analytics/activity-trend", async (req, res) => {
-	try {
-		const rawDays = parseInt(req.query.days as string, 10) || 14;
-		const days = Math.min(Math.max(rawDays, 1), 30);
-
-		if (!db) {
-			return res.json(buildMockActivityTrend(days));
-		}
-
-		const cutoff = new Date();
-		cutoff.setUTCHours(0, 0, 0, 0);
-		cutoff.setUTCDate(cutoff.getUTCDate() - (days - 1));
-
-		const trendDate = sql<string>`timezone('UTC', ${catTournamentSelections.selectedAt})::date::text`;
-
-		const [selectionRows, activeUserRows, uniqueNameRows] = await Promise.all([
-			db
-				.select({
-					date: trendDate,
-					selectionCount: sql<number>`count(*)`,
-				})
-				.from(catTournamentSelections)
-				.where(gte(catTournamentSelections.selectedAt, cutoff))
-				.groupBy(trendDate)
-				.orderBy(trendDate),
-			db
-				.select({
-					date: trendDate,
-					activeUsers: sql<number>`count(distinct ${catTournamentSelections.userId})`,
-				})
-				.from(catTournamentSelections)
-				.where(gte(catTournamentSelections.selectedAt, cutoff))
-				.groupBy(trendDate)
-				.orderBy(trendDate),
-			db
-				.select({
-					date: trendDate,
-					uniqueNames: sql<number>`count(distinct ${catTournamentSelections.nameId})`,
-				})
-				.from(catTournamentSelections)
-				.where(gte(catTournamentSelections.selectedAt, cutoff))
-				.groupBy(trendDate)
-				.orderBy(trendDate),
-		]);
-
-		res.json(buildActivityTrend(days, selectionRows, activeUserRows, uniqueNameRows));
-	} catch (error) {
-		console.error("Error fetching activity trend:", error);
-		res.status(500).json({ error: "Failed to fetch activity trend" });
 	}
 });
 

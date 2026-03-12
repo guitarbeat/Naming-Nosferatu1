@@ -5,9 +5,9 @@
  */
 
 import { useCallback, useEffect, useId, useRef } from "react";
+import { useNameSuggestion } from "@/shared/hooks";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
-import { useNameSuggestion } from "@/shared/hooks";
 import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";
 
 // ============================================================================
@@ -24,10 +24,10 @@ interface NameSuggestionProps {
 }
 
 // ============================================================================
-// INLINE VARIANT
+// INNER CONTENT (no wrapper — used when embedded in a shared container)
 // ============================================================================
 
-function InlineNameSuggestion() {
+export function NameSuggestionInner() {
 	const { values, isSubmitting, handleChange, handleSubmit, globalError, successMessage } =
 		useNameSuggestion();
 
@@ -37,21 +37,21 @@ function InlineNameSuggestion() {
 	};
 
 	return (
-		<form onSubmit={handleLocalSubmit} className="mx-auto w-full max-w-3xl px-4 sm:px-6">
-			<div className="relative flex flex-col gap-6 py-4 sm:py-6">
+		<form onSubmit={handleLocalSubmit} className="w-full max-w-3xl mx-auto">
+			<div className="relative overflow-hidden rounded-[28px] border border-border bg-background/50 p-6 sm:p-8 shadow-2xl shadow-background/40">
 				<div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent-color/15 blur-3xl" />
 				<div className="pointer-events-none absolute -left-14 bottom-0 h-48 w-48 rounded-full bg-chart-4/10 blur-3xl" />
 
 				<div className="relative flex flex-col gap-6">
-					<div className="flex flex-col gap-3 text-center">
-						<div className="inline-flex mx-auto items-center gap-2 rounded-full border border-border/60 bg-foreground/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent-foreground/90">
+					<div className="text-center flex flex-col gap-3">
+						<div className="inline-flex mx-auto items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent-foreground/90">
 							<Lightbulb size={14} />
 							Submit A Name
 						</div>
-						<h3 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+						<h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
 							Drop your best cat name idea
 						</h3>
-						<p className="mx-auto max-w-2xl text-sm text-muted-foreground sm:text-base">
+						<p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
 							Add a name and a quick reason. Great suggestions help everyone discover fun new
 							options.
 						</p>
@@ -68,7 +68,7 @@ function InlineNameSuggestion() {
 								value={values.name}
 								onChange={(e) => handleChange("name", e.target.value)}
 								placeholder="e.g. Count Whiskula"
-								className="h-14 w-full border-border bg-foreground/5 px-4 text-base font-semibold focus-visible:ring-accent-color/45"
+								className="w-full h-14 px-4 text-base font-semibold bg-foreground/5 border-border focus-visible:ring-accent-color/45"
 								disabled={isSubmitting}
 								maxLength={50}
 							/>
@@ -92,15 +92,15 @@ function InlineNameSuggestion() {
 								onChange={(e) => handleChange("description", e.target.value)}
 								placeholder="Share the meaning, story, or personality fit..."
 								rows={4}
-								className="w-full resize-none border-border bg-foreground/5 px-4 py-3 font-medium focus-visible:ring-accent-color/45"
+								className="w-full px-4 py-3 font-medium bg-foreground/5 border-border focus-visible:ring-accent-color/45 resize-none"
 								disabled={isSubmitting}
 								maxLength={500}
 								showCount={true}
 							/>
 						</div>
 
-						<div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-							<p className="text-xs text-muted-foreground sm:text-sm">
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+							<p className="text-xs sm:text-sm text-muted-foreground">
 								Your suggestion is added to the shared discovery pool.
 							</p>
 							<Button
@@ -109,7 +109,7 @@ function InlineNameSuggestion() {
 								size="xl"
 								disabled={!values.name.trim() || !values.description.trim() || isSubmitting}
 								loading={isSubmitting}
-								className="w-full font-extrabold sm:min-w-[190px] sm:w-auto"
+								className="w-full sm:w-auto sm:min-w-[190px] font-extrabold"
 							>
 								Submit Suggestion
 							</Button>
@@ -119,17 +119,33 @@ function InlineNameSuggestion() {
 			</div>
 
 			{globalError && (
-				<div className="animate-in slide-in-from-top-2 fade-in mt-4 rounded-xl border border-destructive/25 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive-foreground">
+				<div className="mt-4 p-3 bg-destructive/10 border border-destructive/25 rounded-xl text-destructive-foreground text-sm font-medium text-center animate-in fade-in slide-in-from-top-2">
 					{globalError}
 				</div>
 			)}
 			{successMessage && (
-				<div className="animate-in slide-in-from-top-2 fade-in mt-4 flex items-center justify-center gap-2 rounded-xl border border-chart-2/25 bg-chart-2/10 p-3 text-center text-sm font-semibold text-chart-2">
+				<div className="mt-4 flex items-center justify-center gap-2 p-3 bg-chart-2/10 border border-chart-2/25 rounded-xl text-chart-2 text-sm font-semibold text-center animate-in fade-in slide-in-from-top-2">
 					<CheckCircle size={16} />
 					{successMessage}
 				</div>
 			)}
 		</form>
+	);
+}
+
+// ============================================================================
+// INLINE VARIANT (self-contained with LiquidGlass wrapper)
+// ============================================================================
+
+function InlineNameSuggestion() {
+	return (
+		<LiquidGlass
+			className="w-full flex flex-col items-center justify-center p-4 sm:p-6 backdrop-blur-md rounded-3xl"
+			style={{ width: "100%", height: "auto", minHeight: "200px" }}
+			{...getGlassPreset("card")}
+		>
+			<NameSuggestionInner />
+		</LiquidGlass>
 	);
 }
 
@@ -170,7 +186,6 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 		},
 	});
 
-	// Track mount state
 	useEffect(() => {
 		isMountedRef.current = true;
 		return () => {
@@ -178,7 +193,6 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 		};
 	}, []);
 
-	// Focus name input when modal opens
 	useEffect(() => {
 		if (isOpen && nameInputRef.current) {
 			setTimeout(() => {
@@ -187,7 +201,6 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 		}
 	}, [isOpen]);
 
-	// Handle Escape key to close modal
 	useEffect(() => {
 		if (!isOpen) {
 			return;

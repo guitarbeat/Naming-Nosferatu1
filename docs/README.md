@@ -10,8 +10,6 @@
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Setup, coding standards, workflow (formerly DEVELOPMENT.md) |
 | [DESIGN.md](./DESIGN.md) | Design system, tokens, visual patterns (formerly UI_UX.md) |
 | [API.md](./API.md) | API reference and database schema |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Environment variables, deployment configuration, external services |
-| [AI_RULES.md](./AI_RULES.md) | AI assistant guidelines for this codebase |
 
 ## Quick Links
 
