@@ -4,12 +4,16 @@
  */
 
 import { Suspense, useEffect, useState } from "react";
-import { leaderboardAPI, statsAPI } from "@/services/analytics/analyticsService";
+import {
+	type ActivityTrendPoint,
+	leaderboardAPI,
+	statsAPI,
+} from "@/services/analytics/analyticsService";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
-import { BarChart3, Eye, EyeOff, Trophy } from "@/shared/lib/icons";
+import { BarChart3, Clock, Eye, EyeOff, Layers, Trophy, User } from "@/shared/lib/icons";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RandomGenerator } from "../tournament/components/RandomGenerator";
 import { PersonalResults } from "./PersonalResults";
@@ -27,6 +31,24 @@ interface DashboardProps {
 	isAdmin?: boolean;
 	canHideNames?: boolean;
 	onNameHidden?: (nameId: string) => void;
+}
+
+const trendLabelFormatter = new Intl.DateTimeFormat("en-US", {
+	month: "short",
+	day: "numeric",
+});
+
+function formatTrendLabel(date: string): string {
+	const parsed = new Date(`${date}T00:00:00Z`);
+	return Number.isNaN(parsed.getTime()) ? date : trendLabelFormatter.format(parsed);
+}
+
+function getBarHeight(count: number, maxCount: number): string {
+	if (maxCount <= 0) {
+		return "10%";
+	}
+
+	return `${Math.max((count / maxCount) * 100, count > 0 ? 18 : 10)}%`;
 }
 
 export function Dashboard({
@@ -64,8 +86,10 @@ export function Dashboard({
 		totalWins: number;
 		winRate: number;
 	} | null>(null);
+	const [activityTrend, setActivityTrend] = useState<ActivityTrendPoint[]>([]);
 	const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
 	const [_isLoadingStats, setIsLoadingStats] = useState(true);
+	const [isLoadingTrend, setIsLoadingTrend] = useState(true);
 	const [hiddenNames, setHiddenNames] = useState<Array<{ id: string | number; name: string }>>([]);
 	const [showHiddenNames, setShowHiddenNames] = useState(false);
 
@@ -89,10 +113,12 @@ export function Dashboard({
 	useEffect(() => {
 		const fetchStats = async () => {
 			setIsLoadingStats(true);
+			setIsLoadingTrend(true);
 			try {
-				const [site, user] = await Promise.all([
+				const [site, user, trend] = await Promise.all([
 					statsAPI.getSiteStats(),
 					userName ? statsAPI.getUserStats(userName) : Promise.resolve(null),
+					statsAPI.getActivityTrend(14),
 				]);
 
 				if (site) {
@@ -107,10 +133,12 @@ export function Dashboard({
 					});
 				}
 				setUserStats(user);
+				setActivityTrend(trend);
 			} catch (error) {
 				console.error("Failed to fetch stats:", error);
 			} finally {
 				setIsLoadingStats(false);
+				setIsLoadingTrend(false);
 			}
 		};
 		fetchStats();
@@ -145,6 +173,30 @@ export function Dashboard({
 			console.error("Failed to unhide name:", error);
 		}
 	};
+
+	const totalTrendSelections = activityTrend.reduce((sum, point) => sum + point.selectionCount, 0);
+	const maxTrendSelections = activityTrend.reduce(
+		(maximum, point) => Math.max(maximum, point.selectionCount),
+		0,
+	);
+	const peakTrendDay = activityTrend.reduce<ActivityTrendPoint | null>((peak, point) => {
+		if (!peak || point.selectionCount > peak.selectionCount) {
+			return point;
+		}
+
+		return peak;
+	}, null);
+	const averageActiveUsers =
+		activityTrend.length > 0
+			? activityTrend.reduce((sum, point) => sum + point.activeUsers, 0) / activityTrend.length
+			: 0;
+	const peakUniqueNames = activityTrend.reduce(
+		(maximum, point) => Math.max(maximum, point.uniqueNames),
+		0,
+	);
+	const hasTrendActivity = activityTrend.some(
+		(point) => point.selectionCount > 0 || point.activeUsers > 0 || point.uniqueNames > 0,
+	);
 
 	return (
 		<div className="dashboard-container space-y-2">
@@ -198,6 +250,115 @@ export function Dashboard({
 					</div>
 				</Card>
 			)}
+
+			<Card padding="small">
+				<div className="flex items-center gap-3 mb-2">
+					<BarChart3 className="text-primary" size={24} />
+					<div>
+						<h3 className="text-xl font-semibold text-foreground">Recent Activity</h3>
+						<p className="text-sm text-muted-foreground">
+							14-day view of tournament selections and engagement
+						</p>
+					</div>
+				</div>
+
+				{isLoadingTrend ? (
+					<Loading variant="skeleton" height={240} />
+				) : hasTrendActivity ? (
+					<div className="space-y-5">
+						<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+							<div className="rounded-lg border border-border bg-foreground/5 p-4">
+								<p className="mb-1 text-sm text-muted-foreground">Selections (14d)</p>
+								<p className="text-2xl font-bold text-foreground">{totalTrendSelections}</p>
+							</div>
+							<div className="rounded-lg border border-border bg-foreground/5 p-4">
+								<p className="mb-1 text-sm text-muted-foreground">Busiest Day</p>
+								<p className="text-2xl font-bold text-foreground">
+									{peakTrendDay?.selectionCount ?? 0}
+								</p>
+								<p className="text-xs text-muted-foreground">
+									{peakTrendDay ? formatTrendLabel(peakTrendDay.date) : "No activity"}
+								</p>
+							</div>
+							<div className="rounded-lg border border-border bg-foreground/5 p-4">
+								<p className="mb-1 text-sm text-muted-foreground">Avg Active Users</p>
+								<p className="text-2xl font-bold text-foreground">
+									{averageActiveUsers.toFixed(1)}
+								</p>
+							</div>
+							<div className="rounded-lg border border-border bg-foreground/5 p-4">
+								<p className="mb-1 text-sm text-muted-foreground">Peak Names Touched</p>
+								<p className="text-2xl font-bold text-foreground">{peakUniqueNames}</p>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-border bg-gradient-to-b from-foreground/5 to-transparent p-4">
+							<div
+								className="grid grid-cols-7 gap-2 md:grid-cols-14"
+								role="list"
+								aria-label="Daily tournament activity"
+							>
+								{activityTrend.map((point) => (
+									<div
+										key={point.date}
+										role="listitem"
+										aria-label={`${formatTrendLabel(point.date)}: ${point.selectionCount} selections, ${point.activeUsers} active users, ${point.uniqueNames} names touched`}
+										className="flex min-h-[11rem] flex-col justify-end rounded-lg border border-border/70 bg-background/60 p-2"
+									>
+										<div className="mb-3 flex min-h-28 items-end">
+											<div
+												className="flex w-full items-start justify-center rounded-md bg-primary/85 px-1 pt-2 text-center text-xs font-semibold text-primary-foreground shadow-sm transition-transform hover:scale-[1.02]"
+												style={{ height: getBarHeight(point.selectionCount, maxTrendSelections) }}
+											>
+												{point.selectionCount}
+											</div>
+										</div>
+										<p className="text-center text-xs font-semibold text-foreground">
+											{formatTrendLabel(point.date)}
+										</p>
+										<div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+											<div className="flex items-center justify-between gap-1">
+												<span className="flex items-center gap-1">
+													<User size={12} />
+													Users
+												</span>
+												<span>{point.activeUsers}</span>
+											</div>
+											<div className="flex items-center justify-between gap-1">
+												<span className="flex items-center gap-1">
+													<Layers size={12} />
+													Names
+												</span>
+												<span>{point.uniqueNames}</span>
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+
+							<div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+								<span className="flex items-center gap-2">
+									<span className="h-3 w-3 rounded-sm bg-primary/85" aria-hidden={true} />
+									Daily selections
+								</span>
+								<span className="flex items-center gap-2">
+									<Clock size={14} />
+									Updated from recorded tournament selections
+								</span>
+							</div>
+						</div>
+					</div>
+				) : (
+					<div className="rounded-xl border border-dashed border-border bg-foreground/5 p-6 text-center">
+						<p className="text-base font-semibold text-foreground">
+							No tournament selections recorded in the last 14 days.
+						</p>
+						<p className="mt-2 text-sm text-muted-foreground">
+							Run a tournament to generate recent activity.
+						</p>
+					</div>
+				)}
+			</Card>
 
 			{/* Global Leaderboard */}
 			<Card padding="small">

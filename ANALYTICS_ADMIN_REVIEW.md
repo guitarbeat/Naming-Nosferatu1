@@ -2,24 +2,25 @@
 
 ## Snapshot
 
-This review reflects the current codebase after the admin role-detection, dashboard UX hardening, and audit-log overview pass on `main`.
+This review reflects the current codebase after the admin role-detection, dashboard UX hardening, audit-log overview, and recent-activity trend pass on `main`.
 
 ## Current State
 
 ### Analytics Dashboard (`src/features/analytics/Dashboard.tsx`)
 
-**Status**: Functional, but still shallow
+**Status**: Functional, with one real time-series surface now in place
 
 **What exists**
 - Top-n leaderboard rendering via `leaderboardAPI.getLeaderboard()`
 - Per-user stats via `statsAPI.getUserStats()`
 - Site-level summary stats via `statsAPI.getSiteStats()`
+- 14-day recent-activity trend driven by recorded tournament selections
 - Personal results and random-generator integration
 - Admin-only hidden-name list with unhide controls
 
 **Current limits**
 - No ranking-history timeline or chart
-- No popularity trend visualization
+- No popularity trend visualization yet
 - No tournament-history view
 - Admin analytics remain lighter than the dedicated admin dashboard
 
@@ -30,12 +31,13 @@ This review reflects the current codebase after the admin role-detection, dashbo
 **What exists**
 - `leaderboardAPI` for global rankings
 - `statsAPI` for site and per-user stats
+- Typed recent-activity trend support via `statsAPI.getActivityTrend()`
 - Typed mapping and fallback handling for server responses
 - User-rated-name support for richer personal analytics surfaces
 
 **Current limits**
-- No richer typed time-series models in active use
 - The UI still consumes only a subset of the available analytics depth
+- The only live time-series view today is recent tournament activity
 
 ### Admin Dashboard (`src/features/admin/AdminDashboard.tsx`)
 
@@ -79,13 +81,14 @@ This review reflects the current codebase after the admin role-detection, dashbo
 - Admin controls now disable while writes are in flight
 - Bulk admin actions no longer depend on repeated full reloads to make progress
 - Hide/unhide and lock/unlock actions now have a backend-backed recent-activity view
+- The analytics dashboard now includes a backend-backed 14-day activity trend instead of only summary cards
 - The review itself now matches the actual repository state
 
 ## Highest-Value Remaining Work
 
 ### Priority 1: Analytics Depth
 
-Add one genuinely new analytics surface instead of more summary cards:
+Build on the new time-series baseline:
 - ranking-history timeline
 - popularity trend chart
 - tournament activity history
@@ -110,6 +113,6 @@ Expose how a session was classified as admin and make role issues easier to diag
 
 ## Suggested Next Epochs
 
-1. Add one time-series analytics endpoint and consume it in the analytics surface.
+1. Add a second time-series surface, likely ranking-history or popularity trends.
 2. Add role management or per-user drill-down to the users view.
 3. Add deeper audit-log drill-down and longer history windows.

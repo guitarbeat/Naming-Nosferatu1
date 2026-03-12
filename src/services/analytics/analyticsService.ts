@@ -32,6 +32,13 @@ export interface UserStats {
 	[key: string]: unknown;
 }
 
+export interface ActivityTrendPoint {
+	date: string;
+	selectionCount: number;
+	activeUsers: number;
+	uniqueNames: number;
+}
+
 interface UserRatingRow {
 	nameId: IdType;
 	rating: number;
@@ -61,6 +68,15 @@ function mapLeaderboardRow(row: Record<string, unknown>): LeaderboardItem {
 		total_ratings: toNumber(row.total_ratings),
 		created_at: (row.created_at as string | null | undefined) ?? null,
 		date_submitted: (row.date_submitted as string | null | undefined) ?? null,
+	};
+}
+
+function mapActivityTrendRow(row: Record<string, unknown>): ActivityTrendPoint {
+	return {
+		date: String(row.date ?? ""),
+		selectionCount: toNumber(row.selectionCount ?? row.selection_count),
+		activeUsers: toNumber(row.activeUsers ?? row.active_users),
+		uniqueNames: toNumber(row.uniqueNames ?? row.unique_names),
 	};
 }
 
@@ -143,6 +159,17 @@ export const statsAPI = {
 			};
 		} catch {
 			return null;
+		}
+	},
+
+	getActivityTrend: async (days = 14): Promise<ActivityTrendPoint[]> => {
+		try {
+			const rows = await api.get<Array<Record<string, unknown>>>(
+				`/analytics/activity-trend?days=${days}`,
+			);
+			return (rows ?? []).map(mapActivityTrendRow).filter((row) => row.date.length > 0);
+		} catch {
+			return [];
 		}
 	},
 };

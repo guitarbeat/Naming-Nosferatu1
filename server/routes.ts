@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { type NextFunction, type Request, type Response, Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import jwt from "jsonwebtoken";
@@ -84,6 +84,69 @@ const mockNames = [
 		pronunciation: "MIT-enz",
 	},
 ];
+
+interface ActivityTrendPoint {
+	date: string;
+	selectionCount: number;
+	activeUsers: number;
+	uniqueNames: number;
+}
+
+function toCount(value: unknown): number {
+	const numeric = Number(value);
+	return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function buildRecentDateKeys(days: number): string[] {
+	const endDate = new Date();
+	endDate.setUTCHours(0, 0, 0, 0);
+
+	return Array.from({ length: days }, (_, index) => {
+		const date = new Date(endDate);
+		date.setUTCDate(endDate.getUTCDate() - (days - 1 - index));
+		return date.toISOString().slice(0, 10);
+	});
+}
+
+function buildMockActivityTrend(days: number): ActivityTrendPoint[] {
+	return buildRecentDateKeys(days).map((date, index) => {
+		const selectionCount = Math.max(
+			0,
+			8 + ((index * 3) % 9) + (index % 4 === 0 ? 5 : 0) - (index % 6 === 0 ? 2 : 0),
+		);
+
+		return {
+			date,
+			selectionCount,
+			activeUsers: Math.max(0, Math.round(selectionCount / 3)),
+			uniqueNames: Math.max(0, Math.round(selectionCount / 2.5)),
+		};
+	});
+}
+
+function buildActivityTrend(
+	days: number,
+	selectionRows: Array<Record<string, unknown>>,
+	activeUserRows: Array<Record<string, unknown>>,
+	uniqueNameRows: Array<Record<string, unknown>>,
+): ActivityTrendPoint[] {
+	const selectionMap = new Map(
+		selectionRows.map((row) => [String(row.date ?? ""), toCount(row.selectionCount)]),
+	);
+	const activeUserMap = new Map(
+		activeUserRows.map((row) => [String(row.date ?? ""), toCount(row.activeUsers)]),
+	);
+	const uniqueNameMap = new Map(
+		uniqueNameRows.map((row) => [String(row.date ?? ""), toCount(row.uniqueNames)]),
+	);
+
+	return buildRecentDateKeys(days).map((date) => ({
+		date,
+		selectionCount: selectionMap.get(date) ?? 0,
+		activeUsers: activeUserMap.get(date) ?? 0,
+		uniqueNames: uniqueNameMap.get(date) ?? 0,
+	}));
+}
 
 // Basic endpoint to get all active names
 router.get("/api/names", async (req, res) => {
@@ -532,6 +595,59 @@ router.get("/api/analytics/site-stats", async (_req, res) => {
 	} catch (error) {
 		console.error("Error fetching site stats:", error);
 		res.status(500).json({ error: "Failed to fetch site stats" });
+	}
+});
+
+// Get analytics - recent selection activity trend
+router.get("/api/analytics/activity-trend", async (req, res) => {
+	try {
+		const rawDays = parseInt(req.query.days as string, 10) || 14;
+		const days = Math.min(Math.max(rawDays, 1), 30);
+
+		if (!db) {
+			return res.json(buildMockActivityTrend(days));
+		}
+
+		const cutoff = new Date();
+		cutoff.setUTCHours(0, 0, 0, 0);
+		cutoff.setUTCDate(cutoff.getUTCDate() - (days - 1));
+
+		const trendDate = sql<string>`timezone('UTC', ${catTournamentSelections.selectedAt})::date::text`;
+
+		const [selectionRows, activeUserRows, uniqueNameRows] = await Promise.all([
+			db
+				.select({
+					date: trendDate,
+					selectionCount: sql<number>`count(*)`,
+				})
+				.from(catTournamentSelections)
+				.where(gte(catTournamentSelections.selectedAt, cutoff))
+				.groupBy(trendDate)
+				.orderBy(trendDate),
+			db
+				.select({
+					date: trendDate,
+					activeUsers: sql<number>`count(distinct ${catTournamentSelections.userId})`,
+				})
+				.from(catTournamentSelections)
+				.where(gte(catTournamentSelections.selectedAt, cutoff))
+				.groupBy(trendDate)
+				.orderBy(trendDate),
+			db
+				.select({
+					date: trendDate,
+					uniqueNames: sql<number>`count(distinct ${catTournamentSelections.nameId})`,
+				})
+				.from(catTournamentSelections)
+				.where(gte(catTournamentSelections.selectedAt, cutoff))
+				.groupBy(trendDate)
+				.orderBy(trendDate),
+		]);
+
+		res.json(buildActivityTrend(days, selectionRows, activeUserRows, uniqueNameRows));
+	} catch (error) {
+		console.error("Error fetching activity trend:", error);
+		res.status(500).json({ error: "Failed to fetch activity trend" });
 	}
 });
 
