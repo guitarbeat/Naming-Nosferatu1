@@ -39,13 +39,6 @@ interface SupabaseNamesClient {
 	from(table: string): SupabaseNamesQuery;
 }
 
-function toErrorMessage(error: unknown): string {
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
-	return String(error);
-}
-
 function mapNameRow(item: ApiNameRow): NameItem {
 	return {
 		id: String(item.id),

@@ -15,7 +15,9 @@ import { STORAGE_KEYS } from "@/shared/lib/constants";
 async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {
 		const client = await resolveSupabaseClient();
-		if (!client) return false;
+		if (!client) {
+			return false;
+		}
 
 		const { data, error } = await (client as any)
 			.from("cat_user_roles")

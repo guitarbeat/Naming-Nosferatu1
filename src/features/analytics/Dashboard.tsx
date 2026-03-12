@@ -7,7 +7,6 @@ import { Suspense, useEffect, useState } from "react";
 import { leaderboardAPI, statsAPI } from "@/services/analytics/analyticsService";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
 import Button from "@/shared/components/layout/Button";
-import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { BarChart3, Eye, EyeOff, Trophy } from "@/shared/lib/icons";
 import type { NameItem, RatingData } from "@/shared/types";
@@ -147,7 +146,7 @@ export function Dashboard({
 	};
 
 	return (
-		<div className="dashboard-container space-y-2">
+		<div className="dashboard-container space-y-10">
 			{/* Personal Results with Ranking Adjustment */}
 			{personalRatings && Object.keys(personalRatings).length > 0 && onUpdateRatings && (
 				<PersonalResults
@@ -165,42 +164,42 @@ export function Dashboard({
 			)}
 
 			{/* Random Name Generator */}
-			<Card padding="small">
+			<div className="py-2">
 				<Suspense fallback={<div className="p-4">Loading...</div>}>
 					<RandomGenerator fetchNames={() => coreAPI.getTrendingNames(false)} />
 				</Suspense>
-			</Card>
+			</div>
 
 			{/* User Stats */}
 			{userName && userStats && (
-				<Card padding="small">
+				<div className="py-2">
 					<div className="flex items-center gap-3 mb-4">
 						<BarChart3 className="text-primary" size={24} />
 						<h3 className="text-xl font-semibold text-foreground">Your Stats</h3>
 					</div>
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Ratings Given</p>
 							<p className="text-2xl font-bold text-foreground">{userStats.totalRatings}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Names Selected</p>
 							<p className="text-2xl font-bold text-foreground">{userStats.totalSelections}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Wins</p>
 							<p className="text-2xl font-bold text-foreground">{userStats.totalWins}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Win Rate</p>
 							<p className="text-2xl font-bold text-foreground">{userStats.winRate}%</p>
 						</div>
 					</div>
-				</Card>
+				</div>
 			)}
 
 			{/* Global Leaderboard */}
-			<Card padding="small">
+			<div className="py-2">
 				<div className="flex items-center justify-between mb-4">
 					<div className="flex items-center gap-3">
 						<Trophy className="text-chart-4" size={24} />
@@ -220,7 +219,7 @@ export function Dashboard({
 						{leaderboard.map((entry, index) => (
 							<div
 								key={entry.name}
-								className="flex items-center gap-4 p-3 rounded-lg bg-foreground/5 border border-border hover:bg-foreground/10 transition-colors"
+								className="flex items-center gap-4 py-3 border-b border-border/10"
 							>
 								<div
 									className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold ${
@@ -254,44 +253,44 @@ export function Dashboard({
 						No ratings yet. Start a tournament!
 					</p>
 				)}
-			</Card>
+			</div>
 
 			{/* Site Statistics */}
 			{siteStats && (
-				<Card padding="small">
+				<div className="py-2">
 					<h3 className="text-xl font-semibold text-foreground mb-4">Site Statistics</h3>
 					<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Names</p>
 							<p className="text-2xl font-bold text-foreground">{siteStats.totalNames}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Active Names</p>
 							<p className="text-2xl font-bold text-foreground">{siteStats.activeNames}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Users</p>
 							<p className="text-2xl font-bold text-foreground">{siteStats.totalUsers}</p>
 						</div>
-						<div className="bg-foreground/5 rounded-lg p-4 border border-border">
+						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Avg Rating</p>
 							<p className="text-2xl font-bold text-foreground">
 								{Math.round(siteStats.avgRating)}
 							</p>
 						</div>
 						{isAdmin && (
-							<div className="bg-chart-4/20 rounded-lg p-4 border border-chart-4/30">
+							<div className="py-2">
 								<p className="text-sm text-chart-4/80 mb-1">Hidden Names</p>
 								<p className="text-2xl font-bold text-chart-4">{siteStats.hiddenNames}</p>
 							</div>
 						)}
 					</div>
-				</Card>
+				</div>
 			)}
 
 			{/* Admin: Hidden Names Management */}
 			{isAdmin && (
-				<Card padding="small" className="border-chart-4/30 bg-chart-4/10">
+				<div className="py-2">
 					<div className="flex items-center justify-between mb-4">
 						<div className="flex items-center gap-3">
 							<EyeOff className="text-chart-4" size={24} />
@@ -312,7 +311,7 @@ export function Dashboard({
 								hiddenNames.map((name) => (
 									<div
 										key={name.id}
-										className="flex items-center justify-between p-3 rounded-lg bg-foreground/5 border border-chart-4/20"
+										className="flex items-center justify-between py-3 border-b border-border/10"
 									>
 										<span className="text-foreground font-medium">{name.name}</span>
 										<Button
@@ -331,7 +330,7 @@ export function Dashboard({
 							)}
 						</div>
 					)}
-				</Card>
+				</div>
 			)}
 		</div>
 	);

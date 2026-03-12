@@ -18,8 +18,8 @@ export default {
 				sans: ["var(--font-sans)"],
 				serif: ["var(--font-serif)"],
 				mono: ["var(--font-mono)"],
-				display: ["Spline Sans", "sans-serif"],
-				whimsical: ["Patrick Hand", "cursive"],
+				display: ["var(--font-display)"],
+				whimsical: ["var(--font-whimsical)"],
 			},
 			colors: {
 				"background-light": "#f7f6f8",

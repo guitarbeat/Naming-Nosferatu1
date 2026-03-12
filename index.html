@@ -42,14 +42,14 @@
   <link rel="preconnect" href="https://ocghxwwwuubgmwsxgyoy.supabase.co" crossorigin />
   <!-- * Load fonts asynchronously to prevent render blocking -->
   <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Josefin+Slab:wght@400;600&family=Waiting+for+the+Sunrise&family=Sour+Gummy:wght@100&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Patrick+Hand&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap"
     as="style" onload="
         this.onload = null;
         this.rel = 'stylesheet';
       " />
   <noscript>
     <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Josefin+Slab:wght@400;600&family=Waiting+for+the+Sunrise&family=Sour+Gummy:wght@100&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Patrick+Hand&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap"
       rel="stylesheet" />
   </noscript>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -64,6 +64,112 @@
 
     body {
       background-color: #050b16;
+    }
+
+    #deployment-error-display {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow-y: auto;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+    }
+
+    #deployment-error-display .deployment-error__panel {
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+      color: #1a1a1a;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    #deployment-error-display .deployment-error__title,
+    #deployment-error-display .deployment-error__message,
+    #deployment-error-display .deployment-error__section-title,
+    #deployment-error-display .deployment-error__list-item,
+    #deployment-error-display .deployment-error__button {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: normal;
+      text-transform: none;
+    }
+
+    #deployment-error-display .deployment-error__icon {
+      margin-bottom: 1rem;
+      font-size: 3rem;
+      line-height: 1;
+      text-align: center;
+    }
+
+    #deployment-error-display .deployment-error__title {
+      margin: 0 0 1rem;
+      color: #dc2626;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    #deployment-error-display .deployment-error__message {
+      margin: 0 0 1.5rem;
+      color: #666;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    #deployment-error-display .deployment-error__section {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-left: 4px solid #dc2626;
+      border-radius: 8px;
+    }
+
+    #deployment-error-display .deployment-error__section-title {
+      margin: 0 0 0.75rem;
+      color: #1a1a1a;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    #deployment-error-display .deployment-error__list {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+
+    #deployment-error-display .deployment-error__list-item {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    #deployment-error-display .deployment-error__button-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    #deployment-error-display .deployment-error__button {
+      flex: 1;
+      min-width: 120px;
+      padding: 0.75rem 1.5rem;
+      color: #fff;
+      background: #2563eb;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.2;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -202,6 +308,23 @@
         }
       });
 
+      function renderDeploymentList(title, items, listTag) {
+        if (!items || items.length === 0) {
+          return "";
+        }
+
+        return `
+          <div class="deployment-error__section">
+            <h3 class="deployment-error__section-title">${title}</h3>
+            <${listTag} class="deployment-error__list">
+              ${items
+                .map((item) => `<li class="deployment-error__list-item">${item}</li>`)
+                .join("")}
+            </${listTag}>
+          </div>
+        `;
+      }
+
       function showDeploymentError(errorInfo) {
         // * Remove existing error display if present
         const existing = document.getElementById(ErrorDisplayId);
@@ -211,77 +334,18 @@
 
         const errorDiv = document.createElement("div");
         errorDiv.id = ErrorDisplayId;
-        errorDiv.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            padding: 1rem;
-            overflow-y: auto;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          `;
 
         const content = document.createElement("div");
-        content.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            color: #1a1a1a;
-          `;
+        content.className = "deployment-error__panel";
 
         content.innerHTML = `
-            <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">⚠️</div>
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; color: #dc2626; text-align: center;">
-              ${errorInfo.title}
-            </h2>
-            <p style="font-size: 1rem; line-height: 1.6; margin: 0 0 1.5rem; color: #666;">
-              ${errorInfo.message}
-            </p>
-            ${errorInfo.details
-            ? `
-              <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #dc2626;">
-                <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem;">Details:</h3>
-                <ul style="margin: 0; padding-left: 1.5rem;">
-                  ${errorInfo.details.map((d) => `<li style="margin: 0.5rem 0; line-height: 1.5;">${d}</li>`).join("")}
-                </ul>
-              </div>
-            `
-            : ""
-          }
-            ${errorInfo.suggestions
-            ? `
-              <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #dc2626;">
-                <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem;">How to Fix:</h3>
-                <ol style="margin: 0; padding-left: 1.5rem;">
-                  ${errorInfo.suggestions.map((s) => `<li style="margin: 0.5rem 0; line-height: 1.5;">${s}</li>`).join("")}
-                </ol>
-              </div>
-            `
-            : ""
-          }
-            <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-              <button onclick="window.location.reload()" style="
-                flex: 1;
-                min-width: 120px;
-                padding: 0.75rem 1.5rem;
-                background: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                font-size: 1rem;
-                font-weight: 600;
-                cursor: pointer;
-              ">Reload Page</button>
+            <div class="deployment-error__icon" aria-hidden="true">⚠️</div>
+            <h2 class="deployment-error__title">${errorInfo.title}</h2>
+            <p class="deployment-error__message">${errorInfo.message}</p>
+            ${renderDeploymentList("Details:", errorInfo.details, "ul")}
+            ${renderDeploymentList("How to Fix:", errorInfo.suggestions, "ol")}
+            <div class="deployment-error__button-row">
+              <button type="button" class="deployment-error__button" onclick="window.location.reload()">Reload Page</button>
             </div>
           `;
 

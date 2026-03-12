@@ -1,4 +1,5 @@
 src/shared/styles/reset.css
+src/integrations/supabase/**
 **/node_modules/**
 **/dist/**
 **/build/**

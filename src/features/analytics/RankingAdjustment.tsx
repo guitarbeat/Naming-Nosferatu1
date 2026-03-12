@@ -11,7 +11,6 @@ import { Button, CardBody, CardHeader, Chip, cn, Divider } from "@heroui/react";
 import { motion } from "framer-motion";
 import { memo, useEffect, useRef, useState } from "react";
 import { ErrorManager } from "@/services/errorManager";
-import { Card } from "@/shared/components/layout";
 import { GripVertical, Loader2, Save } from "@/shared/lib/icons";
 import type { NameItem } from "@/shared/types";
 
@@ -140,10 +139,7 @@ export const RankingAdjustment = memo(
 		};
 
 		return (
-			<Card
-				className={cn("w-full max-w-4xl mx-auto", isDragging && "ring-2 ring-primary/50")}
-				variant="primary"
-			>
+			<div className={cn("w-full max-w-4xl mx-auto", isDragging && "ring-2 ring-primary/50")}>
 				<CardHeader className="flex flex-col gap-3 pb-4">
 					<div className="flex items-center justify-between w-full">
 						<h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -209,12 +205,8 @@ export const RankingAdjustment = memo(
 														animate={{ opacity: 1, y: 0 }}
 														exit={{ opacity: 0, scale: 0.95 }}
 														className={cn(
-															"p-4 rounded-xl transition-all duration-200",
-															"bg-gradient-to-br from-foreground/5 to-foreground/[0.02]",
-															"border border-border/10",
-															"hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10",
-															snapshot.isDragging &&
-																"shadow-2xl shadow-primary/30 border-primary/50 scale-105 rotate-2",
+															"py-3 transition-all duration-200 border-b border-border/10",
+															snapshot.isDragging && "bg-foreground/5 scale-105 rotate-2",
 														)}
 													>
 														<RankingItemContent item={item} index={index} />
@@ -241,7 +233,7 @@ export const RankingAdjustment = memo(
 						Back to Tournament
 					</Button>
 				</div>
-			</Card>
+			</div>
 		);
 	},
 );

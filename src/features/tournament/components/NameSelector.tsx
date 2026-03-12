@@ -6,7 +6,6 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { useNamesCache } from "@/shared/hooks";
 import { api } from "@/services/apiClient";
 import { coreAPI, hiddenNamesAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
@@ -17,7 +16,7 @@ import { CollapsibleContent } from "@/shared/components/layout/CollapsibleHeader
 import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
-import { useCollapsible } from "@/shared/hooks";
+import { useCollapsible, useNamesCache } from "@/shared/hooks";
 import { getRandomCatImage } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import {
@@ -707,17 +706,17 @@ export function NameSelector() {
 
 	if (isLoading) {
 		return (
-			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
+			<div className="mx-auto w-full">
 				<div className="flex items-center justify-center py-20">
 					<Loading variant="spinner" text="Loading cat names..." />
 				</div>
-			</Card>
+			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
+			<div className="mx-auto w-full">
 				<div className="flex flex-col items-center justify-center py-20 space-y-4">
 					<div className="text-destructive text-center">
 						<p className="text-lg font-medium">Failed to load names</p>
@@ -727,12 +726,12 @@ export function NameSelector() {
 						Try Again
 					</Button>
 				</div>
-			</Card>
+			</div>
 		);
 	}
 
 	return (
-		<Card padding="small" shadow="xl" className="max-w-full mx-auto ">
+		<div className="mx-auto w-full">
 			<div className="space-y-6 mobile-nav-safe-bottom">
 				{(() => {
 					const lockedInNames = names.filter((name) => name.lockedIn || name.locked_in);
@@ -1556,6 +1555,6 @@ export function NameSelector() {
 				onCancel={() => setPendingAdminAction(null)}
 				onConfirm={handleConfirmAdminAction}
 			/>
-		</Card>
+		</div>
 	);
 }

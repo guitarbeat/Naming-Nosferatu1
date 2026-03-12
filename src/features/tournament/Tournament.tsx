@@ -1,7 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { type KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
 import { ErrorComponent } from "@/shared/components/layout/Feedback";
 import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
@@ -147,14 +146,11 @@ function MatchSideCard({
 
 	return (
 		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
-			<Card
-				interactive={true}
-				padding="none"
-				className={`relative overflow-hidden group cursor-pointer flex-1 animate-float transition-all duration-300 ${
+			<div
+				className={`relative overflow-hidden rounded-xl group cursor-pointer flex-1 animate-float transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
 					isVoting ? "pointer-events-none" : ""
 				} ${getHeatCardClasses(heatLevel)} ${selectionClass}`}
 				style={animationDelay ? { animationDelay } : undefined}
-				variant="default"
 				role="button"
 				tabIndex={isVoting ? -1 : 0}
 				aria-label={`Vote for ${isTeam ? "team" : "name"} ${name}`}
@@ -263,7 +259,7 @@ function MatchSideCard({
 						) : null}
 					</div>
 				</div>
-			</Card>
+			</div>
 		</div>
 	);
 }
@@ -704,7 +700,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				</div>
 
 				<div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
-					<Card className="max-w-2xl w-full text-center p-8" variant="default">
+					<div className="max-w-2xl w-full text-center p-8">
 						<div className="mb-6 flex justify-center">
 							<Trophy className="size-16 text-green-400" />
 						</div>
@@ -747,7 +743,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 								</button>
 							</div>
 						</div>
-					</Card>
+					</div>
 				</div>
 			</div>
 		);
@@ -783,7 +779,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				? { name: rightName, streak: rightStreak, heatLevel: rightHeatLevel ?? "warm" }
 				: null;
 	return (
-		<div className="relative min-h-[100dvh] w-full overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
+		<div className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
 			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -859,11 +855,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			</header>
 
 			<section className="px-3 sm:px-4 py-1.5 flex-shrink-0">
-				<Card
-					className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-					padding="small"
-					variant="default"
-				>
+				<div className="p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="w-full sm:w-auto flex flex-wrap gap-2 items-center justify-center sm:justify-start">
 						<button
 							type="button"
@@ -944,10 +936,10 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						<PawPrint className="size-3.5" />
 						<span>{showCatPictures ? "Names Only" : "Show Cats"}</span>
 					</button>
-				</Card>
+				</div>
 			</section>
 
-			<main className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 relative py-2 min-h-0">
+			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
 				{/* Animated blob backgrounds */}
 				<div className="absolute inset-0 overflow-hidden pointer-events-none">
 					<div className="absolute top-0 left-0 w-32 h-32 bg-primary/20 rounded-full animate-blob animation-delay-2000" />
@@ -1069,7 +1061,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(6px)" }
 						}
 						transition={{ duration: prefersReducedMotion ? 0.01 : 0.32 }}
-						className="relative flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-4 w-full max-w-5xl mx-auto z-10 items-stretch h-full min-h-0"
+						className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-stretch gap-4 sm:grid sm:h-full sm:min-h-0 sm:grid-cols-[1fr_auto_1fr] sm:gap-4"
 					>
 						{/* Left Card */}
 						<MatchSideCard

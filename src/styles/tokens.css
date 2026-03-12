@@ -47,6 +47,10 @@
 	--font-sans:
 		"Space Grotesk", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
 		roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif;
+	--font-ui: "Inter", var(--font-sans);
+	--font-ui-mono: "Inter", var(--font-mono);
+	--font-display: "Syne", var(--font-sans);
+	--font-whimsical: "Patrick Hand", cursive;
 	--font-serif: ui-serif, georgia, cambria, "Times New Roman", times, serif;
 	--font-mono:
 		"Space Mono", ui-monospace, sfmono-regular, menlo, monaco, consolas, "Liberation Mono",
@@ -98,6 +102,10 @@
 	--color-navbar-border: hsl(0deg 0% 0%);
 	--color-navbar-ring: hsl(0deg 0% 0%);
 	--font-sans: var(--font-sans);
+	--font-ui: var(--font-ui);
+	--font-ui-mono: var(--font-ui-mono);
+	--font-display: var(--font-display);
+	--font-whimsical: var(--font-whimsical);
 	--font-serif: var(--font-serif);
 	--font-mono: var(--font-mono);
 	--radius: var(--radius);
@@ -169,11 +177,15 @@
 	--font-weight-medium: 500;
 	--font-weight-semibold: 600;
 	--font-weight-bold: 700;
+	--font-weight-extrabold: 800;
 
+	--tracking-tight: -0.02em;
 	--tracking-wide: 0.025em;
 	--tracking-wider: 0.05em;
+	--tracking-caps: 0.11em;
 
 	--leading-normal: 1.5;
+	--leading-copy: 1.6;
 	--max-width-content: 65ch;
 }
 
@@ -644,6 +656,7 @@
 	--duration-base: 180ms;
 	--duration-moderate: 250ms;
 	--duration-gentle: 350ms;
+	--duration-normal: var(--duration-moderate);
 
 	/* Transform scales */
 	--scale-press: 0.97;
@@ -655,14 +668,18 @@
 	--lift-small: -2px;
 	--lift-medium: -3px;
 
+	/* Timing aliases (legacy callers) */
+	--ease-out: var(--ease-out-expo);
+	--ease-standard: var(--ease-in-out-smooth);
+
 	/* Focus ring */
-	--focus-ring-color: hsl(var(--primary) / 40%);
+	--focus-ring-color: color-mix(in srgb, var(--primary) 40%, transparent);
 	--focus-ring-spread: 3px;
 
 	/* Glow intensities */
-	--glow-subtle: 0 0 12px hsl(var(--primary) / 15%);
-	--glow-medium: 0 0 20px hsl(var(--primary) / 25%);
-	--glow-strong: 0 0 30px hsl(var(--primary) / 35%);
+	--glow-subtle: 0 0 12px color-mix(in srgb, var(--primary) 15%, transparent);
+	--glow-medium: 0 0 20px color-mix(in srgb, var(--primary) 25%, transparent);
+	--glow-strong: 0 0 30px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 /* ==========================================================================

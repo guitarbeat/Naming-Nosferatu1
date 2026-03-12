@@ -470,20 +470,28 @@ export function useNameSuggestion(props: UseNameSuggestionProps = {}): UseNameSu
 
 	const validate = useCallback(() => {
 		const nextErrors: { name?: string; description?: string } = {};
-		if (!values.name.trim()) nextErrors.name = "Name is required";
-		if (!values.description.trim()) nextErrors.description = "Description is required";
+		if (!values.name.trim()) {
+			nextErrors.name = "Name is required";
+		}
+		if (!values.description.trim()) {
+			nextErrors.description = "Description is required";
+		}
 		setErrors(nextErrors);
 		return Object.keys(nextErrors).length === 0;
 	}, [values]);
 
 	const handleSubmit = useCallback(async () => {
-		if (!validate()) return;
+		if (!validate()) {
+			return;
+		}
 		setIsSubmitting(true);
 		setGlobalError("");
 		setSuccessMessage("");
 		try {
 			const result = await coreAPI.addName(values.name, values.description);
-			if (!result.success) throw new Error(result.error || "Failed to submit suggestion");
+			if (!result.success) {
+				throw new Error(result.error || "Failed to submit suggestion");
+			}
 			setSuccessMessage("Name suggestion submitted successfully!");
 			setValues({ name: "", description: "" });
 			setTouched({});
@@ -508,9 +516,18 @@ export function useNameSuggestion(props: UseNameSuggestionProps = {}): UseNameSu
 	const isValid = !errors.name && !errors.description && values.name.trim() !== "";
 
 	return {
-		values, errors, touched, isSubmitting, isValid,
-		handleChange, handleBlur, handleSubmit, reset,
-		globalError, successMessage, setGlobalError,
+		values,
+		errors,
+		touched,
+		isSubmitting,
+		isValid,
+		handleChange,
+		handleBlur,
+		handleSubmit,
+		reset,
+		globalError,
+		successMessage,
+		setGlobalError,
 	};
 }
 

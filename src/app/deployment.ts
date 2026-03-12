@@ -8,6 +8,25 @@ interface ErrorInfo {
 const ErrorDisplayId = "deployment-error-display";
 const MaxWaitTime = 5000; // 5 seconds
 
+function renderDeploymentList(
+	title: string,
+	items: string[] | undefined,
+	listTag: "ol" | "ul",
+): string {
+	if (!items || items.length === 0) {
+		return "";
+	}
+
+	return `
+		<div class="deployment-error__section">
+			<h3 class="deployment-error__section-title">${title}</h3>
+			<${listTag} class="deployment-error__list">
+				${items.map((item) => `<li class="deployment-error__list-item">${item}</li>`).join("")}
+			</${listTag}>
+		</div>
+	`;
+}
+
 /**
  * Displays a full-screen error overlay when deployment issues are detected.
  * This runs before React loads to catch initialization failures.
@@ -21,81 +40,20 @@ function showDeploymentError(errorInfo: ErrorInfo): void {
 
 	const errorDiv = document.createElement("div");
 	errorDiv.id = ErrorDisplayId;
-	errorDiv.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(4px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        padding: 1rem;
-        overflow-y: auto;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    `;
 
 	const content = document.createElement("div");
-	content.style.cssText = `
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        max-width: 600px;
-        width: 100%;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        color: #1a1a1a;
-    `;
-
-	const detailsHtml = errorInfo.details
-		? `
-        <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #dc2626;">
-            <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem;">Details:</h3>
-            <ul style="margin: 0; padding-left: 1.5rem;">
-                ${errorInfo.details.map((d) => `<li style="margin: 0.5rem 0; line-height: 1.5;">${d}</li>`).join("")}
-            </ul>
-        </div>
-    `
-		: "";
-
-	const suggestionsHtml = errorInfo.suggestions
-		? `
-        <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #dc2626;">
-            <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem;">How to Fix:</h3>
-            <ol style="margin: 0; padding-left: 1.5rem;">
-                ${errorInfo.suggestions.map((s) => `<li style="margin: 0.5rem 0; line-height: 1.5;">${s}</li>`).join("")}
-            </ol>
-        </div>
-    `
-		: "";
+	content.className = "deployment-error__panel";
 
 	content.innerHTML = `
-        <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">⚠️</div>
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; color: #dc2626; text-align: center;">
-            ${errorInfo.title}
-        </h2>
-        <p style="font-size: 1rem; line-height: 1.6; margin: 0 0 1.5rem; color: #666;">
-            ${errorInfo.message}
-        </p>
-        ${detailsHtml}
-        ${suggestionsHtml}
-        <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-            <button onclick="window.location.reload()" style="
-                flex: 1;
-                min-width: 120px;
-                padding: 0.75rem 1.5rem;
-                background: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                font-size: 1rem;
-                font-weight: 600;
-                cursor: pointer;
-            ">Reload Page</button>
-        </div>
-    `;
+		<div class="deployment-error__icon" aria-hidden="true">⚠️</div>
+		<h2 class="deployment-error__title">${errorInfo.title}</h2>
+		<p class="deployment-error__message">${errorInfo.message}</p>
+		${renderDeploymentList("Details:", errorInfo.details, "ul")}
+		${renderDeploymentList("How to Fix:", errorInfo.suggestions, "ol")}
+		<div class="deployment-error__button-row">
+			<button type="button" class="deployment-error__button" onclick="window.location.reload()">Reload Page</button>
+		</div>
+	`;
 
 	errorDiv.appendChild(content);
 	document.body.appendChild(errorDiv);

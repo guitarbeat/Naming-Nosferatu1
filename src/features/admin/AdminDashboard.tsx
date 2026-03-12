@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
-import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
@@ -237,37 +236,37 @@ export function AdminDashboard() {
 			{/* Stats Overview */}
 			{stats && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-					<Card className="p-6 border-primary/30 bg-primary/10">
+					<div className="p-6">
 						<div className="flex items-center gap-3 mb-2">
 							<BarChart3 className="text-primary" size={24} />
 							<h3 className="text-lg font-semibold text-primary">Total Names</h3>
 						</div>
 						<p className="text-3xl font-bold text-foreground">{stats.totalNames}</p>
-					</Card>
+					</div>
 
-					<Card className="p-6 border-chart-2/30 bg-chart-2/10">
+					<div className="p-6">
 						<div className="flex items-center gap-3 mb-2">
 							<Eye className="text-chart-2" size={24} />
 							<h3 className="text-lg font-semibold text-chart-2">Active</h3>
 						</div>
 						<p className="text-3xl font-bold text-foreground">{stats.activeNames}</p>
-					</Card>
+					</div>
 
-					<Card className="p-6 border-chart-4/30 bg-chart-4/10">
+					<div className="p-6">
 						<div className="flex items-center gap-3 mb-2">
 							<Lock className="text-chart-4" size={24} />
 							<h3 className="text-lg font-semibold text-chart-4">Locked In</h3>
 						</div>
 						<p className="text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
-					</Card>
+					</div>
 
-					<Card className="p-6 border-destructive/30 bg-destructive/10">
+					<div className="p-6">
 						<div className="flex items-center gap-3 mb-2">
 							<EyeOff className="text-destructive" size={24} />
 							<h3 className="text-lg font-semibold text-destructive">Hidden</h3>
 						</div>
 						<p className="text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
-					</Card>
+					</div>
 				</div>
 			)}
 
@@ -329,7 +328,7 @@ export function AdminDashboard() {
 
 						{/* Bulk Actions */}
 						{selectedNames.size > 0 && (
-							<div className="mb-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
+							<div className="mb-4 py-4 border-y border-border/10">
 								<p className="text-sm text-primary mb-2">{selectedNames.size} names selected</p>
 								<div className="flex gap-2">
 									<Button onClick={() => handleBulkAction("hide")} size="small">
@@ -352,9 +351,9 @@ export function AdminDashboard() {
 						)}
 
 						{/* Names List */}
-						<div className="space-y-2">
+						<div className="divide-y divide-border/10">
 							{filteredNames.map((name) => (
-								<Card key={name.id} className="p-4">
+								<div key={name.id} className="py-4">
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-4">
 											<input
@@ -391,12 +390,12 @@ export function AdminDashboard() {
 										<div className="flex items-center gap-2">
 											{/* Status indicators */}
 											{(name.lockedIn || name.locked_in) && (
-												<div className="px-2 py-1 bg-chart-4/20 border border-chart-4/30 rounded text-xs text-chart-4">
+												<div className="text-xs text-chart-4 font-semibold">
 													<Lock size={12} /> Locked
 												</div>
 											)}
 											{name.isHidden && (
-												<div className="px-2 py-1 bg-destructive/20 border border-destructive/30 rounded text-xs text-destructive">
+												<div className="text-xs text-destructive font-semibold">
 													<EyeOff size={12} /> Hidden
 												</div>
 											)}
@@ -426,7 +425,7 @@ export function AdminDashboard() {
 											</div>
 										</div>
 									</div>
-								</Card>
+								</div>
 							))}
 						</div>
 					</motion.div>
@@ -439,7 +438,7 @@ export function AdminDashboard() {
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -20 }}
 					>
-						<Card className="p-6">
+						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
@@ -456,7 +455,7 @@ export function AdminDashboard() {
 									<p className="text-muted-foreground">Activity tracking coming soon...</p>
 								</div>
 							</div>
-						</Card>
+						</div>
 					</motion.div>
 				)}
 
@@ -467,10 +466,10 @@ export function AdminDashboard() {
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -20 }}
 					>
-						<Card className="p-6">
+						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">User Analytics</h2>
 							<p className="text-muted-foreground">User tracking and analytics coming soon...</p>
-						</Card>
+						</div>
 					</motion.div>
 				)}
 
@@ -481,10 +480,10 @@ export function AdminDashboard() {
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -20 }}
 					>
-						<Card className="p-6">
+						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">Site Analytics</h2>
 							<p className="text-muted-foreground">Advanced analytics coming soon...</p>
-						</Card>
+						</div>
 					</motion.div>
 				)}
 			</AnimatePresence>

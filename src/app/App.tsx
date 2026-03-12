@@ -7,7 +7,7 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
@@ -18,8 +18,6 @@ import Tournament from "@/features/tournament/Tournament";
 import { ErrorManager } from "@/services/errorManager";
 import { updateSupabaseUserContext } from "@/services/supabase/runtime";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
-import { LiquidGlass } from "@/shared/components/layout";
-import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useOfflineSync } from "@/shared/hooks";
 
 import {
@@ -105,21 +103,14 @@ function HomeContent() {
 				</Suspense>
 			</Section>
 
-			<Section id="suggest-and-profile" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
-				<LiquidGlass
-					className="w-full flex flex-col backdrop-blur-md rounded-3xl"
-					style={{ width: "100%", height: "auto", minHeight: "200px" }}
-					{...getGlassPreset("card")}
-				>
-					<div className="flex flex-col divide-y divide-border/20">
-						<div className="p-6 sm:p-8">
-							<NameSuggestionInner />
-						</div>
-						<div className="p-6 sm:p-8">
-							<ProfileInner onLogin={(name) => login({ name })} />
-						</div>
-					</div>
-				</LiquidGlass>
+			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="full">
+				<NameSuggestionInner />
+			</Section>
+
+			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="full">
+				<div className="mx-auto w-full max-w-3xl">
+					<ProfileInner onLogin={(name) => login({ name })} />
+				</div>
 			</Section>
 		</>
 	);
@@ -143,7 +134,7 @@ function TournamentContent() {
 						onComplete={handleTournamentComplete as any}
 					/>
 				) : (
-					<div className="mx-auto max-w-xl rounded-2xl border border-border/10 bg-background/30 px-6 py-10 text-center">
+					<div className="mx-auto w-full max-w-xl px-6 py-10 text-center">
 						<h2 className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter">
 							No contenders yet
 						</h2>

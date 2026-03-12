@@ -47,6 +47,14 @@ vi.mock("@/features/tournament/Tournament", () => ({
 
 vi.mock("@/shared/hooks", () => ({
 	useOfflineSync: vi.fn(),
+	useNameSuggestion: () => ({
+		values: { name: "", description: "" },
+		isSubmitting: false,
+		handleChange: vi.fn(),
+		handleSubmit: vi.fn(),
+		globalError: null,
+		successMessage: null,
+	}),
 }));
 
 vi.mock("@/shared/lib/performance", () => ({

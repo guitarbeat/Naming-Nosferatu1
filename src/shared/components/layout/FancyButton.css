@@ -19,8 +19,6 @@
 	--anim--hover-time: 400ms;
 	--anim--hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 
-	font-size: 1rem; /* Base font size, though the snippet used global size. I'll default to 1rem for standard usage */
-
 	position: relative;
 	z-index: 2;
 	border-radius: 999vw;
@@ -142,10 +140,6 @@
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-	font-family: "Inter", sans-serif;
-	letter-spacing: -0.02em;
-	font-weight: 600;
-	font-size: 1em;
 	color: rgb(255 255 255 / 95%);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -153,7 +147,6 @@
 	transition: all var(--anim--hover-time) var(--anim--hover-ease);
 	padding-inline: 1.5em;
 	padding-block: 0.875em;
-	line-height: 1;
 }
 
 .fancy-button:hover > .fancy-button-content {
@@ -215,25 +208,21 @@
 .fancy-button--small > .fancy-button-content {
 	padding-inline: 1.15em;
 	padding-block: 0.62em;
-	font-size: 0.78rem;
 }
 
 .fancy-button--medium > .fancy-button-content {
 	padding-inline: 1.4em;
 	padding-block: 0.8em;
-	font-size: 0.9rem;
 }
 
 .fancy-button--large > .fancy-button-content {
 	padding-inline: 1.7em;
 	padding-block: 0.9em;
-	font-size: 0.98rem;
 }
 
 .fancy-button--xl > .fancy-button-content {
 	padding-inline: 1.9em;
 	padding-block: 0.98em;
-	font-size: 1.05rem;
 }
 
 .fancy-button--icon > .fancy-button-content {

@@ -5,9 +5,9 @@
  */
 
 import { useCallback, useEffect, useId, useRef } from "react";
-import { useNameSuggestion } from "@/shared/hooks";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
+import { useNameSuggestion } from "@/shared/hooks";
 import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";
 
 // ============================================================================
@@ -38,7 +38,7 @@ export function NameSuggestionInner() {
 
 	return (
 		<form onSubmit={handleLocalSubmit} className="w-full max-w-3xl mx-auto">
-			<div className="relative overflow-hidden rounded-[28px] border border-border bg-background/50 p-6 sm:p-8 shadow-2xl shadow-background/40">
+			<div className="relative flex flex-col gap-6 py-4 sm:py-6">
 				<div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent-color/15 blur-3xl" />
 				<div className="pointer-events-none absolute -left-14 bottom-0 h-48 w-48 rounded-full bg-chart-4/10 blur-3xl" />
 
@@ -138,15 +138,7 @@ export function NameSuggestionInner() {
 // ============================================================================
 
 function InlineNameSuggestion() {
-	return (
-		<LiquidGlass
-			className="w-full flex flex-col items-center justify-center p-4 sm:p-6 backdrop-blur-md rounded-3xl"
-			style={{ width: "100%", height: "auto", minHeight: "200px" }}
-			{...getGlassPreset("card")}
-		>
-			<NameSuggestionInner />
-		</LiquidGlass>
-	);
+	return <NameSuggestionInner />;
 }
 
 // ============================================================================

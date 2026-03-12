@@ -6,8 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Button, Input, LiquidGlass, Section } from "@/shared/components/layout";
-import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
+import { Button, Input, Section } from "@/shared/components/layout";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import { LogOut, Pencil, User } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
@@ -63,9 +62,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 					<h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 						Join the Council
 					</h2>
-					<p className="text-sm text-muted-foreground">
-						Enter your name to track your rankings
-					</p>
+					<p className="text-sm text-muted-foreground">Enter your name to track your rankings</p>
 				</div>
 			)}
 
@@ -88,9 +85,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 					{isEditing ? (
 						<div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 							<div className="space-y-2">
-								<label className="text-sm font-medium text-foreground/80 block">
-									Your Name
-								</label>
+								<label className="text-sm font-medium text-foreground/80 block">Your Name</label>
 								<div className="relative">
 									<User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/50" />
 									<Input
@@ -146,10 +141,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 								onClick={handleLogout}
 								className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors group"
 							>
-								<LogOut
-									size={16}
-									className="group-hover:-translate-x-0.5 transition-transform"
-								/>
+								<LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
 								Logout
 							</button>
 						</div>
@@ -172,16 +164,10 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 
 export function ProfileSection({ onLogin }: ProfileSectionProps) {
 	return (
-		<Section id="profile" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
-			<LiquidGlass
-				className="w-full flex flex-col items-center justify-center backdrop-blur-md rounded-3xl"
-				style={{ width: "100%", height: "auto", minHeight: "200px" }}
-				{...getGlassPreset("card")}
-			>
-				<div className="p-8 w-full">
-					<ProfileInner onLogin={onLogin} />
-				</div>
-			</LiquidGlass>
+		<Section id="profile" variant="minimal" padding="comfortable" maxWidth="full">
+			<div className="mx-auto w-full max-w-3xl">
+				<ProfileInner onLogin={onLogin} />
+			</div>
 		</Section>
 	);
 }

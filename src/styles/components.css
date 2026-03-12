@@ -42,8 +42,6 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 	min-width: 3.25rem;
 	min-height: 3.25rem;
 	padding: var(--space-3);
-	font-size: var(--text-lg);
-	font-weight: 700;
 	border-radius: var(--radius-full);
 	box-shadow: 0 16px 35px var(--overlay-dark);
 	transform: translate3d(0, var(--space-4), 0) scale(0.95);
@@ -54,9 +52,16 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 		transform var(--duration-normal) var(--ease-out),
 		opacity var(--duration-normal) var(--ease-out),
 		box-shadow var(--duration-normal) var(--ease-out);
-	color: var(--white-rgb);
+	color: rgb(255 255 255 / 0.96);
 	background: linear-gradient(45deg, var(--color-neon-cyan), var(--color-hot-pink));
-	border: var(--button-border-width) solid transparent;
+	border: 1px solid transparent;
+}
+
+.scroll-to-top.visible {
+	transform: translate3d(0, 0, 0) scale(1);
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
 }
 
 /* ==========================================================================
@@ -117,9 +122,6 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 	border: 1px solid rgb(255 255 255 / 50%);
 	border-radius: 9999px;
 	padding: 0.8rem 1.8rem;
-	font-weight: 800;
-	font-size: 0.95rem;
-	letter-spacing: 0.01em;
 	color: rgb(255 255 255 / 96%);
 	background: linear-gradient(145deg, rgb(255 255 255 / 28%), rgb(255 255 255 / 10%));
 	backdrop-filter: blur(10px) saturate(1.1);
@@ -176,9 +178,6 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 		linear-gradient(160deg, rgb(9 19 46 / 92%), rgb(8 28 58 / 90%)),
 		radial-gradient(circle at top right, rgb(251 191 36 / 12%), transparent 54%);
 	color: rgb(241 245 249 / 95%);
-	font-size: 0.78rem;
-	line-height: 1.45;
-	letter-spacing: 0.01em;
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 	box-shadow:
@@ -215,17 +214,10 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 }
 
 .name-lock-tooltip__label {
-	font-size: 0.6rem;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.11em;
 	color: rgb(253 224 71 / 78%);
 }
 
 .name-lock-tooltip__pronunciation {
-	font-size: 0.75rem;
-	font-style: italic;
-	font-weight: 700;
 	color: rgb(252 211 77 / 95%);
 }
 

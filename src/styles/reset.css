@@ -16,7 +16,6 @@
 
 /* HTML base */
 html {
-	font-size: 16px;
 	scroll-behavior: smooth;
 }
 
@@ -28,12 +27,8 @@ html {
 
 /* Body base */
 body {
-	font-family: var(--font-sans);
-	line-height: 1.6;
 	color: var(--text-primary);
 	background-color: var(--background-color);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
 	transition:
 		background-color var(--transition-theme),
 		color var(--transition-theme);
