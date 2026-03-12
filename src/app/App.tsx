@@ -96,19 +96,19 @@ function HomeContent() {
 	const { login } = useAuth();
 
 	return (
-		<>
+		<div className="flex flex-col gap-10 pb-6 md:gap-14 md:pb-10">
 			<Section id="pick" variant="minimal" padding="none" maxWidth="full">
 				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 					<TournamentFlow />
 				</Suspense>
 			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
+			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="full">
 				<NameSuggestion variant="inline" />
 			</Section>
 
 			<ProfileSection onLogin={(name) => login({ name })} />
-		</>
+		</div>
 	);
 }
 
