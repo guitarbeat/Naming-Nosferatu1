@@ -103,11 +103,9 @@ function HomeContent() {
 				</Suspense>
 			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
-				<NameSuggestion variant="inline" />
+			<Section id="suggest-and-profile" variant="minimal" padding="comfortable" maxWidth="2xl" separator={true}>
+				<CombinedSuggestProfile onLogin={(name) => login({ name })} />
 			</Section>
-
-			<ProfileSection onLogin={(name) => login({ name })} />
 		</>
 	);
 }
