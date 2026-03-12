@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-This review reflects the current codebase after the admin role-detection and dashboard UX hardening passes on `main`.
+This review reflects the current codebase after the admin role-detection, dashboard UX hardening, and audit-log overview pass on `main`.
 
 ## Current State
 
@@ -42,17 +42,17 @@ This review reflects the current codebase after the admin role-detection and das
 **Status**: Functional, but incomplete
 
 **What exists**
-- Overview, names, users, and analytics tabs
+- Overview and names views with data-backed admin controls
 - Derived counts for total, active, hidden, and locked names
 - Single-name and bulk hide/unhide and lock/unlock actions
-- Toast feedback for admin writes and upload attempts
+- Backend-backed recent admin actions rendered in the overview tab
+- Toast feedback for admin writes and partial data failures
 - Disabled/loading states during pending admin writes
-- Refresh controls and clearer empty-state handling in the names tab
+- Refresh controls and clearer empty/error-state handling
 
 **Current limits**
-- No audit-log view
 - No user-management tools
-- Users and analytics tabs are still summary-oriented
+- No dedicated filtering/search for the audit history
 - No confirmation flow for destructive admin actions
 
 ### Admin Identity / Authorization (`src/services/authAdapter.ts`)
@@ -76,13 +76,14 @@ This review reflects the current codebase after the admin role-detection and das
 - Dashboard write actions now expose success/error feedback
 - Admin controls now disable while writes are in flight
 - Bulk admin actions no longer depend on repeated full reloads to make progress
+- Hide/unhide and lock/unlock actions now have a backend-backed recent-activity view
 - The review itself now matches the actual repository state
 
 ## Highest-Value Remaining Work
 
-### Priority 1: Admin Auditability
+### Priority 1: User Operations
 
-Add a backend-backed audit log for hide/unhide and lock/unlock actions, then surface it in the overview tab.
+Replace the old users placeholder with real role or user-activity tooling.
 
 ### Priority 2: Analytics Depth
 
@@ -91,19 +92,19 @@ Add one genuinely new analytics surface instead of more summary cards:
 - popularity trend chart
 - tournament activity history
 
-### Priority 3: User Operations
-
-Replace the users tab placeholder with real user-management or user-activity tooling.
-
-### Priority 4: Admin UX Follow-Through
+### Priority 3: Admin UX Follow-Through
 
 Build on the new feedback layer:
 - confirmation for destructive actions when appropriate
-- richer empty/loading/error states outside the names tab
-- persistent result history instead of transient toasts only
+- richer filtering and drill-down for audit history
+- persistent result history beyond the recent-actions slice
+
+### Priority 4: Admin Permissions Surface
+
+Expose how a session was classified as admin and make role issues easier to diagnose.
 
 ## Suggested Next Epochs
 
-1. Add audit-log reads and render recent admin actions in the overview tab.
-2. Replace the users tab placeholder with actual role/user activity data.
-3. Add one time-series analytics endpoint and consume it in the analytics tab.
+1. Replace the old users placeholder with actual role or user activity data.
+2. Add audit-log filtering and deeper action details.
+3. Add one time-series analytics endpoint and consume it in the analytics surface.

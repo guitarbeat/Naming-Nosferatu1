@@ -45,6 +45,28 @@ interface FetchResult<T> {
 	source: "supabase" | "api" | "unavailable";
 }
 
+interface AdminAuditLogRow {
+	id: string;
+	created_at?: string | null;
+	operation?: string | null;
+	table_name?: string | null;
+	user_name?: string | null;
+	target_name?: string | null;
+	old_values?: unknown;
+	new_values?: unknown;
+}
+
+export interface AdminAuditEntry {
+	id: string;
+	createdAt: string | null;
+	operation: string;
+	tableName: string;
+	userName: string | null;
+	targetName: string | null;
+	oldValues: Record<string, unknown> | null;
+	newValues: Record<string, unknown> | null;
+}
+
 function mapNameRow(item: ApiNameRow): NameItem {
 	return {
 		id: String(item.id),
@@ -67,6 +89,25 @@ function toErrorMessage(error: unknown, fallback: string): string {
 		return error.message;
 	}
 	return fallback;
+}
+
+function toJsonRecord(value: unknown): Record<string, unknown> | null {
+	return value && typeof value === "object" && !Array.isArray(value)
+		? (value as Record<string, unknown>)
+		: null;
+}
+
+function mapAdminAuditRow(item: AdminAuditLogRow): AdminAuditEntry {
+	return {
+		id: item.id,
+		createdAt: item.created_at ?? null,
+		operation: item.operation ?? "UNKNOWN",
+		tableName: item.table_name ?? "unknown",
+		userName: item.user_name ?? null,
+		targetName: item.target_name ?? null,
+		oldValues: toJsonRecord(item.old_values),
+		newValues: toJsonRecord(item.new_values),
+	};
 }
 
 async function getNamesFromSupabase(
@@ -147,6 +188,45 @@ async function getSiteStatsResult(): Promise<FetchResult<Record<string, unknown>
 		return {
 			data: {},
 			error: toErrorMessage(error, "Failed to fetch site stats"),
+			source: "unavailable",
+		};
+	}
+}
+
+async function getRecentAdminActionsResult(limit: number): Promise<FetchResult<AdminAuditEntry[]>> {
+	const client = await resolveSupabaseClient();
+	if (!client) {
+		return {
+			data: [],
+			error: "Supabase client unavailable",
+			source: "unavailable",
+		};
+	}
+
+	const normalizedLimit = Math.min(Math.max(Math.trunc(limit) || 10, 1), 50);
+
+	try {
+		const rpcResult = await client.rpc("get_recent_admin_actions" as any, {
+			p_limit: normalizedLimit,
+		});
+
+		if (rpcResult.error) {
+			return {
+				data: [],
+				error: rpcResult.error.message || "Failed to fetch admin actions",
+				source: "supabase",
+			};
+		}
+
+		return {
+			data: (rpcResult.data ?? []).map((item) => mapAdminAuditRow(item as AdminAuditLogRow)),
+			error: null,
+			source: "supabase",
+		};
+	} catch (error) {
+		return {
+			data: [],
+			error: toErrorMessage(error, "Failed to fetch admin actions"),
 			source: "unavailable",
 		};
 	}
@@ -289,6 +369,16 @@ export const hiddenNamesAPI = {
 
 	unhideName: async (_userName: string, nameId: string | number) => {
 		return coreAPI.hideName(_userName, nameId, false);
+	},
+};
+
+export const adminAuditAPI = {
+	getRecentActions: async (limit: number = 10) => {
+		return (await getRecentAdminActionsResult(limit)).data;
+	},
+
+	getRecentActionsResult: async (limit: number = 10) => {
+		return getRecentAdminActionsResult(limit);
 	},
 };
 

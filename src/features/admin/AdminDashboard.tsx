@@ -6,7 +6,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
-import { coreAPI, hiddenNamesAPI, statsAPI } from "@/services/supabase/api";
+import {
+	type AdminAuditEntry,
+	adminAuditAPI,
+	coreAPI,
+	hiddenNamesAPI,
+	statsAPI,
+} from "@/services/supabase/api";
 import { withSupabase } from "@/services/supabase/runtime";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
@@ -107,6 +113,53 @@ function patchPendingIds(ids: Set<string>, id: string, isPending: boolean): Set<
 	return next;
 }
 
+function formatAdminActionLabel(operation: string): string {
+	switch (operation) {
+		case "HIDE":
+			return "hid";
+		case "UNHIDE":
+			return "unhid";
+		case "LOCK_IN":
+			return "locked";
+		case "UNLOCK_IN":
+			return "unlocked";
+		default:
+			return operation.toLowerCase().split("_").join(" ");
+	}
+}
+
+function getAuditTargetName(action: AdminAuditEntry): string {
+	const nextName = action.newValues?.name;
+	const previousName = action.oldValues?.name;
+
+	return (
+		action.targetName ??
+		(typeof nextName === "string" ? nextName : null) ??
+		(typeof previousName === "string" ? previousName : null) ??
+		"Unknown name"
+	);
+}
+
+function getAuditStateSummary(action: AdminAuditEntry): string | null {
+	const previousHidden = action.oldValues?.is_hidden;
+	const nextHidden = action.newValues?.is_hidden;
+	const oldHidden = typeof previousHidden === "boolean" ? previousHidden : null;
+	const newHidden = typeof nextHidden === "boolean" ? nextHidden : null;
+	if (oldHidden !== null && newHidden !== null && oldHidden !== newHidden) {
+		return `${oldHidden ? "Hidden" : "Visible"} -> ${newHidden ? "Hidden" : "Visible"}`;
+	}
+
+	const previousLocked = action.oldValues?.locked_in;
+	const nextLocked = action.newValues?.locked_in;
+	const oldLocked = typeof previousLocked === "boolean" ? previousLocked : null;
+	const newLocked = typeof nextLocked === "boolean" ? nextLocked : null;
+	if (oldLocked !== null && newLocked !== null && oldLocked !== newLocked) {
+		return `${oldLocked ? "Locked" : "Unlocked"} -> ${newLocked ? "Locked" : "Unlocked"}`;
+	}
+
+	return null;
+}
+
 export function AdminDashboard() {
 	const { user } = useAppStore();
 	const toast = useToast();
@@ -118,11 +171,13 @@ export function AdminDashboard() {
 		totalUsers: 0,
 		recentVotes: 0,
 	});
+	const [auditActions, setAuditActions] = useState<AdminAuditEntry[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filterStatus, setFilterStatus] = useState<"all" | "active" | "hidden" | "locked">("all");
 	const [isLoading, setIsLoading] = useState(true);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
+	const [auditLoadError, setAuditLoadError] = useState<string | null>(null);
 	const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 	const [pendingHiddenIds, setPendingHiddenIds] = useState<Set<string>>(new Set());
 	const [pendingLockedIds, setPendingLockedIds] = useState<Set<string>>(new Set());
@@ -195,9 +250,10 @@ export function AdminDashboard() {
 			}
 
 			try {
-				const [namesResult, siteStatsResult] = await Promise.all([
+				const [namesResult, siteStatsResult, auditResult] = await Promise.all([
 					coreAPI.getTrendingNamesResult(true),
 					statsAPI.getSiteStatsResult(),
+					adminAuditAPI.getRecentActionsResult(8),
 				]);
 				const nextNames = namesResult.data.map((name) => mapAdminName(name));
 				const nextErrors = [namesResult.error, siteStatsResult.error].filter(
@@ -205,6 +261,8 @@ export function AdminDashboard() {
 				);
 
 				setNames(nextNames);
+				setAuditActions(auditResult.data);
+				setAuditLoadError(auditResult.error);
 				setSelectedNames((current) => {
 					const nextIds = new Set(nextNames.map((name) => String(name.id)));
 					return new Set([...current].filter((id) => nextIds.has(id)));
@@ -762,7 +820,7 @@ export function AdminDashboard() {
 									<p className="text-sm text-muted-foreground">
 										{loadError
 											? "Some admin sources are unavailable. The dashboard is showing the latest data it could load."
-											: "Moderation, visibility, and health checks are all live from this screen."}
+											: "Moderation, visibility, health checks, and recent admin actions are all live from this screen."}
 									</p>
 								</div>
 								<Button onClick={() => setActiveTab("names")} size="small">
@@ -868,6 +926,64 @@ export function AdminDashboard() {
 										)}
 									</div>
 								</div>
+							</div>
+
+							<div className="mt-4 rounded-lg border border-border/20 bg-foreground/5 p-5">
+								<div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+									<div>
+										<h3 className="text-lg font-semibold text-foreground">Recent Admin Actions</h3>
+										<p className="text-sm text-muted-foreground">
+											Latest hide, unhide, lock, and unlock operations recorded by the backend.
+										</p>
+									</div>
+									<p className="text-xs text-muted-foreground">
+										Showing up to {auditActions.length || 8} recent events
+									</p>
+								</div>
+
+								{auditLoadError ? (
+									<div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
+										<p className="text-sm font-medium text-destructive">Audit log unavailable</p>
+										<p className="mt-1 text-sm text-muted-foreground">{auditLoadError}</p>
+									</div>
+								) : auditActions.length === 0 ? (
+									<div className="mt-4 rounded-lg border border-border/20 bg-background/70 p-4">
+										<p className="text-sm text-muted-foreground">
+											No admin actions have been recorded yet.
+										</p>
+									</div>
+								) : (
+									<div className="mt-4 space-y-3">
+										{auditActions.map((action) => {
+											const stateSummary = getAuditStateSummary(action);
+
+											return (
+												<div
+													key={action.id}
+													className="rounded-lg border border-border/20 bg-background/70 p-4"
+												>
+													<div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+														<div>
+															<p className="font-medium text-foreground">
+																{action.userName || "Unknown admin"}{" "}
+																{formatAdminActionLabel(action.operation)}{" "}
+																{getAuditTargetName(action)}
+															</p>
+															<p className="text-xs text-muted-foreground">
+																{stateSummary || action.operation.split("_").join(" ")}
+															</p>
+														</div>
+														<p className="text-xs text-muted-foreground">
+															{action.createdAt
+																? new Date(action.createdAt).toLocaleString()
+																: "Unknown time"}
+														</p>
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								)}
 							</div>
 						</Card>
 					</motion.div>

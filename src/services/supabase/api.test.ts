@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/services/apiClient";
-import { coreAPI, statsAPI } from "./api";
+import { adminAuditAPI, coreAPI, statsAPI } from "./api";
 import { resolveSupabaseClient } from "./runtime";
 
 // Mock dependencies
@@ -223,6 +223,63 @@ describe("Supabase Service API", () => {
 			expect(mockRpc).toHaveBeenCalled();
 			expect(api.patch).toHaveBeenCalledWith("/names/123/hide", { isHidden: true });
 			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("adminAuditAPI.getRecentActionsResult", () => {
+		it("should map recent admin actions from the audit RPC", async () => {
+			const mockRpc = vi.fn().mockResolvedValue({
+				data: [
+					{
+						id: "audit-1",
+						created_at: "2026-03-12T09:45:00.000Z",
+						operation: "HIDE",
+						table_name: "cat_name_options",
+						user_name: "admin",
+						target_name: "Luna",
+						old_values: { id: "123", name: "Luna", is_hidden: false },
+						new_values: { id: "123", name: "Luna", is_hidden: true },
+					},
+				],
+				error: null,
+			});
+			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
+
+			const result = await adminAuditAPI.getRecentActionsResult(5);
+
+			expect(mockRpc).toHaveBeenCalledWith("get_recent_admin_actions", { p_limit: 5 });
+			expect(result).toEqual({
+				data: [
+					{
+						id: "audit-1",
+						createdAt: "2026-03-12T09:45:00.000Z",
+						operation: "HIDE",
+						tableName: "cat_name_options",
+						userName: "admin",
+						targetName: "Luna",
+						oldValues: { id: "123", name: "Luna", is_hidden: false },
+						newValues: { id: "123", name: "Luna", is_hidden: true },
+					},
+				],
+				error: null,
+				source: "supabase",
+			});
+		});
+
+		it("should surface audit RPC failures without crashing the dashboard", async () => {
+			const mockRpc = vi.fn().mockResolvedValue({
+				data: null,
+				error: { message: "Function not found" },
+			});
+			(resolveSupabaseClient as any).mockResolvedValue({ rpc: mockRpc });
+
+			const result = await adminAuditAPI.getRecentActionsResult(10);
+
+			expect(result).toEqual({
+				data: [],
+				error: "Function not found",
+				source: "supabase",
+			});
 		});
 	});
 
