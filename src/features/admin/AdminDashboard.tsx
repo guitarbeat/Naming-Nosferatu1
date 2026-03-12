@@ -12,6 +12,7 @@ import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
+import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Lock } from "@/shared/lib/icons";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
@@ -46,16 +47,6 @@ const tabs: { id: AdminTab; label: string }[] = [
 	{ id: "users", label: "Users" },
 	{ id: "analytics", label: "Analytics" },
 ];
-
-function isRpcSignatureError(message: string): boolean {
-	const normalized = message.toLowerCase();
-	return (
-		normalized.includes("function") &&
-		(normalized.includes("does not exist") ||
-			normalized.includes("no function matches") ||
-			normalized.includes("could not find"))
-	);
-}
 
 function toFiniteNumber(value: unknown): number {
 	const numeric = typeof value === "number" ? value : Number(value);
