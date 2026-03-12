@@ -131,7 +131,7 @@ function TournamentContent() {
 					<Tournament
 						names={tournament.names}
 						existingRatings={tournament.ratings}
-						onComplete={handleTournamentComplete as any}
+						onComplete={handleTournamentComplete}
 					/>
 				) : (
 					<div className="mx-auto w-full max-w-xl px-6 py-10 text-center">

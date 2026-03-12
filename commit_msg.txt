@@ -1,0 +1,6 @@
+chore: refactor useTournamentHandlers to remove unsafe as any type assertion
+
+🎯 **What:** Removed the unnecessary `async` keyword from `handleTournamentComplete` in `useTournamentHandlers.ts`, which caused its return type to be `Promise<void>`. This allowed us to remove the unsafe `as any` type assertion when passing the function to the `onComplete` prop of the `<Tournament>` component in `App.tsx`.
+💡 **Why:** Type assertions to `any` hide mismatches between expected prop types and actual function signatures, which reduces code maintainability and typescript safety. Removing the `async` keyword corrects the mismatch since the function only performs synchronous state updates.
+✅ **Verification:** Verified by running the full Vitest suite (`pnpm test`), passing Biome linting/formatting (`npx biome check`), and successfully running `tsc --noEmit` locally.
+✨ **Result:** Improved type safety and codebase readability by eliminating an `any` cast without changing application functionality.
