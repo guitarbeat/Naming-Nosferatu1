@@ -110,6 +110,28 @@ function HomeContent() {
 	);
 }
 
+function CombinedSuggestProfile({ onLogin }: { onLogin: (name: string) => Promise<boolean | undefined> }) {
+	return (
+		<LiquidGlass
+			className="w-full flex flex-col backdrop-blur-md rounded-3xl"
+			style={{ width: "100%", height: "auto", minHeight: "200px" }}
+			{...getGlassPreset("card")}
+		>
+			<div className="flex flex-col divide-y divide-border/20">
+				{/* Name Suggestion */}
+				<div className="p-6 sm:p-8">
+					<InlineNameSuggestionContent />
+				</div>
+				{/* Profile / Login */}
+				<div className="p-6 sm:p-8">
+					<ProfileContent onLogin={onLogin} />
+				</div>
+			</div>
+		</LiquidGlass>
+	);
+}
+
+
 function TournamentContent() {
 	const { user, tournament, tournamentActions } = useAppStore();
 	const navigate = useNavigate();
