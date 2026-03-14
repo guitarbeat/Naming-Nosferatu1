@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { authAdapter } from "@/services/authAdapter";
 import { queryClient } from "@/services/supabase/client";
 import App from "./App";
+import { shouldEnableAnalytics } from "./analytics";
 import { Providers } from "./providers/Providers";
 import "../index.css";
 
@@ -16,13 +17,18 @@ if (!rootElement) {
 	throw new Error("Root element #root not found");
 }
 
+const analyticsEnabled = shouldEnableAnalytics({
+	hostname: window.location.hostname,
+	isProd: import.meta.env.PROD,
+});
+
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<Providers auth={{ adapter: authAdapter }}>
 				<BrowserRouter>
 					<App />
-					<Analytics />
+					{analyticsEnabled ? <Analytics /> : null}
 				</BrowserRouter>
 			</Providers>
 		</QueryClientProvider>

@@ -19,6 +19,7 @@ Notes:
 - [x] Logged-out profile avatar no longer depends on an external image host; it now uses a bundled local cat asset.
 - [x] Production/static builds no longer inject the dev-only console-forwarding bridge that was posting to `/api/debug/client-logs` without a backend.
 - [x] Logged-out homepage no longer auto-scrolls toward the profile form on first load; profile input focus is now limited to explicit edit actions.
+- [x] Local/static previews no longer load the Vercel analytics script, avoiding `_vercel/insights` 404 noise outside real production hosts.
 
 ## 2025
 

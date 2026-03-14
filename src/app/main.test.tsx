@@ -87,7 +87,7 @@ describe("main bootstrap", () => {
 		expect(screen.getByTestId("providers")).toHaveAttribute("data-has-adapter", "true");
 		expect(screen.getByTestId("browser-router")).toBeInTheDocument();
 		expect(screen.getByTestId("app")).toBeInTheDocument();
-		expect(screen.getByTestId("analytics")).toBeInTheDocument();
+		expect(screen.queryByTestId("analytics")).not.toBeInTheDocument();
 	});
 
 	it("throws when the root element is missing", async () => {
