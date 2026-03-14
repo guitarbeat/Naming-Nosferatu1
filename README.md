@@ -27,6 +27,7 @@ A React application for managing cat names and related data, featuring tournamen
         - `VITE_SUPABASE_URL`
         - `VITE_SUPABASE_ANON_KEY`
         - `DATABASE_URL` (for Drizzle/server operations)
+        - `JWT_SECRET` (required for backend API auth)
 
 ### Development
 
@@ -42,7 +43,7 @@ To start the backend API server:
 pnpm run dev:server
 ```
 
-Run them in separate terminals for full-stack local development. The frontend uses the Vite default port (`5173`) and proxies `/api` requests to the backend on port `3001`.
+Run them in separate terminals for full-stack local development. The frontend uses the Vite default port (`5173`) and proxies `/api` requests to the backend on port `3001`. The backend requires `JWT_SECRET` to be set before startup.
 
 ### Testing
 

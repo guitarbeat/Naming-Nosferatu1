@@ -1,8 +1,8 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
-import { Providers, type AuthAdapter, useAuth, useToast } from "./Providers";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { type AuthAdapter, Providers, useAuth, useToast } from "./Providers";
 
 function createWrapper(adapter?: AuthAdapter) {
 	return function Wrapper({ children }: { children: ReactNode }) {
@@ -16,7 +16,9 @@ describe("Providers", () => {
 	});
 
 	it("throws a helpful error when useAuth is used outside Providers", () => {
-		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+			/* expected React error for hook misuse */
+		});
 
 		expect(() => renderHook(() => useAuth())).toThrow(/useAuth must be used within <Providers>/);
 
@@ -24,7 +26,9 @@ describe("Providers", () => {
 	});
 
 	it("throws a helpful error when useToast is used outside Providers", () => {
-		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+			/* expected React error for hook misuse */
+		});
 
 		expect(() => renderHook(() => useToast())).toThrow(/useToast must be used within <Providers>/);
 

@@ -22,13 +22,7 @@ vi.mock("react-dom/client", () => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({
-	QueryClientProvider: ({
-		children,
-		client,
-	}: {
-		children: ReactNode;
-		client: unknown;
-	}) => (
+	QueryClientProvider: ({ children, client }: { children: ReactNode; client: unknown }) => (
 		<div data-testid="query-client-provider" data-has-client={String(Boolean(client))}>
 			{children}
 		</div>
@@ -54,13 +48,7 @@ vi.mock("@/services/supabase/client", () => ({
 }));
 
 vi.mock("./providers/Providers", () => ({
-	Providers: ({
-		children,
-		auth,
-	}: {
-		children: ReactNode;
-		auth?: { adapter?: unknown };
-	}) => (
+	Providers: ({ children, auth }: { children: ReactNode; auth?: { adapter?: unknown } }) => (
 		<div data-testid="providers" data-has-adapter={String(Boolean(auth?.adapter))}>
 			{children}
 		</div>

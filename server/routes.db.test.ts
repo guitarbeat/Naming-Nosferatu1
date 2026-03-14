@@ -2,6 +2,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import request from "supertest";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock requireAdmin to allow access
@@ -162,7 +163,7 @@ describe("Server Routes (DB Mode)", () => {
 				.send({
 					userId: jwt.sign(
 						{ userId: "00000000-0000-0000-0000-000000000000" },
-						process.env.JWT_SECRET || "default-dev-secret",
+						process.env.JWT_SECRET as string,
 					),
 					ratings,
 				});
