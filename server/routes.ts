@@ -3,6 +3,7 @@ import { type NextFunction, type Request, type Response, Router } from "express"
 import { rateLimit } from "express-rate-limit";
 import jwt from "jsonwebtoken";
 import { ZodError } from "zod";
+import { getFallbackNames } from "../shared/fallbackNames";
 import {
 	catAppUsers,
 	catNameOptions,
@@ -58,58 +59,7 @@ const getJwtUserId = (token: string) => {
 };
 
 // Mock data for when database is unavailable
-const mockNames = [
-	{
-		id: "1",
-		name: "Whiskers",
-		description: "Classic tabby cat",
-		avgRating: 1650,
-		isActive: true,
-		isHidden: false,
-		status: "approved",
-		pronunciation: "WHIS-kerz",
-	},
-	{
-		id: "2",
-		name: "Shadow",
-		description: "Mysterious black cat",
-		avgRating: 1600,
-		isActive: true,
-		isHidden: false,
-		status: "approved",
-		pronunciation: "SHAD-oh",
-	},
-	{
-		id: "3",
-		name: "Luna",
-		description: "Elegant white cat",
-		avgRating: 1580,
-		isActive: true,
-		isHidden: false,
-		status: "approved",
-		pronunciation: "LOO-nah",
-	},
-	{
-		id: "4",
-		name: "Muffin",
-		description: "Sweet orange cat",
-		avgRating: 1550,
-		isActive: true,
-		isHidden: false,
-		status: "approved",
-		pronunciation: "MUF-in",
-	},
-	{
-		id: "5",
-		name: "Mittens",
-		description: "Playful kitten",
-		avgRating: 1500,
-		isActive: true,
-		isHidden: false,
-		status: "candidate",
-		pronunciation: "MIT-enz",
-	},
-];
+const mockNames = getFallbackNames(true);
 
 // Basic endpoint to get all active names
 router.get("/api/names", async (req, res) => {

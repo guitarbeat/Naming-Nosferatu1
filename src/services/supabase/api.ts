@@ -1,5 +1,6 @@
 import { api } from "@/services/apiClient";
 import type { NameItem } from "@/shared/types";
+import { getFallbackNames } from "../../../shared/fallbackNames";
 import { resolveSupabaseClient } from "./runtime";
 
 interface ApiNameRow {
@@ -127,7 +128,7 @@ export const coreAPI = {
 			const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
 			return (data ?? []).map((item) => mapNameRow(item));
 		} catch {
-			return [];
+			return getFallbackNames(includeHidden).map((item) => mapNameRow(item));
 		}
 	},
 

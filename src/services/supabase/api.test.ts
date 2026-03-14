@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/services/apiClient";
+import { FALLBACK_NAMES } from "../../../shared/fallbackNames";
 import { coreAPI } from "./api";
 import { resolveSupabaseClient } from "./runtime";
 
@@ -116,12 +117,13 @@ describe("Supabase Service API", () => {
 			expect(result[0]?.name).toBe("Cat 3");
 		});
 
-		it("should return empty array if both API and Supabase fail", async () => {
+		it("should return bundled fallback names if both API and Supabase fail", async () => {
 			(api.get as any).mockRejectedValue(new Error("API Down"));
 			(resolveSupabaseClient as any).mockResolvedValue(null);
 
 			const result = await coreAPI.getTrendingNames();
-			expect(result).toEqual([]);
+			expect(result).toHaveLength(FALLBACK_NAMES.length);
+			expect(result[0]?.name).toBe(FALLBACK_NAMES[0]?.name);
 		});
 	});
 

@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
 	server: {
 		host: "0.0.0.0",
 		port: 5173,
@@ -29,7 +29,7 @@ export default defineConfig({
 		react(),
 		tailwindcss(),
 		consoleForwardPlugin({
-			enabled: true,
+			enabled: command === "serve",
 			endpoint: "/api/debug/client-logs",
 			levels: ["log", "warn", "error", "info", "debug"],
 		}),
@@ -39,4 +39,4 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "src"),
 		},
 	},
-});
+}));

@@ -13,6 +13,12 @@ Notes:
 - `Made right` is based on commit messages plus representative touched files. When commit history is terse, the wording is an informed inference rather than a verbatim claim from the code.
 - File paths are historical. This repo was reorganized heavily, so some paths no longer exist at `HEAD`.
 
+## 2026-03-14 Review Checklist
+
+- [x] Static preview no longer hard-fails when both `/api` and Supabase are unavailable; bundled fallback names now keep the site browsable.
+- [x] Logged-out profile avatar no longer depends on an external image host; it now uses a bundled local cat asset.
+- [x] Production/static builds no longer inject the dev-only console-forwarding bridge that was posting to `/api/debug/client-logs` without a backend.
+
 ## 2025
 
 - `2025-04-20`

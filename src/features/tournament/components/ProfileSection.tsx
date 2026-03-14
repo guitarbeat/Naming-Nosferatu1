@@ -21,18 +21,19 @@ interface ProfileSectionProps {
 
 export function ProfileInner({ onLogin }: ProfileSectionProps) {
 	const { user, userActions } = useAppStore();
+	const defaultAvatar = CAT_IMAGES[0] ?? "";
 	const [editedName, setEditedName] = useState(user.name || "");
 	const [isSaving, setIsSaving] = useState(false);
 	const [isEditing, setIsEditing] = useState(!user.isLoggedIn);
-	const [avatarSrc, setAvatarSrc] = useState(user.avatarUrl || "https://placekitten.com/200/200");
+	const [avatarSrc, setAvatarSrc] = useState(user.avatarUrl || defaultAvatar);
 
 	useEffect(() => {
 		setEditedName(user.name || "");
-		setAvatarSrc(user.avatarUrl || "https://placekitten.com/200/200");
+		setAvatarSrc(user.avatarUrl || defaultAvatar);
 		if (!user.isLoggedIn) {
 			setIsEditing(true);
 		}
-	}, [user.name, user.isLoggedIn, user.avatarUrl]);
+	}, [defaultAvatar, user.name, user.isLoggedIn, user.avatarUrl]);
 
 	const handleSave = async () => {
 		if (!editedName.trim()) {
@@ -75,7 +76,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 							src={avatarSrc}
 							alt="Profile"
 							className="w-full h-full object-cover"
-							onError={() => setAvatarSrc(CAT_IMAGES[0] ?? "")}
+							onError={() => setAvatarSrc(defaultAvatar)}
 						/>
 					</div>
 				</div>
