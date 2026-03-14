@@ -21,6 +21,13 @@ const isDev = import.meta.env?.DEV ?? false;
 // Types
 // ═══════════════════════════════════════════════════════════════════════════════
 
+export interface PerformanceConfig {
+	/** If true, metrics are logged to console.debug */
+	debug?: boolean;
+	/** Callback fired when a metric is recorded */
+	onReport?: (metricName: string, value: number) => void;
+}
+
 interface PerformanceMetrics {
 	fcp?: number;
 	lcp?: number;
@@ -37,10 +44,18 @@ interface PerformanceMetrics {
 
 const metrics: PerformanceMetrics = {};
 const observers: PerformanceObserver[] = [];
+let currentConfig: PerformanceConfig = {};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════════════
+
+function reportMetric(name: string, value: number, unit = ""): void {
+	if (currentConfig.debug) {
+		console.debug(`[Perf] ${name}: ${value}${unit}`);
+	}
+	currentConfig.onReport?.(name, value);
+}
 
 /**
  * Report navigation timing using the Navigation Timing Level 2 API.
@@ -57,9 +72,15 @@ function reportNavigationMetrics(): void {
 	metrics.loadComplete = Math.round(nav.loadEventEnd);
 	metrics.serverResponseTime = Math.round(nav.responseEnd - nav.requestStart);
 
-	console.debug(`[Perf] DOM Content Loaded: ${metrics.domContentLoaded}ms`);
-	console.debug(`[Perf] Page Load Complete: ${metrics.loadComplete}ms`);
-	console.debug(`[Perf] Server Response: ${metrics.serverResponseTime}ms`);
+	if (metrics.domContentLoaded !== undefined) {
+		reportMetric("DOM Content Loaded", metrics.domContentLoaded, "ms");
+	}
+	if (metrics.loadComplete !== undefined) {
+		reportMetric("Page Load Complete", metrics.loadComplete, "ms");
+	}
+	if (metrics.serverResponseTime !== undefined) {
+		reportMetric("Server Response", metrics.serverResponseTime, "ms");
+	}
 }
 
 /**
@@ -72,7 +93,9 @@ function observeWebVital(type: string, callback: (entries: PerformanceEntryList)
 		observer.observe({ type, buffered: true });
 		observers.push(observer);
 	} catch {
-		console.debug(`[Perf] "${type}" observer not supported`);
+		if (currentConfig.debug) {
+			console.debug(`[Perf] "${type}" observer not supported`);
+		}
 	}
 }
 
@@ -81,7 +104,9 @@ function observeWebVital(type: string, callback: (entries: PerformanceEntryList)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Start collecting Web Vitals and navigation metrics (dev only). */
-export function initializePerformanceMonitoring(): void {
+export function initializePerformanceMonitoring(config: PerformanceConfig = {}): void {
+	currentConfig = config;
+
 	if (!isDev || typeof window === "undefined") {
 		return;
 	}
@@ -98,7 +123,9 @@ export function initializePerformanceMonitoring(): void {
 		const fcp = entries.find((e) => e.name === "first-contentful-paint");
 		if (fcp) {
 			metrics.fcp = Math.round(fcp.startTime);
-			console.debug(`[Perf] FCP: ${metrics.fcp}ms`);
+			if (metrics.fcp !== undefined) {
+				reportMetric("FCP", metrics.fcp, "ms");
+			}
 		}
 	});
 
@@ -109,7 +136,9 @@ export function initializePerformanceMonitoring(): void {
 			| undefined;
 		if (last) {
 			metrics.lcp = Math.round(last.renderTime || last.loadTime || last.startTime);
-			console.debug(`[Perf] LCP: ${metrics.lcp}ms`);
+			if (metrics.lcp !== undefined) {
+				reportMetric("LCP", metrics.lcp, "ms");
+			}
 		}
 	});
 
@@ -125,7 +154,9 @@ export function initializePerformanceMonitoring(): void {
 				metrics.cls = parseFloat(clsTotal.toFixed(4));
 			}
 		}
-		console.debug(`[Perf] CLS: ${metrics.cls}`);
+		if (metrics.cls !== undefined) {
+			reportMetric("CLS", metrics.cls);
+		}
 	});
 
 	// First Input Delay
@@ -133,7 +164,9 @@ export function initializePerformanceMonitoring(): void {
 		const entry = entries[0] as (PerformanceEntry & { processingStart: number }) | undefined;
 		if (entry) {
 			metrics.fid = Math.round(entry.processingStart - entry.startTime);
-			console.debug(`[Perf] FID: ${metrics.fid}ms`);
+			if (metrics.fid !== undefined) {
+				reportMetric("FID", metrics.fid, "ms");
+			}
 		}
 	});
 }
@@ -148,6 +181,7 @@ export function cleanupPerformanceMonitoring(): void {
 		}
 	}
 	observers.length = 0;
+	currentConfig = {};
 }
 
 /** Retrieve a snapshot of all collected metrics. */
