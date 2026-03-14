@@ -190,7 +190,6 @@ function CatImage({
 
 	const handleError = useCallback(
 		(event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-			console.error("Image failed to load:", event.currentTarget.src);
 			setHasError(true);
 			onError?.(event);
 		},
