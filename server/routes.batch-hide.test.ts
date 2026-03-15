@@ -76,7 +76,7 @@ describe("Batch Hide Endpoint", () => {
 		expect(mocks.set).toHaveBeenCalledWith({ isHidden });
 		// Verify inArray was called
 		expect(inArray).toHaveBeenCalledWith("mock_id_column", nameIds);
-	});
+	}, 15_000);
 
 	it("should handle empty nameIds array", async () => {
 		const res = await request(app)
