@@ -26,6 +26,7 @@ Notes:
 - [x] Production builds no longer emit the >500 kB main-chunk warning; stable vendor code is split into dedicated chunks.
 - [x] Local fallback mode no longer emits avoidable startup noise; missing `/api` proxies now fail quietly and local no-Supabase runs stop warning in the browser console.
 - [x] Production builds no longer warn about mixed dynamic/static Supabase client imports; the last lazy import was removed from the name picker flow.
+- [x] The batch-hide route test no longer flakes under full-suite load; its main integration assertion now has a realistic timeout budget.
 
 ## 2025
 
