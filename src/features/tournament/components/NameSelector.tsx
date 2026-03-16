@@ -531,10 +531,11 @@ export function NameSelector() {
 		setPendingAdminAction(null);
 	}, [pendingAdminAction, handleToggleHidden, handleToggleLocked]);
 
-	const visibleCards = names.filter(
-		(name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in),
+	const visibleCards = useMemo(
+		() => names.filter((name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in)),
+		[names, swipedIds],
 	);
-	const cardsToRender = visibleCards.slice(0, 3);
+	const cardsToRender = useMemo(() => visibleCards.slice(0, 3), [visibleCards]);
 
 	const availableNames = useMemo(
 		() => names.filter((name) => !(name.lockedIn || name.locked_in) && !name.isHidden),
