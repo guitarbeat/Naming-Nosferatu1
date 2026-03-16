@@ -16,6 +16,7 @@ import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible, useNamesCache } from "@/shared/hooks";
 import { getRandomCatImage } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
+import { isRpcSignatureError } from "@/shared/lib/errors";
 import {
 	Check,
 	CheckCircle,
@@ -78,16 +79,6 @@ const EXIT_SPRING_CONFIG = {
 	damping: 25,
 	velocity: 50,
 };
-
-function isRpcSignatureError(message: string): boolean {
-	const normalized = message.toLowerCase();
-	return (
-		normalized.includes("function") &&
-		(normalized.includes("does not exist") ||
-			normalized.includes("no function matches") ||
-			normalized.includes("could not find"))
-	);
-}
 
 type PendingAdminAction = {
 	type: "toggle-hidden" | "toggle-locked";
