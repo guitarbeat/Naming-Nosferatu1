@@ -95,3 +95,29 @@ For more detailed information, please refer to the [docs](./docs) directory:
 -   **Database**: Supabase (PostgreSQL)
 -   **Testing**: Vitest, React Testing Library, Supertest
 -   **Tooling**: Biome, TypeScript, pnpm
+
+## Root structure
+
+Minimal root directories:
+
+- `.github`
+- `config`
+- `docs`
+- `public`
+- `scripts`
+- `server`
+- `shared`
+- `src`
+- `supabase`
+
+Root files:
+
+- `.biomeignore`
+- `.gitignore`
+- `LICENSE`
+- `README.md`
+- `index.html`
+- `package.json`
+- `pnpm-lock.yaml`
+- `pnpm-workspace.yaml`
+- `vercel.json`
