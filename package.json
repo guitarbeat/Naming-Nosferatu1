@@ -45,7 +45,7 @@
     "format": "biome format --write --config-path config/biome.json src server",
     "fix": "pnpm run lint:fix",
     "check": "pnpm run lint && pnpm run check:deps",
-    "check:deps": "DATABASE_URL=${DATABASE_URL:-postgres://user:pass@localhost:5432/db} knip --config config/knip.json --dependencies --no-config-hints",
+    "check:deps": "cross-env DATABASE_URL=postgres://user:pass@localhost:5432/db knip --config config/knip.json --dependencies --no-config-hints",
     "check:deps:fix": "knip --config config/knip.json --fix",
     "clean": "rm -rf build dist node_modules/.vite",
     "test": "vitest --run --config config/vitest.config.ts",
@@ -56,11 +56,14 @@
     "@capacitor/cli": "8.2.0",
     "@hello-pangea/dnd": "^18.0.1",
     "@heroui/react": "^2.8.10",
+    "@sentry/react": "^8.45.0",
+    "@sentry/tracing": "^7.114.0",
     "@supabase/supabase-js": "^2.99.1",
     "@tanstack/react-query": "^5.90.21",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/pg": "^8.16.0",
+    "@types/react-window": "^1.8.8",
     "@vercel/analytics": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "2.1.1",
@@ -70,12 +73,13 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
     "framer-motion": "^12.35.2",
-    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.577.0",
+    "multer": "^1.4.5-lts.1",
     "pg": "^8.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.0",
+    "react-window": "^1.8.8",
     "tailwind-merge": "3.5.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
@@ -86,7 +90,7 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.12",
     "@types/node": "^25.4.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -94,6 +98,8 @@
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.24",
+    "concurrently": "^9.1.2",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "fast-check": "^4.6.0",
     "jsdom": "^28.1.0",
@@ -102,7 +108,6 @@
     "supertest": "^7.2.2",
     "tailwindcss": "4.2.1",
     "terser": "^5.46.0",
-    "concurrently": "^9.1.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
@@ -137,6 +142,11 @@
   "volta": {
     "node": "20.19.6",
     "pnpm": "10.27.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "glob": "13.0.6"
+    }
   },
   "overrides": {
     "nth-check": "^2.1.1",

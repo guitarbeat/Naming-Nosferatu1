@@ -8,5 +8,6 @@
 		"src/features/tournament/hooks/useTournamentSelectionSaver.ts",
 		"src/features/tournament/hooks/useTournamentSelectionSaver.bench.ts"
 	],
+	"ignoreDependencies": ["@capacitor/cli", "tailwindcss"],
 	"typescript": true
 }

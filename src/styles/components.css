@@ -49,9 +49,9 @@ nav[aria-label="Primary"] button[aria-pressed="true"] {
 	visibility: hidden;
 	pointer-events: none;
 	transition:
-		transform var(--duration-normal) var(--ease-out),
-		opacity var(--duration-normal) var(--ease-out),
-		box-shadow var(--duration-normal) var(--ease-out);
+		transform var(--duration-normal) var(--ease-out-expo),
+		opacity var(--duration-normal) var(--ease-out-expo),
+		box-shadow var(--duration-normal) var(--ease-out-expo);
 	color: rgb(255 255 255 / 0.96);
 	background: linear-gradient(45deg, var(--color-neon-cyan), var(--color-hot-pink));
 	border: 1px solid transparent;

@@ -42,10 +42,34 @@ function collectFiles(rootDir) {
 }
 
 function runSubprocessCheck(command, args, label, projectRoot) {
-	const result = spawnSync(command, args, {
-		cwd: projectRoot,
-		stdio: "inherit",
-	});
+	const isWindowsCmd = process.platform === "win32" && command.toLowerCase().endsWith(".cmd");
+
+	const result = isWindowsCmd
+		? spawnSync(
+				"cmd.exe",
+				[
+					"/d",
+					"/s",
+					"/c",
+					`"${[
+						command,
+						...args.map((arg) => {
+							if (arg === "") {
+								return '""';
+							}
+							return /[\s"]/u.test(arg) ? `"${arg.replaceAll('"', '\\"')}"` : arg;
+						}),
+					].join(" ")}"`,
+				],
+				{
+					cwd: projectRoot,
+					stdio: "inherit",
+				},
+			)
+		: spawnSync(command, args, {
+				cwd: projectRoot,
+				stdio: "inherit",
+			});
 
 	if (result.error) {
 		const message = result.error instanceof Error ? result.error.message : String(result.error);
@@ -144,14 +168,14 @@ export function runArchitectureCheck(projectRoot = ROOT) {
 }
 
 export function runCircularCheck(projectRoot = ROOT) {
-	const tsx = resolveBin(projectRoot, "tsx");
-	if (!tsx || !fs.existsSync(tsx)) {
-		console.error("Unable to locate tsx binary. Run `pnpm install` first.");
+	const tsxCli = path.join(projectRoot, "node_modules", "tsx", "dist", "cli.mjs");
+	if (!fs.existsSync(tsxCli)) {
+		console.error("Unable to locate tsx CLI module. Run `pnpm install` first.");
 		return false;
 	}
 
 	const checkPath = path.join(projectRoot, "scripts", "check-circular-dependencies.ts");
-	return runSubprocessCheck(tsx, [checkPath], "circular dependency check", projectRoot);
+	return runSubprocessCheck(process.execPath, [tsxCli, checkPath], "circular dependency check", projectRoot);
 }
 
 export function runMaintenanceChecks(requestedChecks = DEFAULT_CHECKS, projectRoot = ROOT) {

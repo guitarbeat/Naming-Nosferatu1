@@ -73,7 +73,9 @@ updateRating(r, expected, actual, games) = r + k * (actual - expected)
 
 ---
 
-## Project Structure
+## Project Structure & Scalability
+
+### Current Structure (March 2026)
 
 ```
 src/
@@ -110,6 +112,36 @@ config/                   # Tool configuration
 | `store/appStore.ts` | Global state management with Zustand |
 | `shared/types/index.ts` | Shared domain type definitions |
 | `shared/lib/` | Pure utilities, constants, cache, metrics, formatting |
+
+### Scalability Guidelines
+
+**Dependency Flow:** `app -> features -> shared` (one-way)
+
+**Feature Organization:**
+```
+features/
+  tournament/
+    components/     # UI components
+    hooks/          # Feature-specific hooks
+    services/       # Feature-local services (Elo, match helpers)
+    types/          # Feature types
+  analytics/
+    components/     # Dashboard components
+    services/       # Analytics API wrappers
+    hooks/          # Analytics hooks
+```
+
+**Shared Resources:**
+```
+shared/
+  components/layout/  # Reusable UI primitives
+  hooks/             # Cross-feature hooks
+  services/          # Runtime infrastructure (apiClient, errorManager)
+  lib/               # Pure utilities, constants
+  types/             # Shared domain types
+```
+
+**Enforcement:** `pnpm run check:maintenance` validates that `src/shared/` and `src/services/` do not import from `@/features/*`.
 
 ---
 
