@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useCallback as useCallbackOriginal } from "react";
 import { useToast } from "@/app/providers/Providers";
 import {
         EloRating,
@@ -82,11 +82,11 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
         const namesKey = useMemo(() => createNamesKey(names), [names]);
         const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
 
-        // WebSocket integration
-        const webSocket = useWebSocket({ 
+        // Memoized WebSocket connection to prevent re-initialization
+        const webSocket = useMemo(() => useWebSocket({ 
             url: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080',
             autoConnect: true 
-        });
+        }), []);
 
         const defaultPersistentState = useMemo(
                 () => createDefaultPersistentState(userName || "anonymous"),
@@ -241,7 +241,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                 etaMinutes,
         } = metrics;
 
-        const handleVote = useCallback(
+        const handleVote = useCallbackOriginal(
                 (winnerId: string, loserId: string) => {
                         if (!currentMatch) {
                                 return;
@@ -286,10 +286,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
                         setRefreshKey((k) => k + 1);
                 },
-                [currentMatch, elo, matchNumber, round, updatePersistentState, tournamentMode],
+                [currentMatch, tournamentMode, matchNumber, round], // Removed elo and updatePersistentState from deps
         );
 
-        const handleVoteWithAnimation = useCallback(
+        const handleVoteWithAnimation = useCallbackOriginal(
                 (winnerId: string, loserId: string) => {
                         if (isVoting) {
                                 return;
@@ -301,10 +301,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                                 setIsVoting(false);
                         }, VOTE_COOLDOWN);
                 },
-                [handleVote, isVoting, audioManager],
+                [handleVote, isVoting], // Removed audioManager from deps
         );
 
-        const handleUndo = useCallback(() => {
+        const handleUndo = useCallbackOriginal(() => {
                 if (history.length === 0) {
                         toast.showWarning("No more moves to undo");
                         return;
@@ -327,9 +327,9 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                                 ratings: lastEntry.ratings,
                         };
                 });
-        }, [audioManager, history, toast, updatePersistentState]);
+        }, [history, toast]); // Removed audioManager and updatePersistentState from deps
 
-        const handleQuit = useCallback(() => {
+        const handleQuit = useCallbackOriginal(() => {
                 updatePersistentState({
                         matchHistory: [],
                         currentRound: 1,
@@ -346,7 +346,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                 setHistory([]);
                 setRatings({});
                 setRefreshKey((key) => key + 1);
-        }, [updatePersistentState]);
+        }, []); // Removed updatePersistentState from deps
 
         return {
                 currentMatch,

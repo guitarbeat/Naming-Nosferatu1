@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getWebSocketService } from "../services/websocketService";
-import type { TournamentUpdate, MatchResult, UserActivity } from "../services/websocketService";
+import type { TournamentUpdate, MatchResult, UserActivity, ConnectionMetrics } from "../services/websocketService";
 
 interface UseWebSocketOptions {
 	url?: string;
@@ -16,7 +16,16 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 	const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
 	const [lastMessage, setLastMessage] = useState<string>('');
 	const [activeUsers, setActiveUsers] = useState<UserActivity[]>([]);
+	const [metrics, setMetrics] = useState<ConnectionMetrics>({
+		connectedAt: null,
+		lastMessageAt: null,
+		messagesReceived: 0,
+		messagesSent: 0,
+		reconnectCount: 0,
+		averageLatency: 0,
+	});
 	const wsServiceRef = useRef<ReturnType<typeof getWebSocketService> | null>(null);
+	const unsubscribeRefs = useRef<Set<() => void>>(new Set());
 
 	// Initialize WebSocket service
 	useEffect(() => {
@@ -26,9 +35,20 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 			if (options.autoConnect) {
 				wsServiceRef.current.connect().catch(console.error);
 			}
+
+			// Subscribe to connection state changes
+			const unsubscribeConnectionState = wsServiceRef.current.onConnectionStateChange((state) => {
+				setConnectionState(state);
+			});
+
+			unsubscribeRefs.current.add(unsubscribeConnectionState);
 		}
 
 		return () => {
+			// Clean up all subscriptions
+			unsubscribeRefs.current.forEach(unsubscribe => unsubscribe());
+			unsubscribeRefs.current.clear();
+			
 			wsServiceRef.current?.disconnect();
 			wsServiceRef.current = null;
 		};
@@ -47,25 +67,19 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		}
 	}, []);
 
-	// Update connection state
+	// Update metrics and connection state
 	useEffect(() => {
 		if (wsServiceRef.current) {
-			const updateConnectionState = () => {
-				const state = wsServiceRef.current.getConnectionState();
-				setConnectionState(state);
-			};
-
-			// Listen for connection state changes
-			const interval = setInterval(updateConnectionState, 1000);
-			wsServiceRef.current.onMessage('connection_state', (message) => {
-				if (message.data) {
-					setConnectionState(message.data as 'connecting' | 'connected' | 'disconnected' | 'error');
+			// Update metrics periodically
+			const metricsInterval = setInterval(() => {
+				if (wsServiceRef.current) {
+					const currentMetrics = wsServiceRef.current.getMetrics();
+					setMetrics(currentMetrics);
 				}
-			});
+			}, 1000);
 
 			return () => {
-				clearInterval(interval);
-				wsServiceRef.current.offMessage('connection_state');
+				clearInterval(metricsInterval);
 			};
 		}
 	}, [wsServiceRef.current]);
@@ -73,28 +87,44 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 	// Tournament subscription
 	const subscribeToTournament = useCallback((tournamentId: string, callback: (update: TournamentUpdate) => void) => {
 		if (wsServiceRef.current) {
-			return wsServiceRef.current.subscribeToTournament(tournamentId, callback);
+			const unsubscribe = wsServiceRef.current.subscribeToTournament(tournamentId, callback);
+			unsubscribeRefs.current.add(unsubscribe);
+			return unsubscribe;
 		}
+		return () => {};
 	}, [wsServiceRef.current]);
 
 	// Match results subscription
 	const subscribeToMatches = useCallback((callback: (result: MatchResult) => void) => {
 		if (wsServiceRef.current) {
-			return wsServiceRef.current.subscribeToMatches(callback);
+			const unsubscribe = wsServiceRef.current.subscribeToMatches(callback);
+			unsubscribeRefs.current.add(unsubscribe);
+			return unsubscribe;
 		}
+		return () => {};
 	}, [wsServiceRef.current]);
 
 	// User activity subscription
 	const subscribeToUserActivity = useCallback((callback: (activity: UserActivity) => void) => {
 		if (wsServiceRef.current) {
-			return wsServiceRef.current.subscribeToUserActivity(callback);
+			const unsubscribe = wsServiceRef.current.subscribeToUserActivity(callback);
+			unsubscribeRefs.current.add(unsubscribe);
+			return unsubscribe;
 		}
+		return () => {};
 	}, [wsServiceRef.current]);
 
 	// Send custom message
 	const sendMessage = useCallback((message: any) => {
 		if (wsServiceRef.current) {
 			wsServiceRef.current.sendMessage(message);
+		}
+	}, [wsServiceRef.current]);
+
+	// Clear message queue
+	const clearMessageQueue = useCallback(() => {
+		if (wsServiceRef.current) {
+			wsServiceRef.current.clearMessageQueue();
 		}
 	}, [wsServiceRef.current]);
 
@@ -135,12 +165,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		connectionState,
 		lastMessage,
 		activeUsers,
+		metrics,
 		connect,
 		disconnect,
 		subscribeToTournament,
 		subscribeToMatches,
 		subscribeToUserActivity,
 		sendMessage,
+		clearMessageQueue,
 		isConnected: wsServiceRef.current?.isConnected() ?? false,
 	};
 };
