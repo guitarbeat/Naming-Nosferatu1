@@ -11,6 +11,7 @@ const mockStore = {
 	tournament: {
 		isComplete: false,
 		names: null as null | string[],
+		ratings: {} as Record<string, number>,
 	},
 	tournamentActions: {},
 };

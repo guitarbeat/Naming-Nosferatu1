@@ -34,7 +34,7 @@ function FloatingNavItem({
 	customIcon,
 	className,
 }: {
-	icon: any;
+	icon: React.ElementType;
 	label: string;
 	isActive?: boolean;
 	onClick: () => void;
