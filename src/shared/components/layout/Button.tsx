@@ -13,29 +13,78 @@ import "./FancyButton.css";
  * Unified button variants - single source of truth
  */
 const buttonVariants = cva(
-	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 transition-all",
+	[
+		"inline-flex items-center justify-center gap-2 whitespace-nowrap",
+		"font-medium tracking-wide",
+		"rounded-[var(--radius-button)]",
+		"transition-all duration-200 ease-in-out",
+		"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+		"disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",
+		"[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+		"select-none",
+	].join(" "),
 	{
 		variants: {
 			variant: {
-				primary: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-				secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-				danger: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-				ghost: "hover:bg-accent hover:text-accent-foreground",
-				outline:
-					"border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-				link: "text-primary underline-offset-4 hover:underline",
-				gradient:
-					"rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 active:scale-95 disabled:active:scale-100",
-				secondaryGradient:
-					"rounded-xl bg-gradient-to-r from-chart-2 to-chart-3 hover:from-chart-2/90 hover:to-chart-3/90 text-primary-foreground font-bold shadow-lg shadow-chart-2/20 active:scale-95 disabled:active:scale-100",
+				primary: [
+					"bg-primary text-primary-foreground",
+					"shadow-sm",
+					"hover:brightness-110 hover:shadow-md hover:-translate-y-px",
+					"active:translate-y-0 active:shadow-sm active:brightness-95",
+				].join(" "),
+				secondary: [
+					"bg-secondary text-secondary-foreground",
+					"border border-border/40",
+					"shadow-sm",
+					"hover:bg-secondary/80 hover:border-border/60 hover:shadow-md hover:-translate-y-px",
+					"active:translate-y-0 active:shadow-sm active:bg-secondary/70",
+				].join(" "),
+				danger: [
+					"bg-destructive text-destructive-foreground",
+					"shadow-sm",
+					"hover:brightness-110 hover:shadow-md hover:-translate-y-px",
+					"active:translate-y-0 active:shadow-sm active:brightness-95",
+				].join(" "),
+				ghost: [
+					"text-foreground/80",
+					"hover:bg-accent/50 hover:text-accent-foreground",
+					"active:bg-accent/70",
+				].join(" "),
+				outline: [
+					"border border-border bg-transparent text-foreground",
+					"shadow-sm",
+					"hover:bg-accent/30 hover:border-border/80 hover:text-accent-foreground hover:-translate-y-px",
+					"active:translate-y-0 active:bg-accent/50",
+				].join(" "),
+				link: [
+					"text-primary underline-offset-4",
+					"hover:underline hover:text-primary/80",
+					"active:text-primary/70",
+				].join(" "),
+				gradient: [
+					"rounded-xl bg-gradient-to-r from-primary to-accent",
+					"text-primary-foreground font-bold",
+					"shadow-lg shadow-primary/20",
+					"hover:from-primary/90 hover:to-accent/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-px",
+					"active:scale-[0.98] active:shadow-md",
+					"disabled:active:scale-100",
+				].join(" "),
+				secondaryGradient: [
+					"rounded-xl bg-gradient-to-r from-chart-2 to-chart-3",
+					"text-primary-foreground font-bold",
+					"shadow-lg shadow-chart-2/20",
+					"hover:from-chart-2/90 hover:to-chart-3/90 hover:shadow-xl hover:shadow-chart-2/30 hover:-translate-y-px",
+					"active:scale-[0.98] active:shadow-md",
+					"disabled:active:scale-100",
+				].join(" "),
 				glass: "",
 			},
 			size: {
-				small: "h-8 rounded-md px-3 text-xs",
-				medium: "h-9 px-4 py-2",
-				large: "h-10 rounded-md px-8",
-				xl: "h-[50px] px-8",
-				icon: "h-9 w-9",
+				small: "h-8 px-3 py-1.5 text-xs rounded-md",
+				medium: "h-9 px-4 py-2 text-sm",
+				large: "h-11 px-6 py-2.5 text-base",
+				xl: "h-[50px] px-8 py-3 text-base",
+				icon: "h-9 w-9 p-0",
 			},
 		},
 		defaultVariants: {
