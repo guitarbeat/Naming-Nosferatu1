@@ -10,6 +10,7 @@ import { queryClient } from "@/shared/services/supabase/client";
 import App from "./App";
 import { shouldEnableAnalytics } from "./analytics";
 import { Providers } from "./providers/Providers";
+import { ErrorBoundary } from "@/shared/components/layout/Feedback/ErrorBoundary";
 import "../index.css";
 
 // Initialize Sentry in production
@@ -27,10 +28,10 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
 			}),
 		],
 		// Performance Monitoring
-		tracesSampleRate: 1.0, // Capture 100% of the transactions
+		tracesSampleRate: 1.0, // Capture 100% of transactions
 		// Session Replay
 		replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-		replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+		replaysOnErrorSampleRate: 1.0, // If you're not already sampling entire session, change the sample rate to 100% when sampling sessions where errors occur.
 		environment: import.meta.env.MODE,
 		release: `name-nosferatu@${import.meta.env.VITE_APP_VERSION || "1.0.2"}`,
 	});
@@ -49,7 +50,10 @@ const analyticsEnabled = shouldEnableAnalytics({
 
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
-		<Sentry.ErrorBoundary fallback={<div>An error has occurred</div>}>
+		<ErrorBoundary context="Application Root" onError={(error: Error, errorInfo: React.ErrorInfo) => {
+			// Sentry will automatically capture this through ErrorManager
+			console.error("Application error:", error, errorInfo);
+		}}>
 			<QueryClientProvider client={queryClient}>
 				<Providers auth={{ adapter: authAdapter }}>
 					<BrowserRouter>
@@ -58,6 +62,6 @@ ReactDOM.createRoot(rootElement).render(
 					</BrowserRouter>
 				</Providers>
 			</QueryClientProvider>
-		</Sentry.ErrorBoundary>
+		</ErrorBoundary>
 	</React.StrictMode>,
 );

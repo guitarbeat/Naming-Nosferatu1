@@ -13,6 +13,8 @@ import {
 } from "../shared/schema";
 import { db } from "./db";
 import { requireSupabaseAuth, optionalSupabaseAuth, isSupabaseAdmin } from "./supabaseAuth";
+// JWT authentication removed - now using Supabase Auth exclusively
+// import jwt from "jsonwebtoken";
 
 const authRateLimiter = rateLimit({
 	windowMs: 15 * 60 * 1000,
@@ -268,16 +270,17 @@ router.patch("/api/names/:id/lock", requireAdmin, async (req, res) => {
 	}
 });
 
-// User management endpoints
+// User management endpoints - DEPRECATED: Use Supabase Auth instead
 router.post("/api/users", async (req, res) => {
 	try {
 		const { userName, preferences } = createUserSchema.parse(req.body);
 
 		if (!db) {
+			// Mock response for development without database
 			return res.json({
 				success: true,
 				data: {
-					userId: jwt.sign({ userId: "mock-uuid" }, JWT_SECRET),
+					message: "User management deprecated. Please use Supabase Auth.",
 					userName,
 					preferences: preferences || {},
 				},
@@ -298,7 +301,10 @@ router.post("/api/users", async (req, res) => {
 			.returning();
 		res.json({
 			success: true,
-			data: { ...inserted, userId: jwt.sign({ userId: inserted.userId }, JWT_SECRET) },
+			data: { 
+				...inserted, 
+				message: "User preferences saved. Please use Supabase Auth for authentication." 
+			},
 		});
 	} catch (error) {
 		if (error instanceof ZodError) {
@@ -335,13 +341,30 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 			return res.status(400).json({ error: "Too many ratings submitted at once" });
 		}
 
-		// Validate each rating has reasonable values
+		// Enhanced validation for each rating
 		for (const rating of ratings) {
+			// Rating bounds check (already in schema but double-check)
 			if (rating.rating < 1000 || rating.rating > 3000) {
-				return res.status(400).json({ error: "Invalid rating value" });
+				return res.status(400).json({ error: `Invalid rating value: ${rating.rating}. Must be between 1000-3000` });
 			}
-			if ((rating.wins || 0) < 0 || (rating.losses || 0) < 0) {
-				return res.status(400).json({ error: "Invalid win/loss values" });
+			
+			// Win/loss validation
+			const wins = rating.wins || 0;
+			const losses = rating.losses || 0;
+			if (wins < 0 || losses < 0) {
+				return res.status(400).json({ error: "Invalid win/loss values: cannot be negative" });
+			}
+			
+			// Reasonable total games check (prevent data corruption)
+			const totalGames = wins + losses;
+			if (totalGames > 1000) {
+				return res.status(400).json({ error: "Unrealistic game count detected" });
+			}
+			
+			// Check for duplicate nameIds in the same request
+			const duplicateCount = ratings.filter(r => r.nameId === rating.nameId).length;
+			if (duplicateCount > 1) {
+				return res.status(400).json({ error: `Duplicate nameId ${rating.nameId} in request` });
 			}
 		}
 
@@ -382,7 +405,14 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 		res.json({ success: true, count: records.length });
 	} catch (error) {
 		if (error instanceof ZodError) {
-			return res.status(400).json({ success: false, error: error.issues });
+			return res.status(400).json({ 
+				success: false, 
+				error: "Validation failed", 
+				details: error.issues.map(issue => ({
+					field: issue.path.join('.'),
+					message: issue.message
+				}))
+			});
 		}
 		console.error("Error saving ratings:", error);
 		res.status(500).json({ error: "Failed to save ratings" });

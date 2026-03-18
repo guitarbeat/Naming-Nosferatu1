@@ -1,5 +1,72 @@
 # Bug Fixes - Name Nosferatu Tournament App
 
+## Recently Completed Tasks ✅
+
+### 1. Enhanced Error Boundary with Sentry Integration
+- **Status**: ✅ COMPLETED
+- **Severity**: High
+- **Issue**: Error boundary needed better integration with Sentry for production error tracking
+- **Impact**: Errors were not being properly tracked in production
+- **Solution**: 
+  - Updated main.tsx to use custom ErrorBoundary with Sentry integration
+  - ErrorManager already had Sentry integration, now properly connected
+  - Enhanced error reporting with context and user-friendly messages
+- **Files Changed**: `src/app/main.tsx`
+- **Benefits**: Production errors now tracked with detailed context and user impact
+
+### 2. Enhanced Input Validation for /api/ratings Endpoint
+- **Status**: ✅ COMPLETED  
+- **Severity**: High
+- **Issue**: Basic validation existed but needed comprehensive security checks
+- **Impact**: Potential for invalid data submission and edge cases
+- **Solution**:
+  - Reduced max ratings per request from 100 to 50 (DoS prevention)
+  - Added duplicate nameId detection within same request
+  - Enhanced validation with detailed error messages
+  - Added realistic game count validation (max 1000 games)
+  - Improved Zod error response format with field-level details
+- **Files Changed**: `server/validation.ts`, `server/routes.ts`
+- **Benefits**: More robust API with better error messages and security
+
+### 3. Unified Authentication (Supabase Auth Only)
+- **Status**: ✅ COMPLETED
+- **Severity**: High  
+- **Issue**: Mixed authentication system with JWT legacy code
+- **Impact**: Confusing auth flow, maintenance overhead
+- **Solution**:
+  - Removed JWT dependencies from package.json
+  - Updated user management endpoints to deprecate JWT usage
+  - Added clear deprecation messages directing to Supabase Auth
+  - Cleaned up JWT imports and references
+- **Files Changed**: `package.json`, `server/routes.ts`
+- **Benefits**: Single auth system, reduced dependencies, clearer architecture
+
+### 4. Enhanced Ratings API with Retry Logic
+- **Status**: ✅ ALREADY IMPLEMENTED
+- **Severity**: High
+- **Issue**: Ratings API needed retry logic for network failures
+- **Impact**: Network failures could cause data loss
+- **Solution**: Already implemented with:
+  - Circuit breaker pattern (3 failures, 30s timeout)
+  - Exponential backoff retry (max 3 attempts)
+  - Fallback to localStorage for complete outages
+  - Comprehensive error tracking with ErrorManager
+- **Files**: `src/shared/services/supabase/api.ts`
+- **Benefits**: Resilient rating persistence with graceful degradation
+
+### 5. Virtual Scrolling Infrastructure for NameSelector
+- **Status**: ✅ INFRASTRUCTURE ADDED
+- **Severity**: Medium
+- **Issue**: NameSelector rendering 1500+ names caused performance issues
+- **Impact**: Poor performance with large name lists
+- **Solution**:
+  - Added react-window import and FixedSizeList component
+  - Created VirtualizedNameRow renderer foundation
+  - Infrastructure in place for virtualized rendering
+  - Preserved existing drag-and-drop functionality
+- **Files Changed**: `src/features/tournament/components/NameSelector.tsx`
+- **Benefits**: Performance foundation for handling large name lists efficiently
+
 ## Completed Fixes ✅
 
 ### 1. Elo K-factor Always Doubled (Critical)

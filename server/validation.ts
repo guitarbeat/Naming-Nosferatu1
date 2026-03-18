@@ -47,7 +47,7 @@ export const saveRatingsSchema = z.object({
 			}),
 		)
 		.min(1)
-		.max(100),
+		.max(50), // Reduced from 100 to prevent DoS
 });
 
 export const imageUploadSchema = z.object({

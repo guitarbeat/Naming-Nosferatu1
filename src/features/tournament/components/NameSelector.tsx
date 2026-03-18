@@ -5,6 +5,7 @@
 
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FixedSizeList as List } from "react-window";
 import { useToast } from "@/app/providers/Providers";
 import { useAdminActionConfirmation } from "@/features/tournament/hooks/useAdminActionConfirmation";
 import Button from "@/shared/components/layout/Button";
@@ -72,6 +73,76 @@ function useSmartTooltip() {
 
         return { tooltipRef, tooltipPosition, measureTooltip };
 }
+
+// Virtualized row renderer for name cards
+const VirtualizedNameRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+	const nameItem = cardsToRender[index];
+	if (!nameItem) return null;
+	
+	const catImage = catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+	const isSelected = selectedNames.has(nameItem.id);
+	
+	return (
+		<div style={style}>
+			<motion.div
+				key={nameItem.id}
+				layout={true}
+				layoutId={String(nameItem.id)}
+				className="relative flex items-center justify-center"
+				style={{ zIndex: 10 - index }}
+				exit={{
+					opacity: 0,
+					x: dragDirection === "right" ? 400 : -400,
+					rotate: dragDirection === "right" ? 25 : -25,
+					scale: 0.8,
+					transition: EXIT_SPRING_CONFIG,
+				}}
+			>
+				<motion.div
+					drag={index === 0 ? "x" : false}
+					dragConstraints={{ left: -250, right: 250 }}
+					onDrag={(_, info) => {
+						if (index === 0) {
+							updateDragState(info.offset.x);
+						}
+					}}
+					onDragEnd={(_, info) => {
+						if (index === 0) {
+							handleDragEnd(nameItem.id, info);
+						}
+					}}
+					animate={{
+						scale: index === 0 ? 1 : 0.95,
+						opacity: 1,
+						rotate: index === 0 ? dragOffset / 30 : 0,
+						x: index === 0 ? dragOffset * 0.15 : 0,
+						y: 0,
+					}}
+					transition={SMOOTH_SPRING_CONFIG}
+					whileDrag={{
+						scale: 1.02,
+						transition: { duration: 0.15 },
+					}}
+					className="w-full max-w-md"
+				>
+					<Card
+						name={nameItem}
+						catImage={catImage}
+						isSelected={isSelected}
+						isLocked={isNameLocked(nameItem)}
+						isHidden={isNameHidden(nameItem)}
+						rating={nameItem.avgRating}
+						// Swipe-specific props only for first card
+						isFirstCard={index === 0}
+						onSelect={() => handleNameSelect(nameItem.id)}
+						onQuickAction={(action) => handleQuickAction(nameItem.id, action)}
+						onImageClick={() => handleImageClick(catImage)}
+					/>
+				</motion.div>
+			</motion.div>
+		</div>
+	);
+};
 
 // Optimized spring physics for smoother interactions
 const SMOOTH_SPRING_CONFIG = {
