@@ -668,10 +668,6 @@
 	--lift-small: -2px;
 	--lift-medium: -3px;
 
-	/* Timing aliases (legacy callers) */
-	--ease-out: var(--ease-out-expo);
-	--ease-standard: var(--ease-in-out-smooth);
-
 	/* Focus ring */
 	--focus-ring-color: color-mix(in srgb, var(--primary) 40%, transparent);
 	--focus-ring-spread: 3px;

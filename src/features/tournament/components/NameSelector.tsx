@@ -6,6 +6,7 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
+import { useAdminActionConfirmation } from "@/features/tournament/hooks/useAdminActionConfirmation";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
@@ -14,7 +15,6 @@ import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible, useNamesCache } from "@/shared/hooks";
-import { useAdminActionConfirmation } from "@/features/tournament/hooks/useAdminActionConfirmation";
 import {
 	getActiveNames,
 	getHiddenNames,

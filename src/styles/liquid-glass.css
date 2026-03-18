@@ -52,14 +52,14 @@
 	z-index: var(--z-sticky, 1020);
 	overflow: visible; /* Allow collapse toggle to extend outside bounds */
 	transition:
-		position var(--duration-normal) var(--ease-standard),
-		top var(--duration-normal) var(--ease-standard),
-		left var(--duration-normal) var(--ease-standard),
-		right var(--duration-normal) var(--ease-standard),
-		bottom var(--duration-normal) var(--ease-standard),
-		width var(--duration-normal) var(--ease-standard),
-		height var(--duration-normal) var(--ease-standard),
-		padding var(--duration-normal) var(--ease-standard);
+		position var(--duration-normal) var(--ease-in-out-smooth),
+		top var(--duration-normal) var(--ease-in-out-smooth),
+		left var(--duration-normal) var(--ease-in-out-smooth),
+		right var(--duration-normal) var(--ease-in-out-smooth),
+		bottom var(--duration-normal) var(--ease-in-out-smooth),
+		width var(--duration-normal) var(--ease-in-out-smooth),
+		height var(--duration-normal) var(--ease-in-out-smooth),
+		padding var(--duration-normal) var(--ease-in-out-smooth);
 }
 
 /* Horizontal navbar glass */

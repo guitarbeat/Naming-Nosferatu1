@@ -45,7 +45,7 @@
     "format": "biome format --write --config-path config/biome.json src server",
     "fix": "pnpm run lint:fix",
     "check": "pnpm run lint && pnpm run check:deps",
-    "check:deps": "DATABASE_URL=${DATABASE_URL:-postgres://user:pass@localhost:5432/db} knip --config config/knip.json --dependencies --no-config-hints",
+    "check:deps": "cross-env DATABASE_URL=postgres://user:pass@localhost:5432/db knip --config config/knip.json --dependencies --no-config-hints",
     "check:deps:fix": "knip --config config/knip.json --fix",
     "clean": "rm -rf build dist node_modules/.vite",
     "test": "vitest --run --config config/vitest.config.ts",
@@ -94,6 +94,8 @@
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.24",
+    "concurrently": "^9.1.2",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "fast-check": "^4.6.0",
     "jsdom": "^28.1.0",
@@ -102,7 +104,6 @@
     "supertest": "^7.2.2",
     "tailwindcss": "4.2.1",
     "terser": "^5.46.0",
-    "concurrently": "^9.1.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
@@ -137,6 +138,11 @@
   "volta": {
     "node": "20.19.6",
     "pnpm": "10.27.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "glob": "13.0.6"
+    }
   },
   "overrides": {
     "nth-check": "^2.1.1",

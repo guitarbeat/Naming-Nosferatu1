@@ -304,7 +304,7 @@ Notes:
   Wrong: CSP and Supabase RLS blocked login/write flows, including explicit row-level-security failures and later `401` upsert failures.
   Made right: Relaxed the overly strict CSP where needed and corrected the RLS/user-context path used by writes.
   Evidence: `dd705df4`, `5009e5cf`, `72144716`, `77233d0b`, `44817ac1`.
-  Files: `vercel.json`, `supabase/migrations/20251103033441_bad2a054-93fa-4fae-b9f4-24437e658dfa.sql`, `backend/supabase/migrations/20251114191400_add_create_user_account_function.sql`, `backend/api/supabaseClient.js`, `src/shared/services/supabase/legacy/supabaseClient.js`.
+  Files: `vercel.json`, `supabase/migrations/20251103033441_bad2a054-93fa-4fae-b9f4-24437e658dfa.sql`, `backend/supabase/migrations/20251114191400_add_create_user_account_function.sql`, `backend/api/supabaseClient.js`, `src/shared/services/supabase/supabaseClient.js`.
 
 - `2025-11-15`
   Wrong: The fallback data path could crash tournament UI.
