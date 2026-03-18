@@ -28,6 +28,91 @@ interface ErrorFallbackProps {
 	context: string;
 }
 
+interface DiagnosticItem {
+	label: string;
+	value: string;
+	status: "ok" | "warning" | "error";
+}
+
+function collectDiagnostics(error: Error | null): DiagnosticItem[] {
+	const diagnostics: DiagnosticItem[] = [];
+
+	// Browser info
+	diagnostics.push({
+		label: "Browser",
+		value: navigator.userAgent.split(" ").slice(-2).join(" "),
+		status: "ok",
+	});
+
+	// Network status
+	diagnostics.push({
+		label: "Network",
+		value: navigator.onLine ? "Online" : "Offline",
+		status: navigator.onLine ? "ok" : "error",
+	});
+
+	// Memory (if available)
+	const perf = performance as Performance & {
+		memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number };
+	};
+	if (perf.memory) {
+		const usedMB = Math.round(perf.memory.usedJSHeapSize / 1024 / 1024);
+		const limitMB = Math.round(perf.memory.jsHeapSizeLimit / 1024 / 1024);
+		const pct = Math.round((usedMB / limitMB) * 100);
+		diagnostics.push({
+			label: "Memory",
+			value: `${usedMB}MB / ${limitMB}MB (${pct}%)`,
+			status: pct > 90 ? "error" : pct > 70 ? "warning" : "ok",
+		});
+	}
+
+	// Error type classification
+	if (error) {
+		let errorType = "Unknown";
+		if (error.name === "TypeError") errorType = "Type Error";
+		else if (error.name === "ReferenceError") errorType = "Reference Error";
+		else if (error.name === "SyntaxError") errorType = "Syntax Error";
+		else if (error.message?.includes("fetch") || error.message?.includes("network"))
+			errorType = "Network Error";
+		else if (error.message?.includes("supabase") || error.message?.includes("database"))
+			errorType = "Database Error";
+		else errorType = error.name || "Runtime Error";
+
+		diagnostics.push({
+			label: "Error Type",
+			value: errorType,
+			status: "error",
+		});
+	}
+
+	// Current route
+	diagnostics.push({
+		label: "Route",
+		value: window.location.pathname,
+		status: "ok",
+	});
+
+	return diagnostics;
+}
+
+function parseStackTrace(stack: string): { file: string; line: string; func: string }[] {
+	const lines = stack.split("\n").slice(1, 6); // Get first 5 stack frames
+	return lines.map((line) => {
+		const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):\d+\)/) ||
+			line.match(/at\s+(.+?):(\d+):\d+/) ||
+			line.match(/(.+?)@(.+?):(\d+):\d+/);
+
+		if (match) {
+			return {
+				func: match[1]?.trim() || "anonymous",
+				file: match[2]?.split("/").pop() || "unknown",
+				line: match[3] || "?",
+			};
+		}
+		return { func: "unknown", file: "unknown", line: "?" };
+	});
+}
+
 const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 	error,
 	errorId,
@@ -35,14 +120,28 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 	context,
 }) => {
 	const [copySuccess, setCopySuccess] = useState(false);
+	const [showFullStack, setShowFullStack] = useState(false);
+
+	const diagnostics = collectDiagnostics(error);
+	const parsedStack = error?.stack ? parseStackTrace(error.stack) : [];
 
 	const copyErrorToClipboard = async () => {
+		const diagText = diagnostics.map((d) => `${d.label}: ${d.value}`).join("\n");
 		const errorDetails = `
+=== Error Report ===
+Generated: ${new Date().toISOString()}
+URL: ${window.location.href}
+
+=== Error Info ===
 Error ID: ${errorId}
 Context: ${context}
 Message: ${error?.message || "Unknown error"}
-Stack: ${error?.stack || "No stack trace available"}
-Timestamp: ${new Date().toISOString()}
+
+=== Diagnostics ===
+${diagText}
+
+=== Stack Trace ===
+${error?.stack || "No stack trace available"}
 		`.trim();
 
 		try {
@@ -54,65 +153,164 @@ Timestamp: ${new Date().toISOString()}
 		}
 	};
 
+	const statusColors = {
+		ok: "text-green-400",
+		warning: "text-yellow-400",
+		error: "text-red-400",
+	};
+
+	const statusIcons = {
+		ok: "checkmark",
+		warning: "warning",
+		error: "close",
+	};
+
 	return (
-		<div className="flex flex-col items-center justify-center p-8 bg-muted/50 backdrop-blur-md rounded-2xl border border-border text-center min-h-[50vh] w-full max-w-2xl mx-auto my-8 shadow-2xl">
+		<div className="flex flex-col items-center justify-center p-6 md:p-8 bg-muted/50 backdrop-blur-md rounded-2xl border border-border text-center min-h-[50vh] w-full max-w-3xl mx-auto my-8 shadow-2xl">
 			<div className="flex flex-col gap-6 w-full text-foreground items-center">
+				{/* Header */}
 				<div className="space-y-2">
-					<h2 className="text-3xl font-bold bg-gradient-to-r from-destructive to-accent bg-clip-text text-transparent uppercase tracking-tighter">
-						The names demand another comparison
+					<h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-destructive to-accent bg-clip-text text-transparent uppercase tracking-tighter">
+						Something went wrong
 					</h2>
 					<p className="text-muted-foreground">
-						We encountered an unexpected error in{" "}
-						<span className="font-mono text-foreground/80">{context}</span>.
+						Error in{" "}
+						<code className="font-mono text-foreground/80 bg-black/20 px-2 py-0.5 rounded">
+							{context}
+						</code>
 					</p>
 				</div>
 
-				<details className="mt-2 text-left bg-black/40 p-4 rounded-xl text-xs font-mono w-full border border-white/5 overflow-hidden group">
-					<summary className="cursor-pointer flex items-center justify-between text-yellow-500 font-bold p-2 hover:bg-white/5 rounded-lg transition-colors select-none">
-						<span>Error Details</span>
-						<button
-							onClick={(e) => {
-								e.stopPropagation();
-								copyErrorToClipboard();
-							}}
-							className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-2 py-1 rounded transition-colors group-open:text-foreground/60"
-							aria-label="Copy error details"
-							type="button"
-						>
-							<Copy size={14} />
-							{copySuccess && (
-								<span className="text-green-400 font-bold ml-1 animate-in fade-in zoom-in">
-									Copied!
-								</span>
+				{/* Error Message Card */}
+				<div className="w-full bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-left">
+					<div className="flex items-start gap-3">
+						<span className="text-red-400 text-xl shrink-0">!</span>
+						<div className="flex-1 min-w-0">
+							<p className="font-medium text-red-300 break-words">{error?.message || "An unexpected error occurred"}</p>
+							{errorId && (
+								<p className="text-xs text-muted-foreground mt-1 font-mono">ID: {errorId}</p>
 							)}
-						</button>
-					</summary>
-					<div className="mt-4 space-y-3 pt-2 border-t border-white/5">
-						<p className="flex gap-2 text-white/70">
-							<strong className="text-white/40 min-w-[60px]">ID:</strong>
-							<span className="font-mono text-blue-300">{errorId}</span>
-						</p>
-						<p className="flex gap-2 text-white/70">
-							<strong className="text-white/40 min-w-[60px]">Message:</strong>
-							<span className="text-red-300">{error?.message}</span>
-						</p>
-						{error?.stack && (
-							<div className="flex flex-col gap-1 text-white/70">
-								<strong className="text-white/40">Stack Trace:</strong>
-								<pre className="text-[10px] leading-relaxed text-white/50 overflow-x-auto p-2 bg-black/20 rounded border border-white/5 custom-scrollbar">
-									{error.stack}
-								</pre>
-							</div>
-						)}
+						</div>
 					</div>
-				</details>
+				</div>
 
-				<button
-					onClick={resetError}
-					className="px-8 py-3 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-primary/25 active:scale-95 transition-all duration-200"
-				>
-					Try Again
-				</button>
+				{/* Quick Diagnostics */}
+				<div className="w-full bg-black/30 rounded-lg p-4 text-left">
+					<h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+						Quick Diagnostics
+					</h3>
+					<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+						{diagnostics.map((item) => (
+							<div
+								key={item.label}
+								className="flex items-center gap-2 text-sm bg-black/20 rounded px-3 py-2"
+							>
+								<span className={`${statusColors[item.status]} text-xs`}>
+									{statusIcons[item.status] === "checkmark" && "OK"}
+									{statusIcons[item.status] === "warning" && "WARN"}
+									{statusIcons[item.status] === "close" && "ERR"}
+								</span>
+								<span className="text-muted-foreground">{item.label}:</span>
+								<span className="text-foreground/80 truncate font-mono text-xs">
+									{item.value}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* Parsed Stack Trace */}
+				{parsedStack.length > 0 && (
+					<details className="w-full text-left bg-black/40 rounded-xl border border-white/5 overflow-hidden group">
+						<summary className="cursor-pointer flex items-center justify-between text-yellow-500 font-semibold p-4 hover:bg-white/5 transition-colors select-none">
+							<span className="flex items-center gap-2">
+								<span className="text-sm">Stack Trace</span>
+								<span className="text-xs text-muted-foreground font-normal">
+									({parsedStack.length} frames)
+								</span>
+							</span>
+							<button
+								onClick={(e) => {
+									e.stopPropagation();
+									copyErrorToClipboard();
+								}}
+								className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors text-xs"
+								aria-label="Copy error details"
+								type="button"
+							>
+								<Copy size={12} />
+								{copySuccess ? (
+									<span className="text-green-400">Copied!</span>
+								) : (
+									<span>Copy Report</span>
+								)}
+							</button>
+						</summary>
+						<div className="p-4 pt-0 space-y-2">
+							{/* Simplified stack view */}
+							<div className="space-y-1">
+								{parsedStack.map((frame, i) => (
+									<div
+										key={i}
+										className="flex items-center gap-2 text-xs font-mono p-2 bg-black/20 rounded"
+									>
+										<span className="text-muted-foreground w-4">{i + 1}.</span>
+										<span className="text-blue-300 truncate flex-1">{frame.func}</span>
+										<span className="text-muted-foreground">{frame.file}</span>
+										<span className="text-yellow-400">:{frame.line}</span>
+									</div>
+								))}
+							</div>
+
+							{/* Toggle for full stack */}
+							{error?.stack && (
+								<>
+									<button
+										onClick={() => setShowFullStack(!showFullStack)}
+										className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+										type="button"
+									>
+										{showFullStack ? "Hide" : "Show"} full stack trace
+									</button>
+									{showFullStack && (
+										<pre className="text-[10px] leading-relaxed text-white/50 overflow-x-auto p-3 bg-black/30 rounded border border-white/5 custom-scrollbar max-h-48">
+											{error.stack}
+										</pre>
+									)}
+								</>
+							)}
+						</div>
+					</details>
+				)}
+
+				{/* Action Buttons */}
+				<div className="flex flex-wrap gap-3 justify-center">
+					<button
+						onClick={resetError}
+						className="px-6 py-2.5 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-primary/25 active:scale-95 transition-all duration-200"
+					>
+						Try Again
+					</button>
+					<button
+						onClick={() => window.location.reload()}
+						className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-foreground font-medium rounded-xl transition-all duration-200"
+					>
+						Reload Page
+					</button>
+					<button
+						onClick={copyErrorToClipboard}
+						className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
+					>
+						<Copy size={14} />
+						{copySuccess ? "Copied!" : "Copy Report"}
+					</button>
+				</div>
+
+				{/* Help text */}
+				<p className="text-xs text-muted-foreground">
+					Press <kbd className="px-1.5 py-0.5 bg-black/30 rounded text-foreground/60">F12</kbd>{" "}
+					to open DevTools for more details
+				</p>
 			</div>
 		</div>
 	);
