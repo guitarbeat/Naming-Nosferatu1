@@ -37,7 +37,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 			}
 
 			// Subscribe to connection state changes
-			const unsubscribeConnectionState = wsServiceRef.current.onConnectionStateChange((state) => {
+			const unsubscribeConnectionState = wsServiceRef.current.onConnectionStateChange((state: 'connecting' | 'connected' | 'disconnected' | 'error') => {
 				setConnectionState(state);
 			});
 
@@ -54,10 +54,43 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		};
 	}, [options.url, options.autoConnect]);
 
+	// Update connection state with better error handling
+	useEffect(() => {
+		if (wsServiceRef.current) {
+			const updateConnectionState = () => {
+				try {
+					if (wsServiceRef.current) {
+						const state = wsServiceRef.current.getConnectionState();
+						setConnectionState(state);
+					}
+				} catch (error) {
+					console.error('Failed to get connection state:', error);
+					setConnectionState('error');
+				}
+			};
+
+			// Listen for connection state changes
+			const unsubscribe = wsServiceRef.current.onConnectionStateChange((state: 'connecting' | 'connected' | 'disconnected' | 'error') => {
+				setConnectionState(state);
+			});
+
+			// Poll less frequently to reduce overhead
+			const interval = setInterval(updateConnectionState, 5000);
+
+			return () => {
+				clearInterval(interval);
+				unsubscribe();
+			};
+		}
+	}, [wsServiceRef.current]);
+
 	// Connection state management
 	const connect = useCallback(() => {
 		if (wsServiceRef.current) {
-			wsServiceRef.current.connect().catch(console.error);
+			wsServiceRef.current.connect().catch((error) => {
+				console.error('WebSocket connection failed:', error);
+				setConnectionState('error');
+			});
 		}
 	}, []);
 
@@ -114,10 +147,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		return () => {};
 	}, [wsServiceRef.current]);
 
-	// Send custom message
+	// Send custom message with error handling
 	const sendMessage = useCallback((message: any) => {
-		if (wsServiceRef.current) {
-			wsServiceRef.current.sendMessage(message);
+		try {
+			if (wsServiceRef.current) {
+				wsServiceRef.current.sendMessage(message);
+			}
+		} catch (error) {
+			console.error('Failed to send WebSocket message:', error);
 		}
 	}, [wsServiceRef.current]);
 
@@ -128,36 +165,59 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		}
 	}, [wsServiceRef.current]);
 
-	// Handle incoming messages
+	// Handle incoming messages with error boundaries
 	useEffect(() => {
 		if (wsServiceRef.current) {
-			wsServiceRef.current.onMessage('tournament_update', (message) => {
-				if (message.data && typeof message.data === 'object') {
-					const update = message.data as TournamentUpdate;
-					setLastMessage(`Tournament ${update.tournamentId} updated: Round ${update.round}, Match ${update.matchNumber}`);
+			const unsubscribeTournament = wsServiceRef.current.onMessage('tournament_update', (message) => {
+				try {
+					if (message.data && typeof message.data === 'object') {
+						const update = message.data as TournamentUpdate;
+						setLastMessage(`Tournament ${update.tournamentId} updated: Round ${update.round}, Match ${update.matchNumber}`);
+					}
+				} catch (error) {
+					console.error('Error handling tournament update:', error);
 				}
 			});
 
-			wsServiceRef.current.onMessage('match_result', (message) => {
-				if (message.data && typeof message.data === 'object') {
-					const result = message.data as MatchResult;
-					setLastMessage(`Match completed: ${result.winnerId} defeated ${result.loserId}`);
+			const unsubscribeMatch = wsServiceRef.current.onMessage('match_result', (message) => {
+				try {
+					if (message.data && typeof message.data === 'object') {
+						const result = message.data as MatchResult;
+						setLastMessage(`Match completed: ${result.winnerId} defeated ${result.loserId}`);
+					}
+				} catch (error) {
+					console.error('Error handling match result:', error);
 				}
 			});
 
-			wsServiceRef.current.onMessage('user_joined', (message) => {
-				if (message.data && typeof message.data === 'object') {
-					const activity = message.data as UserActivity;
-					setActiveUsers(prev => [...prev.filter(u => u.userId !== activity.userId), activity]);
+			const unsubscribeJoined = wsServiceRef.current.onMessage('user_joined', (message) => {
+				try {
+					if (message.data && typeof message.data === 'object') {
+						const activity = message.data as UserActivity;
+						setActiveUsers(prev => [...prev.filter(u => u.userId !== activity.userId), activity]);
+					}
+				} catch (error) {
+					console.error('Error handling user joined:', error);
 				}
 			});
 
-			wsServiceRef.current.onMessage('user_left', (message) => {
-				if (message.data && typeof message.data === 'object') {
-					const activity = message.data as UserActivity;
-					setActiveUsers(prev => prev.filter(u => u.userId !== activity.userId));
+			const unsubscribeLeft = wsServiceRef.current.onMessage('user_left', (message) => {
+				try {
+					if (message.data && typeof message.data === 'object') {
+						const activity = message.data as UserActivity;
+						setActiveUsers(prev => prev.filter(u => u.userId !== activity.userId));
+					}
+				} catch (error) {
+					console.error('Error handling user left:', error);
 				}
 			});
+
+			return () => {
+				unsubscribeTournament();
+				unsubscribeMatch();
+				unsubscribeJoined();
+				unsubscribeLeft();
+			};
 		}
 	}, [wsServiceRef.current]);
 

@@ -59,7 +59,7 @@ class WebSocketService {
 	private reconnectAttempts = 0;
 	private maxReconnectAttempts = 5;
 	private reconnectDelay = 1000; // 1 second
-	private messageHandlers = new Map<string, (message: WebSocketMessage) => void>();
+	private messageHandlers = new Map<string, Set<(message: WebSocketMessage) => void>>();
 	private isConnecting = false;
 	private pingInterval: NodeJS.Timeout | null = null;
 	private messageQueue: QueuedMessage[] = [];
@@ -102,9 +102,19 @@ class WebSocketService {
 				this.ws.onmessage = (event) => {
 					try {
 						const message: WebSocketMessage = JSON.parse(event.data);
-						this.updateLatency();
+						this.metrics.lastMessageAt = Date.now();
+						this.metrics.messagesReceived++;
+						
+						// Handle ping/pong for latency measurement
+						if (message.type === 'pong' && message.timestamp) {
+							const latency = Date.now() - message.timestamp;
+							this.updateLatency(latency);
+							return;
+						}
+						
 						this.handleMessage(message);
 					} catch (error) {
+						console.error('Failed to parse WebSocket message:', error, 'Raw data:', event.data);
 						this.sendError('Failed to parse message', error);
 					}
 				};
@@ -156,14 +166,20 @@ class WebSocketService {
 	}
 
 	sendMessage(message: Omit<WebSocketMessage, 'timestamp'>): void {
+		const fullMessage: WebSocketMessage = {
+			...message,
+			timestamp: Date.now(),
+			id: this.generateMessageId(),
+		};
+
 		if (this.ws?.readyState === WebSocket.OPEN) {
-			const fullMessage: WebSocketMessage = {
-				...message,
-				timestamp: Date.now(),
-			};
-			this.ws.send(JSON.stringify(fullMessage));
-			this.metrics.messagesSent++;
-			this.metrics.lastMessageAt = Date.now();
+			try {
+				this.ws.send(JSON.stringify(fullMessage));
+				this.metrics.messagesSent++;
+				this.metrics.lastMessageAt = Date.now();
+			} catch (error) {
+				console.error('Failed to send message:', error);
+				this.queueMessage(message);
 			}
 		} else {
 			console.warn('WebSocket not connected, queuing message:', message);
@@ -230,6 +246,7 @@ class WebSocketService {
 
 	private queueMessage(message: Omit<WebSocketMessage, 'timestamp'>): void {
 		const queuedMessage: QueuedMessage = {
+			id: this.generateMessageId(),
 			message,
 			timestamp: Date.now(),
 			retryCount: 0,
@@ -295,7 +312,7 @@ class WebSocketService {
 	}
 
 	private notifyConnectionStateChange(state: 'connecting' | 'connected' | 'disconnected' | 'error'): void {
-		this.connectionStateListeners.forEach(listener => {
+		this.connectionStateChangeHandlers.forEach(listener => {
 			try {
 				listener(state);
 			} catch (error) {
@@ -313,8 +330,13 @@ class WebSocketService {
 
 	// Public API for enhanced features
 	onConnectionStateChange(listener: (state: 'connecting' | 'connected' | 'disconnected' | 'error') => void): () => void {
-		this.connectionStateListeners.add(listener);
-		return () => this.connectionStateListeners.delete(listener);
+		this.connectionStateChangeHandlers.push(listener);
+		return () => {
+			const index = this.connectionStateChangeHandlers.indexOf(listener);
+			if (index > -1) {
+				this.connectionStateChangeHandlers.splice(index, 1);
+			}
+		};
 	}
 
 	getMetrics(): ConnectionMetrics {
