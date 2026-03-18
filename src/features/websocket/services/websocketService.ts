@@ -135,7 +135,7 @@ class WebSocketService {
 	}
 
 	// Public API methods
-	subscribeToTournament(tournamentId: string, callback: (update: TournamentUpdate) => void): () => {
+	subscribeToTournament(tournamentId: string, callback: (update: TournamentUpdate) => void): () => void {
 		this.onMessage('tournament_update', (message) => {
 			if (message.data && typeof message.data === 'object' && 'tournamentId' in message.data) {
 				const update = message.data as TournamentUpdate;
@@ -150,7 +150,7 @@ class WebSocketService {
 		};
 	}
 
-	subscribeToMatches(callback: (result: MatchResult) => void): () => {
+	subscribeToMatches(callback: (result: MatchResult) => void): () => void {
 		this.onMessage('match_result', (message) => {
 			if (message.data && typeof message.data === 'object') {
 				callback(message.data as MatchResult);
@@ -162,7 +162,7 @@ class WebSocketService {
 		};
 	}
 
-	subscribeToUserActivity(callback: (activity: UserActivity) => void): () => {
+	subscribeToUserActivity(callback: (activity: UserActivity) => void): () => void {
 		this.onMessage('user_joined', (message) => {
 			if (message.data && typeof message.data === 'object') {
 				callback(message.data as UserActivity);
