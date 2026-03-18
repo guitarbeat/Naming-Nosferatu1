@@ -24,6 +24,19 @@ vi.mock("./db", () => ({
 	},
 }));
 
+vi.mock("./supabaseAuth", () => ({
+	requireSupabaseAuth: (req: any, _res: any, next: any) => {
+		req.user = {
+			id: "test-user-id",
+			email: "test@example.com",
+			user_name: "test-user",
+		};
+		next();
+	},
+	optionalSupabaseAuth: (_req: any, _res: any, next: any) => next(),
+	isSupabaseAdmin: vi.fn().mockResolvedValue(false),
+}));
+
 import { router } from "./routes";
 
 const app = express();

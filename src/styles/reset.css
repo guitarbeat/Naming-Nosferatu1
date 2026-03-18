@@ -5,14 +5,15 @@
  * Extracted from base.css for single-responsibility.
  */
 
-/* Box sizing reset */
-*,
-*::before,
-*::after {
-	box-sizing: border-box;
-	padding: 0;
-	margin: 0;
-}
+@layer base {
+	/* Box sizing reset */
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+		padding: 0;
+		margin: 0;
+	}
 
 /* HTML base */
 html {
@@ -174,9 +175,10 @@ a:focus-visible {
 	animation-timing-function: ease-out;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	::view-transition-old(root),
-	::view-transition-new(root) {
-		animation: none;
+	@media (prefers-reduced-motion: reduce) {
+		::view-transition-old(root),
+		::view-transition-new(root) {
+			animation: none;
+		}
 	}
 }

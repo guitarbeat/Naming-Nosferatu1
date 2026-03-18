@@ -2,12 +2,26 @@
 import express from "express";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
-import { router } from "./routes";
 
 // Mock the database module
 vi.mock("./db", () => ({
 	db: null, // Start with no DB to test fallback/mock mode
 }));
+
+vi.mock("./supabaseAuth", () => ({
+	requireSupabaseAuth: (req: any, _res: any, next: any) => {
+		req.user = {
+			id: "test-user-id",
+			email: "test@example.com",
+			user_name: "test-user",
+		};
+		next();
+	},
+	optionalSupabaseAuth: (_req: any, _res: any, next: any) => next(),
+	isSupabaseAdmin: vi.fn().mockResolvedValue(false),
+}));
+
+import { router } from "./routes";
 
 const app = express();
 app.use(express.json());
