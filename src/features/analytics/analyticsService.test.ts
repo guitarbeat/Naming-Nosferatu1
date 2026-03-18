@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { leaderboardAPI } from "@/features/analytics/services/analyticsService";
+import { leaderboardAPI, statsAPI } from "@/features/analytics/services/analyticsService";
 import { api } from "@/shared/services/apiClient";
 
 vi.mock("@/shared/services/apiClient", () => ({
@@ -67,5 +67,32 @@ describe("leaderboardAPI", () => {
 
 		expect(api.get).toHaveBeenCalledWith("/analytics/leaderboard?limit=50");
 		expect(result).toEqual([]);
+	});
+});
+
+describe("statsAPI", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("returns null for getSiteStats on API failure", async () => {
+		vi.mocked(api.get).mockRejectedValueOnce(new Error("boom"));
+
+		const result = await statsAPI.getSiteStats();
+		expect(result).toBeNull();
+	});
+
+	it("returns empty array for getUserRatedNames on API failure", async () => {
+		vi.mocked(api.get).mockRejectedValueOnce(new Error("boom"));
+
+		const result = await statsAPI.getUserRatedNames("testuser");
+		expect(result).toEqual([]);
+	});
+
+	it("returns null for getUserStats on API failure", async () => {
+		vi.mocked(api.get).mockRejectedValueOnce(new Error("boom"));
+
+		const result = await statsAPI.getUserStats("testuser");
+		expect(result).toBeNull();
 	});
 });
