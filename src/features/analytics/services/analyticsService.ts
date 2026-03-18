@@ -1,5 +1,5 @@
-import { api } from "@/shared/services/apiClient";
 import { isNameHidden } from "@/shared/lib/basic";
+import { api } from "@/shared/services/apiClient";
 import type { IdType, NameItem } from "@/shared/types";
 
 export interface LeaderboardItem {

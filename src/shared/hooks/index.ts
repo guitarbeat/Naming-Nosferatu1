@@ -4,7 +4,6 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { coreAPI } from "@/shared/services/supabase/client";
 import {
 	getStorageString,
 	parseJsonValue,
@@ -12,6 +11,7 @@ import {
 	removeStorageItem,
 	writeStorageJson,
 } from "@/shared/lib/storage";
+import { coreAPI } from "@/shared/services/supabase/client";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Internal Utilities

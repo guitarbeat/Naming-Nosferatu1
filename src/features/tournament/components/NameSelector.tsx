@@ -18,9 +18,9 @@ import {
 	getActiveNames,
 	getHiddenNames,
 	getLockedNames,
+	getRandomCatImage,
 	isNameHidden,
 	isNameLocked,
-	getRandomCatImage,
 	matchesNameSearchTerm,
 } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";

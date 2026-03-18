@@ -1,10 +1,10 @@
 // @vitest-environment node
+
+import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import jwt from "jsonwebtoken";
 import request from "supertest";
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { NextFunction, Request, Response } from "express";
 
 // Mock requireAdmin to allow access
 vi.mock("./auth", () => ({

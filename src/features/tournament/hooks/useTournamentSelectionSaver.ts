@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { NameItem } from "@/shared/types";
 import { isStorageAvailable, readStorageJson, writeStorageJson } from "@/shared/lib/storage";
+import type { NameItem } from "@/shared/types";
 
 interface SaverOptions {
 	userName: string | null;
@@ -73,10 +73,7 @@ export function useTournamentSelectionSaver(
 			return [];
 		}
 
-		return readStorageJson<Array<string | number>>(
-			`tournament_selection_${userName}`,
-			[],
-		);
+		return readStorageJson<Array<string | number>>(`tournament_selection_${userName}`, []);
 	}, [userName]);
 
 	useEffect(() => clearPendingSave, [clearPendingSave]);

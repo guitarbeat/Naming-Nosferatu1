@@ -4,8 +4,8 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import type { NameItem } from "@/shared/types";
 import { readStorageJson, writeStorageJson } from "@/shared/lib/storage";
+import type { NameItem } from "@/shared/types";
 
 interface CacheEntry {
 	data: NameItem[];

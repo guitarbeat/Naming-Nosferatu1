@@ -143,7 +143,9 @@ describe("isNameActive", () => {
 		expect(isNameActive({ id: 1, name: "Cat" } as NameItem)).toBe(true);
 		expect(isNameActive({ id: 2, name: "Cat", isHidden: true } as NameItem)).toBe(false);
 		expect(isNameActive({ id: 3, name: "Cat", lockedIn: true } as NameItem)).toBe(false);
-		expect(isNameActive({ id: 4, name: "Cat", is_hidden: false, locked_in: false } as NameItem)).toBe(true);
+		expect(
+			isNameActive({ id: 4, name: "Cat", is_hidden: false, locked_in: false } as NameItem),
+		).toBe(true);
 	});
 });
 

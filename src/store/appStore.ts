@@ -31,7 +31,12 @@
 import { useEffect } from "react";
 import { create, type StateCreator } from "zustand";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
-import { getStorageString, parseJsonValue, removeStorageItem, setStorageString } from "@/shared/lib/storage";
+import {
+	getStorageString,
+	parseJsonValue,
+	removeStorageItem,
+	setStorageString,
+} from "@/shared/lib/storage";
 
 import type {
 	CatChosenName,

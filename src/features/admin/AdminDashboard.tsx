@@ -4,12 +4,10 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
-import { isRpcSignatureError } from "@/shared/lib/errors";
-import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
 import {
 	getActiveNames,
 	getHiddenNames,
@@ -18,6 +16,8 @@ import {
 	isNameLocked,
 	matchesNameSearchTerm,
 } from "@/shared/lib/basic";
+import { isRpcSignatureError } from "@/shared/lib/errors";
+import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
 import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/shared/services/supabase/api";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { NameItem } from "@/shared/types";
@@ -110,9 +110,7 @@ function filterNamesByStatusAndSearch(
 		return filtered;
 	}
 
-	return filtered.filter(
-		(name) => matchesNameSearchTerm(name, normalizedSearch),
-	);
+	return filtered.filter((name) => matchesNameSearchTerm(name, normalizedSearch));
 }
 
 export function AdminDashboard() {
@@ -130,7 +128,10 @@ export function AdminDashboard() {
 	const loadAdminData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const [allNames, siteStats] = await Promise.all([coreAPI.getTrendingNames(true), statsAPI.getSiteStats()]);
+			const [allNames, siteStats] = await Promise.all([
+				coreAPI.getTrendingNames(true),
+				statsAPI.getSiteStats(),
+			]);
 
 			const namesWithStats = allNames.map(mapNameToDisplay);
 			setStats(buildAdminStats(namesWithStats, siteStats));
@@ -430,23 +431,28 @@ export function AdminDashboard() {
 										<div className="flex items-center justify-between">
 											<div className="flex items-center gap-4">
 												<input
-												type="checkbox"
+													type="checkbox"
 													checked={selectedNames.has(nameId)}
 													onChange={(event) => handleSelectionChange(nameId, event.target.checked)}
 													className="w-4 h-4"
 												/>
-											<div>
-												<h3 className="font-semibold text-foreground">{name.name}</h3>
-												{name.description && <p className="text-sm text-muted-foreground">{name.description}</p>}
-												<div className="flex gap-4 mt-1 text-xs text-muted-foreground/60">
-													<span>Votes: {name.votes}</span>
-													<span>
-														Score: {name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
-													</span>
-													{name.lastVoted && <span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>}
+												<div>
+													<h3 className="font-semibold text-foreground">{name.name}</h3>
+													{name.description && (
+														<p className="text-sm text-muted-foreground">{name.description}</p>
+													)}
+													<div className="flex gap-4 mt-1 text-xs text-muted-foreground/60">
+														<span>Votes: {name.votes}</span>
+														<span>
+															Score:{" "}
+															{name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
+														</span>
+														{name.lastVoted && (
+															<span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>
+														)}
+													</div>
 												</div>
 											</div>
-										</div>
 
 											<div className="flex items-center gap-2">
 												{locked && (
@@ -476,10 +482,10 @@ export function AdminDashboard() {
 													>
 														<Lock size={14} />
 													</Button>
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
 								);
 							})}
 						</div>

@@ -6,7 +6,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
-import { getStorageString, isStorageAvailable, setStorageString } from "@/shared/lib/storage";
 import {
 	getCurrentTrack,
 	playBackgroundMusic,
@@ -20,6 +19,7 @@ import {
 	setBackgroundMusicVolume,
 	stopBackgroundMusic,
 } from "@/shared/lib/sound";
+import { getStorageString, isStorageAvailable, setStorageString } from "@/shared/lib/storage";
 
 /* =========================================================================
    AUDIO MANAGER HOOK

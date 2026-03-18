@@ -9,9 +9,14 @@
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
+import {
+	getStorageString,
+	isStorageAvailable,
+	removeStorageItem,
+	setStorageString,
+} from "@/shared/lib/storage";
 import { api } from "@/shared/services/apiClient";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
-import { getStorageString, isStorageAvailable, removeStorageItem, setStorageString } from "@/shared/lib/storage";
 
 async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 	try {

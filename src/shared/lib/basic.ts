@@ -30,7 +30,10 @@ export function isNameActive(name: NameItem | null | undefined): boolean {
 	return !isNameHidden(name) && !isNameLocked(name);
 }
 
-export function matchesNameSearchTerm(name: NameItem | null | undefined, searchTerm: string): boolean {
+export function matchesNameSearchTerm(
+	name: NameItem | null | undefined,
+	searchTerm: string,
+): boolean {
 	const normalizedTerm = searchTerm.trim().toLowerCase();
 	if (!normalizedTerm) {
 		return true;
