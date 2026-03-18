@@ -17,7 +17,7 @@ import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
-import { Lightbulb, User } from "@/shared/lib/icons";
+import { Lightbulb, Trophy, User } from "@/shared/lib/icons";
 import { useOfflineSync } from "@/shared/hooks";
 import {
 	cleanupPerformanceMonitoring,
