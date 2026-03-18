@@ -54,7 +54,7 @@ interface UseTournamentStateResult {
         matchHistory: MatchRecord[];
 }
 
-const VOTE_COOLDOWN = 300;
+const VOTE_COOLDOWN = 500;
 
 function haveSameIds(a: string[], b: string[]): boolean {
         if (a.length !== b.length) {
@@ -319,15 +319,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                         const newHistory = (prev.matchHistory || []).slice(0, -1);
                         return {
                                 matchHistory: newHistory,
-                                currentMatch: Math.max(1, prev.currentMatch - 1),
-                                currentRound: Math.max(
-                                        1,
-                                        prev.currentRound - (prev.currentMatch % roundSize === 0 ? 1 : 0),
-                                ),
                                 ratings: lastEntry.ratings,
                         };
                 });
-        }, [audioManager, history, toast, updatePersistentState, roundSize]);
+        }, [audioManager, history, toast, updatePersistentState]);
 
         const handleQuit = useCallback(() => {
                 updatePersistentState({

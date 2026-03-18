@@ -99,6 +99,12 @@ export const imagesAPI = {
         },
 };
 
+let usingFallbackData = false;
+
+export function isUsingFallbackData(): boolean {
+        return usingFallbackData;
+}
+
 export const coreAPI = {
         addName: async (name: string, description: string) => {
                 try {
@@ -129,14 +135,18 @@ export const coreAPI = {
                         // Primary path: query Supabase directly (no Express backend needed)
                         const supabaseResult = await getNamesFromSupabase(includeHidden);
                         if (supabaseResult.length > 0) {
+                                usingFallbackData = false;
                                 return supabaseResult;
                         }
 
                         // Fallback: try API server if Supabase returned nothing
                         try {
                                 const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
+                                usingFallbackData = false;
                                 return (data ?? []).map((item) => mapNameRow(item));
                         } catch {
+                                usingFallbackData = true;
+                                console.warn("Using fallback/demo data - database connection unavailable");
                                 return getFallbackNames(includeHidden).map((item) => mapNameRow(item));
                         }
                 })();
