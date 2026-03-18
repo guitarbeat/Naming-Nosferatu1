@@ -60,7 +60,7 @@ export function Section({
 				variantClasses[variant],
 				separator && "mt-8 border-t border-border pt-8",
 				scrollMargin && "scroll-mt-20",
-				centered && "flex flex-col items-center",
+				centered && "flex flex-col items-center w-full",
 				className,
 			)}
 		>
