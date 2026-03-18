@@ -3,6 +3,8 @@
  * @description Sound playback management
  */
 
+import { getStorageString, isStorageAvailable } from "@/shared/lib/storage";
+
 interface SoundConfig {
 	volume?: number;
 	preload?: boolean;
@@ -26,7 +28,7 @@ class SoundManager {
 	private defaultVolume = 0.3;
 	private backgroundMusicVolume = 0.1;
 	private currentTrackIndex = 0;
-	private readonly isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined";
+	private readonly isBrowser = isStorageAvailable();
 
 	// Songs (large files, >1MB) - for background music
 	private backgroundTracks = [
@@ -498,13 +500,8 @@ class SoundManager {
 		}
 
 		// Support both historical and current key names.
-		try {
-			const soundEnabled =
-				localStorage.getItem("soundEnabled") ?? localStorage.getItem("sound-enabled");
-			return soundEnabled !== "false";
-		} catch {
-			return true;
-		}
+		const soundEnabled = getStorageString("soundEnabled") ?? getStorageString("sound-enabled");
+		return soundEnabled !== "false";
 	}
 }
 

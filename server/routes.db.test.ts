@@ -1,13 +1,14 @@
 // @vitest-environment node
+
+import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import jwt from "jsonwebtoken";
 import request from "supertest";
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock requireAdmin to allow access
 vi.mock("./auth", () => ({
-	requireAdmin: (_req: any, _res: any, next: any) => next(),
+	requireAdmin: (_req: Request, _res: Response, next: NextFunction) => next(),
 }));
 
 // Hoist mocks to be available in vi.mock
@@ -151,10 +152,11 @@ describe("Server Routes (DB Mode)", () => {
 				{ nameId: 2, rating: 1600, wins: 0 },
 			];
 
-			const mockQuery = Promise.resolve([]) as any;
-			mockQuery.returning = dbMocks.returning;
+			const mockQuery = Object.assign(Promise.resolve([]), {
+				returning: dbMocks.returning,
+				onConflictDoUpdate: vi.fn().mockResolvedValue([]),
+			});
 			// Mock onConflictDoUpdate to return a thenable
-			mockQuery.onConflictDoUpdate = vi.fn().mockResolvedValue([]);
 			dbMocks.values.mockReturnValue(mockQuery);
 
 			// Note: validation schema requires userId to be a valid UUID

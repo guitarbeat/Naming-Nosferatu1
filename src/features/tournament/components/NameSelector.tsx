@@ -14,7 +14,15 @@ import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible, useNamesCache } from "@/shared/hooks";
-import { getRandomCatImage } from "@/shared/lib/basic";
+import {
+	getActiveNames,
+	getHiddenNames,
+	getLockedNames,
+	getRandomCatImage,
+	isNameHidden,
+	isNameLocked,
+	matchesNameSearchTerm,
+} from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import { isRpcSignatureError } from "@/shared/lib/errors";
 import {
@@ -199,9 +207,7 @@ export function NameSelector() {
 	// Auto-select locked-in names when names are loaded
 	useEffect(() => {
 		if (names.length > 0) {
-			const lockedInIds = new Set(
-				names.filter((name) => name.lockedIn || name.locked_in).map((name) => name.id),
-			);
+			const lockedInIds = new Set(getLockedNames(names).map((name) => name.id));
 
 			if (lockedInIds.size > 0) {
 				setSelectedNames((prev) => {
@@ -461,10 +467,10 @@ export function NameSelector() {
 						p_name_id: String(nameId),
 						p_locked_in: !isCurrentlyLocked,
 					};
-					let rpcResult = await client.rpc("toggle_name_locked_in" as any, canonicalArgs);
+					let rpcResult = await client.rpc("toggle_name_locked_in", canonicalArgs);
 
 					if (rpcResult.error && isRpcSignatureError(rpcResult.error.message || "")) {
-						rpcResult = await client.rpc("toggle_name_locked_in" as any, {
+						rpcResult = await client.rpc("toggle_name_locked_in", {
 							...canonicalArgs,
 							p_user_name: userName.trim(),
 						});
@@ -531,29 +537,23 @@ export function NameSelector() {
 		setPendingAdminAction(null);
 	}, [pendingAdminAction, handleToggleHidden, handleToggleLocked]);
 
-	const visibleCards = useMemo(
-		() => names.filter((name) => !swipedIds.has(name.id) && !(name.lockedIn || name.locked_in)),
-		[names, swipedIds],
-	);
+	const visibleCards = useMemo(() => {
+		const unlockedNames = names.filter((name) => !isNameLocked(name));
+		return unlockedNames.filter((name) => !swipedIds.has(name.id));
+	}, [names, swipedIds]);
 	const cardsToRender = useMemo(() => visibleCards.slice(0, 3), [visibleCards]);
 
-	const availableNames = useMemo(
-		() => names.filter((name) => !(name.lockedIn || name.locked_in) && !name.isHidden),
-		[names],
-	);
-	const hiddenNamesAll = useMemo(() => names.filter((name) => name.isHidden), [names]);
+	const availableNames = useMemo(() => getActiveNames(names), [names]);
+	const hiddenNamesAll = useMemo(() => getHiddenNames(names), [names]);
 	const hiddenFiltered = useMemo(() => {
-		const q = hiddenQuery.trim().toLowerCase();
 		return hiddenNamesAll.filter((name) => {
 			if (hiddenShowSelectedOnly && !selectedNames.has(name.id)) {
 				return false;
 			}
-			if (!q) {
+			if (!hiddenQuery.trim()) {
 				return true;
 			}
-			return (
-				name.name.toLowerCase().includes(q) || (name.description ?? "").toLowerCase().includes(q)
-			);
+			return matchesNameSearchTerm(name, hiddenQuery);
 		});
 	}, [hiddenNamesAll, hiddenQuery, hiddenShowSelectedOnly, selectedNames]);
 	const previewItems = useMemo(() => hiddenNamesAll.slice(0, 6), [hiddenNamesAll]);
@@ -660,9 +660,7 @@ export function NameSelector() {
 	}, [availableNames, syncSelectionToStore, triggerHaptic]);
 
 	const handleClearSelection = useCallback(() => {
-		const lockedIds = new Set(
-			names.filter((name) => name.lockedIn || name.locked_in).map((name) => name.id),
-		);
+		const lockedIds = new Set(getLockedNames(names).map((name) => name.id));
 		setSelectedNames(lockedIds);
 		syncSelectionToStore(lockedIds);
 		triggerHaptic();
@@ -725,7 +723,7 @@ export function NameSelector() {
 		<div className="mx-auto w-full">
 			<div className="space-y-6 mobile-nav-safe-bottom">
 				{(() => {
-					const lockedInNames = names.filter((name) => name.lockedIn || name.locked_in);
+					const lockedInNames = getLockedNames(names);
 					if (lockedInNames.length === 0) {
 						return null;
 					}
@@ -985,7 +983,7 @@ export function NameSelector() {
 																			requestAdminAction({
 																				type: "toggle-hidden",
 																				nameId: nameItem.id,
-																				isCurrentlyEnabled: nameItem.isHidden || false,
+																				isCurrentlyEnabled: isNameHidden(nameItem),
 																			});
 																		}}
 																		disabled={togglingHidden.has(nameItem.id)}
@@ -1000,7 +998,7 @@ export function NameSelector() {
 																				<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
 																				<span>Processing...</span>
 																			</>
-																		) : nameItem.isHidden ? (
+																		) : isNameHidden(nameItem) ? (
 																			<>
 																				<Eye size={16} />
 																				<span>Unhide From Public</span>
@@ -1083,9 +1081,7 @@ export function NameSelector() {
 				) : (
 					<div className="space-y-8">
 						{(() => {
-							const activeNames = names.filter(
-								(name) => !(name.lockedIn || name.locked_in) && !name.isHidden,
-							);
+							const activeNames = getActiveNames(names);
 							return (
 								activeNames.length > 0 && (
 									<div className="grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
@@ -1112,7 +1108,7 @@ export function NameSelector() {
 														isSelected
 															? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
 															: "border-border/10 bg-foreground/5 hover:border-border/20 hover:bg-foreground/10 hover:shadow-lg"
-													} ${nameItem.lockedIn || nameItem.locked_in ? "opacity-75" : ""}`}
+													} ${isNameLocked(nameItem) ? "opacity-75" : ""}`}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
 														<CatImage
@@ -1180,7 +1176,7 @@ export function NameSelector() {
 																	requestAdminAction({
 																		type: "toggle-hidden",
 																		nameId: nameItem.id,
-																		isCurrentlyEnabled: nameItem.isHidden || false,
+																		isCurrentlyEnabled: isNameHidden(nameItem),
 																	});
 																}}
 																disabled={togglingHidden.has(nameItem.id)}
@@ -1188,7 +1184,7 @@ export function NameSelector() {
 																whileTap={{ scale: 0.95 }}
 																transition={{ type: "spring", stiffness: 400, damping: 25 }}
 																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-																	nameItem.isHidden
+																	isNameHidden(nameItem)
 																		? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/25"
 																		: "bg-red-600 hover:bg-red-700 text-white shadow-red-500/25"
 																} ${togglingHidden.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
@@ -1198,7 +1194,7 @@ export function NameSelector() {
 																		<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
 																		<span>Processing...</span>
 																	</div>
-																) : nameItem.isHidden ? (
+																) : isNameHidden(nameItem) ? (
 																	<>
 																		<Eye size={12} className="mr-1" />
 																		Unhide
@@ -1219,8 +1215,7 @@ export function NameSelector() {
 																	requestAdminAction({
 																		type: "toggle-locked",
 																		nameId: nameItem.id,
-																		isCurrentlyEnabled:
-																			nameItem.lockedIn || nameItem.locked_in || false,
+																		isCurrentlyEnabled: isNameLocked(nameItem),
 																	});
 																}}
 																disabled={togglingLocked.has(nameItem.id)}
@@ -1228,7 +1223,7 @@ export function NameSelector() {
 																whileTap={{ scale: 0.95 }}
 																transition={{ type: "spring", stiffness: 400, damping: 25 }}
 																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-																	nameItem.lockedIn || nameItem.locked_in
+																	isNameLocked(nameItem)
 																		? "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/25"
 																		: "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/25"
 																} ${togglingLocked.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
@@ -1238,7 +1233,7 @@ export function NameSelector() {
 																		<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
 																		<span>Processing...</span>
 																	</div>
-																) : nameItem.lockedIn || nameItem.locked_in ? (
+																) : isNameLocked(nameItem) ? (
 																	<>
 																		<CheckCircle size={12} className="mr-1" />
 																		Unlock

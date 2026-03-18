@@ -9,6 +9,12 @@
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
+import {
+	getStorageString,
+	isStorageAvailable,
+	removeStorageItem,
+	setStorageString,
+} from "@/shared/lib/storage";
 import { api } from "@/shared/services/apiClient";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 
@@ -19,7 +25,7 @@ async function getSupabaseAdminStatus(userName: string): Promise<boolean> {
 			return false;
 		}
 
-		const { data, error } = await (client as any)
+		const { data, error } = await client
 			.from("cat_user_roles")
 			.select("role")
 			.ilike("user_name", userName)
@@ -41,12 +47,12 @@ export const authAdapter: AuthAdapter = {
 	 * Get current user from localStorage or return null
 	 */
 	async getCurrentUser(): Promise<AuthUser | null> {
-		if (typeof window === "undefined") {
+		if (!isStorageAvailable()) {
 			return null;
 		}
 
-		const userName = localStorage.getItem(STORAGE_KEYS.USER);
-		const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+		const userName = getStorageString(STORAGE_KEYS.USER);
+		const userId = getStorageString(STORAGE_KEYS.USER_ID);
 
 		if (!userName) {
 			return null;
@@ -78,14 +84,14 @@ export const authAdapter: AuthAdapter = {
 				userName,
 			});
 			if (response.success && response.data?.userId) {
-				localStorage.setItem(STORAGE_KEYS.USER_ID, response.data.userId);
+				setStorageString(STORAGE_KEYS.USER_ID, response.data.userId);
 			}
 		} catch (e) {
 			console.error("Failed to register user", e);
 		}
 
 		// Store username in localStorage (must match STORAGE_KEYS.USER for consistency with appStore)
-		localStorage.setItem(STORAGE_KEYS.USER, userName);
+		setStorageString(STORAGE_KEYS.USER, userName);
 		return true;
 	},
 
@@ -93,9 +99,9 @@ export const authAdapter: AuthAdapter = {
 	 * Logout - clear stored user data
 	 */
 	async logout(): Promise<void> {
-		if (typeof window !== "undefined") {
-			localStorage.removeItem(STORAGE_KEYS.USER);
-			localStorage.removeItem(STORAGE_KEYS.USER_ID);
+		if (isStorageAvailable()) {
+			removeStorageItem(STORAGE_KEYS.USER);
+			removeStorageItem(STORAGE_KEYS.USER_ID);
 		}
 	},
 

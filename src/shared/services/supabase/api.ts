@@ -187,7 +187,7 @@ export const coreAPI = {
 				}
 
 				try {
-					const rpcResult = await client.rpc("toggle_name_visibility" as any, {
+					const rpcResult = await client.rpc("toggle_name_visibility", {
 						p_name_id: String(nameId),
 						p_hide: isHidden,
 						p_user_name: userName || undefined,

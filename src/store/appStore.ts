@@ -31,6 +31,12 @@
 import { useEffect } from "react";
 import { create, type StateCreator } from "zustand";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
+import {
+	getStorageString,
+	parseJsonValue,
+	removeStorageItem,
+	setStorageString,
+} from "@/shared/lib/storage";
 
 import type {
 	CatChosenName,
@@ -134,30 +140,6 @@ function patch<K extends keyof AppState>(set: SetFn, key: K, updates: Partial<Ap
 	}));
 }
 
-function readStorage(key: string): string | null {
-	try {
-		return localStorage.getItem(key);
-	} catch {
-		return null;
-	}
-}
-
-function writeStorage(key: string, value: string): void {
-	try {
-		localStorage.setItem(key, value);
-	} catch {
-		/* quota or security error */
-	}
-}
-
-function removeStorage(key: string): void {
-	try {
-		localStorage.removeItem(key);
-	} catch {
-		/* ignore */
-	}
-}
-
 const IS_BROWSER = typeof window !== "undefined";
 const IS_DEV = import.meta.env?.DEV ?? false;
 
@@ -178,22 +160,24 @@ function getInitialUserState(): UserState {
 		return base;
 	}
 
-	const stored = readStorage(STORAGE_KEYS.USER);
+	const stored = getStorageString(STORAGE_KEYS.USER);
 	if (stored?.trim()) {
-		try {
-			const parsed = JSON.parse(stored);
-			if (typeof parsed === "string") {
-				return { ...base, name: parsed, isLoggedIn: true };
-			}
-			if (typeof parsed === "string") {
-				return { ...base, name: parsed, isLoggedIn: true };
-			}
-			if (parsed && typeof parsed === "object" && parsed.name) {
-				return { ...base, name: parsed.name, isLoggedIn: true, isAdmin: !!parsed.isAdmin };
-			}
-		} catch {
-			return { ...base, name: stored.trim(), isLoggedIn: true };
+		const parsed = parseJsonValue<unknown>(stored, null);
+		if (typeof parsed === "string") {
+			return { ...base, name: parsed, isLoggedIn: true };
 		}
+		if (parsed && typeof parsed === "object") {
+			const parsedObj = parsed as { name?: unknown; isAdmin?: unknown };
+			if (typeof parsedObj.name === "string") {
+				return {
+					...base,
+					name: parsedObj.name,
+					isLoggedIn: true,
+					isAdmin: Boolean(parsedObj.isAdmin),
+				};
+			}
+		}
+		return { ...base, name: stored.trim(), isLoggedIn: true };
 	}
 	return base;
 }
@@ -203,7 +187,7 @@ function getInitialTheme(): Pick<UIState, "theme" | "themePreference"> {
 		return { theme: "dark", themePreference: "dark" };
 	}
 
-	const stored = readStorage(STORAGE_KEYS.THEME);
+	const stored = getStorageString(STORAGE_KEYS.THEME);
 	if (stored === "light" || stored === "dark" || stored === "system") {
 		const resolved: ThemeValue =
 			stored === "system"
@@ -220,7 +204,7 @@ function getInitialSwipeMode(): boolean {
 	if (!IS_BROWSER) {
 		return false;
 	}
-	return readStorage(STORAGE_KEYS.SWIPE_MODE) === "true";
+	return getStorageString(STORAGE_KEYS.SWIPE_MODE) === "true";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -311,20 +295,20 @@ const createUserAndSettingsSlice: StateCreator<
 			patch(set, "user", data);
 			const name = data.name ?? get().user.name;
 			if (name) {
-				writeStorage(STORAGE_KEYS.USER, name);
+				setStorageString(STORAGE_KEYS.USER, name);
 			} else {
-				removeStorage(STORAGE_KEYS.USER);
+				removeStorageItem(STORAGE_KEYS.USER);
 			}
 		},
 
 		login: (userName, onContext) => {
 			patch(set, "user", { name: userName, isLoggedIn: true });
-			writeStorage(STORAGE_KEYS.USER, userName);
+			setStorageString(STORAGE_KEYS.USER, userName);
 			onContext?.(userName);
 		},
 
 		logout: (onContext) => {
-			removeStorage(STORAGE_KEYS.USER);
+			removeStorageItem(STORAGE_KEYS.USER);
 			onContext?.(null);
 			set((state) => ({
 				...state,
@@ -343,15 +327,15 @@ const createUserAndSettingsSlice: StateCreator<
 		setAvatar: (avatarUrl) => {
 			patch(set, "user", { avatarUrl });
 			if (avatarUrl) {
-				writeStorage(STORAGE_KEYS.USER_AVATAR, avatarUrl);
+				setStorageString(STORAGE_KEYS.USER_AVATAR, avatarUrl);
 			} else {
-				removeStorage(STORAGE_KEYS.USER_AVATAR);
+				removeStorageItem(STORAGE_KEYS.USER_AVATAR);
 			}
 		},
 
 		initializeFromStorage: (onContext) => {
-			const storedUser = readStorage(STORAGE_KEYS.USER);
-			const storedAvatar = readStorage(STORAGE_KEYS.USER_AVATAR);
+			const storedUser = getStorageString(STORAGE_KEYS.USER);
+			const storedAvatar = getStorageString(STORAGE_KEYS.USER_AVATAR);
 			const updates: Partial<UserState> = {};
 
 			if (storedUser && get().user.name !== storedUser) {
@@ -403,14 +387,14 @@ const createUserAndSettingsSlice: StateCreator<
 			}
 
 			patch(set, "ui", { theme: resolved, themePreference: preference });
-			writeStorage(STORAGE_KEYS.THEME, preference);
+			setStorageString(STORAGE_KEYS.THEME, preference);
 		},
 
 		initializeTheme: () => {
 			if (!IS_BROWSER) {
 				return;
 			}
-			const stored = readStorage(STORAGE_KEYS.THEME) ?? "dark";
+			const stored = getStorageString(STORAGE_KEYS.THEME) ?? "dark";
 			const pref = (
 				["light", "dark", "system"].includes(stored) ? stored : "dark"
 			) as ThemePreference;
@@ -422,7 +406,7 @@ const createUserAndSettingsSlice: StateCreator<
 
 		setSwipeMode: (enabled) => {
 			patch(set, "ui", { isSwipeMode: enabled });
-			writeStorage(STORAGE_KEYS.SWIPE_MODE, String(enabled));
+			setStorageString(STORAGE_KEYS.SWIPE_MODE, String(enabled));
 		},
 
 		setCatPictures: (show) => patch(set, "ui", { showCatPictures: show }),

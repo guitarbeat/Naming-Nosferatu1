@@ -18,8 +18,35 @@ export function shuffleArray<T>(array: T[]): T[] {
 	return next;
 }
 
-function isNameHidden(name: NameItem | null | undefined): boolean {
+export function isNameHidden(name: NameItem | null | undefined): boolean {
 	return name?.is_hidden === true || name?.isHidden === true;
+}
+
+export function isNameLocked(name: NameItem | null | undefined): boolean {
+	return name?.locked_in === true || name?.lockedIn === true;
+}
+
+export function isNameActive(name: NameItem | null | undefined): boolean {
+	return !isNameHidden(name) && !isNameLocked(name);
+}
+
+export function matchesNameSearchTerm(
+	name: NameItem | null | undefined,
+	searchTerm: string,
+): boolean {
+	const normalizedTerm = searchTerm.trim().toLowerCase();
+	if (!normalizedTerm) {
+		return true;
+	}
+
+	if (!name) {
+		return false;
+	}
+
+	return (
+		name.name.toLowerCase().includes(normalizedTerm) ||
+		(name.description ?? "").toLowerCase().includes(normalizedTerm)
+	);
 }
 
 export function getVisibleNames(names: NameItem[] | null | undefined): NameItem[] {
@@ -27,6 +54,27 @@ export function getVisibleNames(names: NameItem[] | null | undefined): NameItem[
 		return [];
 	}
 	return names.filter((name) => !isNameHidden(name));
+}
+
+export function getActiveNames(names: NameItem[] | null | undefined): NameItem[] {
+	if (!Array.isArray(names)) {
+		return [];
+	}
+	return names.filter(isNameActive);
+}
+
+export function getHiddenNames(names: NameItem[] | null | undefined): NameItem[] {
+	if (!Array.isArray(names)) {
+		return [];
+	}
+	return names.filter(isNameHidden);
+}
+
+export function getLockedNames(names: NameItem[] | null | undefined): NameItem[] {
+	if (!Array.isArray(names)) {
+		return [];
+	}
+	return names.filter(isNameLocked);
 }
 
 export function calculatePercentile(

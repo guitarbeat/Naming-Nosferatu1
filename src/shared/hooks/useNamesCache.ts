@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
+import { readStorageJson, writeStorageJson } from "@/shared/lib/storage";
 import type { NameItem } from "@/shared/types";
 
 interface CacheEntry {
@@ -54,12 +55,8 @@ export function useNamesCache() {
 		});
 
 		// Persist to localStorage after updating cache
-		try {
-			const cacheObject = Object.fromEntries(cacheRef.current);
-			localStorage.setItem("names_cache_map", JSON.stringify(cacheObject));
-		} catch (error) {
-			console.warn("Failed to persist names cache to localStorage:", error);
-		}
+		const cacheObject = Object.fromEntries(cacheRef.current);
+		writeStorageJson("names_cache_map", cacheObject);
 	}, []);
 
 	const invalidateCache = useCallback((): void => {
@@ -68,24 +65,17 @@ export function useNamesCache() {
 
 	// Load cache from localStorage on mount
 	useEffect(() => {
-		try {
-			const stored = localStorage.getItem("names_cache_map");
-			if (stored) {
-				const parsed: unknown = JSON.parse(stored);
-				const now = Date.now();
-				if (!parsed || typeof parsed !== "object") {
-					return;
-				}
+		const stored = readStorageJson("names_cache_map", {});
 
-				// Filter out expired entries
-				for (const [key, entry] of Object.entries(parsed as Record<string, unknown>)) {
-					if (isCacheEntry(entry) && now - entry.timestamp <= CACHE_TTL) {
-						cacheRef.current.set(key, entry);
-					}
-				}
+		if (!stored || typeof stored !== "object") {
+			return;
+		}
+
+		const now = Date.now();
+		for (const [key, entry] of Object.entries(stored as Record<string, unknown>)) {
+			if (isCacheEntry(entry) && now - entry.timestamp <= CACHE_TTL) {
+				cacheRef.current.set(key, entry);
 			}
-		} catch (error) {
-			console.warn("Failed to load names cache from localStorage:", error);
 		}
 	}, []);
 

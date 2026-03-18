@@ -30,9 +30,9 @@
     "pnpm": ">=10.26.0"
   },
   "scripts": {
-    "dev": "vite --config config/vite.config.ts",
+    "dev": "concurrently \"tsx server/index.ts\" \"vite --config config/vite.config.ts --port 5000 --host 0.0.0.0\"",
     "dev:server": "tsx server/index.ts",
-    "dev:client": "vite",
+    "dev:client": "vite --port 5000 --host 0.0.0.0",
     "build": "vite build --config config/vite.config.ts",
     "build:dev": "vite build --config config/vite.config.ts --mode development",
     "preview": "vite preview --config config/vite.config.ts",
@@ -102,6 +102,7 @@
     "supertest": "^7.2.2",
     "tailwindcss": "4.2.1",
     "terser": "^5.46.0",
+    "concurrently": "^9.1.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",

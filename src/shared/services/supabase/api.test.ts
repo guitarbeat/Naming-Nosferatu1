@@ -18,6 +18,9 @@ vi.mock("./runtime", () => ({
 }));
 
 describe("Supabase Service API", () => {
+	const mockedApi = vi.mocked(api);
+	const mockedResolveSupabaseClient = vi.mocked(resolveSupabaseClient);
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -28,7 +31,7 @@ describe("Supabase Service API", () => {
 				success: true,
 				data: { id: 1, name: "Test Cat", description: "Desc", avgRating: 1500 },
 			};
-			(api.post as any).mockResolvedValue(mockResponse);
+			mockedApi.post.mockResolvedValue(mockResponse);
 
 			const result = await coreAPI.addName("Test Cat", "Desc");
 
@@ -40,7 +43,7 @@ describe("Supabase Service API", () => {
 
 		it("should return error when API call fails", async () => {
 			const mockResponse = { success: false, error: "Duplicate name" };
-			(api.post as any).mockResolvedValue(mockResponse);
+			mockedApi.post.mockResolvedValue(mockResponse);
 
 			const result = await coreAPI.addName("Duplicate Cat", "Desc");
 
@@ -49,7 +52,7 @@ describe("Supabase Service API", () => {
 		});
 
 		it("should handle exceptions", async () => {
-			(api.post as any).mockRejectedValue(new Error("Network error"));
+			mockedApi.post.mockRejectedValue(new Error("Network error"));
 
 			const result = await coreAPI.addName("Error Cat", "Desc");
 
@@ -61,7 +64,7 @@ describe("Supabase Service API", () => {
 	describe("coreAPI.getTrendingNames", () => {
 		it("should fetch names from API", async () => {
 			const mockNames = [{ id: 1, name: "Cat 1", avg_rating: 1600 }];
-			(api.get as any).mockResolvedValue(mockNames);
+			mockedApi.get.mockResolvedValue(mockNames);
 
 			const result = await coreAPI.getTrendingNames(false);
 
@@ -71,7 +74,7 @@ describe("Supabase Service API", () => {
 		});
 
 		it("should fallback to Supabase client on API error (includeHidden=true)", async () => {
-			(api.get as any).mockRejectedValue(new Error("API Down"));
+			mockedApi.get.mockRejectedValue(new Error("API Down"));
 
 			// Mock Supabase client
 			const mockData = [{ id: 2, name: "Cat 2", avg_rating: 1500 }];
@@ -84,7 +87,7 @@ describe("Supabase Service API", () => {
 			const mockClient = {
 				from: vi.fn().mockReturnValue(mockQuery),
 			};
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await coreAPI.getTrendingNames(true);
 
@@ -95,7 +98,7 @@ describe("Supabase Service API", () => {
 		});
 
 		it("should apply hidden filter in Supabase fallback when includeHidden=false", async () => {
-			(api.get as any).mockRejectedValue(new Error("API Down"));
+			mockedApi.get.mockRejectedValue(new Error("API Down"));
 
 			const mockData = [{ id: 3, name: "Cat 3", avg_rating: 1490 }];
 			const mockQuery = {
@@ -107,7 +110,7 @@ describe("Supabase Service API", () => {
 			const mockClient = {
 				from: vi.fn().mockReturnValue(mockQuery),
 			};
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await coreAPI.getTrendingNames(false);
 
@@ -118,8 +121,8 @@ describe("Supabase Service API", () => {
 		});
 
 		it("should return bundled fallback names if both API and Supabase fail", async () => {
-			(api.get as any).mockRejectedValue(new Error("API Down"));
-			(resolveSupabaseClient as any).mockResolvedValue(null);
+			mockedApi.get.mockRejectedValue(new Error("API Down"));
+			mockedResolveSupabaseClient.mockResolvedValue(null);
 
 			const result = await coreAPI.getTrendingNames();
 			expect(result).toHaveLength(FALLBACK_NAMES.length);
@@ -128,8 +131,8 @@ describe("Supabase Service API", () => {
 
 		it("shares one in-flight request across concurrent callers", async () => {
 			let releaseRequest: (() => void) | null = null;
-			(resolveSupabaseClient as any).mockResolvedValue(null);
-			(api.get as any).mockImplementation(
+			mockedResolveSupabaseClient.mockResolvedValue(null);
+			mockedApi.get.mockImplementation(
 				() =>
 					new Promise((_resolve, reject) => {
 						releaseRequest = () => reject(new Error("API Down"));
@@ -165,14 +168,14 @@ describe("Supabase Service API", () => {
 			const mockClient = {
 				rpc: mockRpc,
 			};
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await coreAPI.hideName("admin", "123", true);
 
 			expect(resolveSupabaseClient).toHaveBeenCalled();
 			expect(mockRpc).toHaveBeenCalledTimes(2);
 			expect(mockRpc).toHaveBeenNthCalledWith(1, "set_user_context", { user_name_param: "admin" });
-			// The second call args are tricky because of "as any" inside the implementation
+			// The second call args are tricky because of the RPC argument shape checks
 			// expecting toggle_name_visibility params
 			expect(mockRpc).toHaveBeenNthCalledWith(
 				2,
@@ -194,9 +197,9 @@ describe("Supabase Service API", () => {
 
 			const mockRpc = vi.fn().mockResolvedValue({ error: { message: "RPC failed" } });
 			const mockClient = { rpc: mockRpc };
-			(resolveSupabaseClient as any).mockResolvedValue(mockClient);
+			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
-			(api.patch as any).mockResolvedValue({ success: true });
+			mockedApi.patch.mockResolvedValue({ success: true });
 
 			const result = await coreAPI.hideName("admin", "123", true);
 
