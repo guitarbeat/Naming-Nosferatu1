@@ -11,12 +11,11 @@
 	initial-value: -45deg;
 }
 
-/* ========== BUTTON ========== */
+/* ========== BUTTON WRAP ========== */
 
-/* Button Wrap Container */
 .fancy-button-wrap {
 	--fancy-btn-size: clamp(2rem, 4vw, 5rem);
-	--anim--hover-time: 400ms;
+	--anim--hover-time: 250ms;
 	--anim--hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 
 	position: relative;
@@ -25,14 +24,15 @@
 	background: transparent;
 	pointer-events: none;
 	transition: all var(--anim--hover-time) var(--anim--hover-ease);
-	display: inline-block; /* Ensure it wraps content */
+	display: inline-block;
 }
 
 .fancy-button-wrap[aria-disabled="true"] {
 	pointer-events: none;
 }
 
-/* Button Shadow Container */
+/* ========== BUTTON SHADOW ========== */
+
 .fancy-button-shadow {
 	--shadow-cuttoff-fix: 2em;
 	position: absolute;
@@ -41,14 +41,11 @@
 	top: calc(0% - var(--shadow-cuttoff-fix) / 2);
 	left: calc(0% - var(--shadow-cuttoff-fix) / 2);
 	filter: blur(clamp(2px, 0.125em, 12px));
-	-webkit-filter: blur(clamp(2px, 0.125em, 12px));
-	-moz-filter: blur(clamp(2px, 0.125em, 12px));
-	-ms-filter: blur(clamp(2px, 0.125em, 12px));
 	overflow: visible;
 	pointer-events: none;
+	transition: filter var(--anim--hover-time) var(--anim--hover-ease);
 }
 
-/* Shadow */
 .fancy-button-shadow::after {
 	content: "";
 	position: absolute;
@@ -71,10 +68,9 @@
 	opacity: 1;
 }
 
-/* ========== BUTTON BASE STYLES ========== */
+/* ========== BUTTON BASE ========== */
 
 .fancy-button {
-	/* Basic Styling */
 	--border-width: clamp(1px, 0.0625em, 4px);
 	all: unset;
 	cursor: pointer;
@@ -96,40 +92,50 @@
 		0 0 0.1em 0.25em inset rgba(255, 255, 255, 0.2),
 		0 0 0 0 rgba(255, 255, 255, 1);
 	backdrop-filter: blur(clamp(1px, 0.125em, 4px));
-	-webkit-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
-	-moz-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
-	-ms-backdrop-filter: blur(clamp(1px, 0.125em, 4px));
 	transition: all var(--anim--hover-time) var(--anim--hover-ease);
-	display: block; /* Ensure it fills the wrapper */
-	width: 100%; /* Or auto? */
+	display: block;
+	width: 100%;
 	box-sizing: border-box;
 }
 
+/* Disabled — matches standard variant opacity + cursor */
 .fancy-button:disabled {
 	cursor: not-allowed;
-	opacity: 0.55;
+	opacity: 0.5;
+	pointer-events: none;
 }
 
+/* Focus-visible — matches standard variants: ring-2 + offset */
 .fancy-button:focus-visible {
-	outline: 2px solid rgb(255 255 255 / 75%);
-	outline-offset: 3px;
-}
-
-.fancy-button:hover {
-	transform: scale(0.975);
-	backdrop-filter: blur(0.01em);
-	-webkit-backdrop-filter: blur(0.01em);
-	-moz-backdrop-filter: blur(0.01em);
-	-ms-backdrop-filter: blur(0.01em);
+	outline: none;
 	box-shadow:
 		inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
 		inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
-		0 0.15em 0.05em -0.1em rgba(0, 0, 0, 0.25),
+		0 0.25em 0.125em -0.125em rgba(0, 0, 0, 0.2),
+		0 0 0.1em 0.25em inset rgba(255, 255, 255, 0.2),
+		0 0 0 2px var(--background, #111318),
+		0 0 0 4px var(--ring, hsl(190 55% 34%));
+}
+
+/* Hover — subtle lift matching -translate-y-px of standard variants */
+.fancy-button:hover:not(:disabled) {
+	transform: translateY(-1px) scale(0.985);
+	backdrop-filter: blur(0.01em);
+	box-shadow:
+		inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
+		inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
+		0 0.3em 0.15em -0.1em rgba(0, 0, 0, 0.25),
 		0 0 0.05em 0.1em inset rgba(255, 255, 255, 0.5),
 		0 0 0 0 rgba(255, 255, 255, 1);
 }
 
-/* Button Text */
+/* Active — press-down matching translate-y-0 of standard variants */
+.fancy-button:active:not(:disabled) {
+	transform: translateY(0) scale(0.97);
+}
+
+/* ========== BUTTON CONTENT (text) ========== */
+
 .fancy-button > .fancy-button-content {
 	position: relative;
 	display: inline-flex;
@@ -137,9 +143,6 @@
 	justify-content: center;
 	gap: 0.5rem;
 	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
 	color: rgb(255 255 255 / 95%);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -147,18 +150,20 @@
 	transition: all var(--anim--hover-time) var(--anim--hover-ease);
 	padding-inline: 1.5em;
 	padding-block: 0.875em;
+	font-weight: 500;
+	letter-spacing: 0.025em;
 }
 
-.fancy-button:hover > .fancy-button-content {
+.fancy-button:hover:not(:disabled) > .fancy-button-content {
 	text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.12);
 }
 
-/* Text */
+/* Shimmer overlay */
 .fancy-button > .fancy-button-content::after {
 	content: "";
 	display: block;
 	position: absolute;
-	width: calc(100% - var(--border-width)); /* Prevent overlapping border */
+	width: calc(100% - var(--border-width));
 	height: calc(100% - var(--border-width));
 	top: calc(0% + var(--border-width) / 2);
 	left: calc(0% + var(--border-width) / 2);
@@ -182,16 +187,16 @@
 		--angle-2 calc(var(--anim--hover-time) * 1.25) var(--anim--hover-ease);
 }
 
-.fancy-button:hover > .fancy-button-content::after {
+.fancy-button:hover:not(:disabled) > .fancy-button-content::after {
 	background-position: 25% 50%;
 }
 
-.fancy-button:active > .fancy-button-content::after {
+.fancy-button:active:not(:disabled) > .fancy-button-content::after {
 	background-position: 50% 15%;
 	--angle-2: -15deg;
 }
 
-/* Touch Devices */
+/* Touch devices */
 @media (hover: none) and (pointer: coarse) {
 	.fancy-button > .fancy-button-content::after,
 	.fancy-button:active > .fancy-button-content::after {
@@ -204,24 +209,30 @@
 	height: 1em;
 }
 
+/* ========== SIZE VARIANTS ========== */
+
 .fancy-button--small > .fancy-button-content {
 	padding-inline: 1.15em;
 	padding-block: 0.62em;
+	font-size: 0.75rem;
 }
 
 .fancy-button--medium > .fancy-button-content {
 	padding-inline: 1.4em;
 	padding-block: 0.8em;
+	font-size: 0.875rem;
 }
 
 .fancy-button--large > .fancy-button-content {
 	padding-inline: 1.7em;
 	padding-block: 0.9em;
+	font-size: 1rem;
 }
 
 .fancy-button--xl > .fancy-button-content {
 	padding-inline: 1.9em;
 	padding-block: 0.98em;
+	font-size: 1rem;
 }
 
 .fancy-button--icon > .fancy-button-content {
@@ -229,9 +240,8 @@
 	padding-block: 0.74em;
 }
 
-/* ========== BUTTON OUTLINE ========== */
+/* ========== BORDER OUTLINE ========== */
 
-/* Outline */
 .fancy-button::after {
 	content: "";
 	position: absolute;
@@ -260,15 +270,15 @@
 	mask-composite: exclude;
 	transition:
 		all var(--anim--hover-time) var(--anim--hover-ease),
-		--angle-1 500ms ease;
+		--angle-1 350ms ease;
 	box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.5);
 }
 
-.fancy-button:hover::after {
+.fancy-button:hover:not(:disabled)::after {
 	--angle-1: -125deg;
 }
 
-.fancy-button:active::after {
+.fancy-button:active:not(:disabled)::after {
 	--angle-1: -75deg;
 }
 
@@ -280,26 +290,22 @@
 	}
 }
 
-/* Shadow Hover */
-.fancy-button-wrap:has(.fancy-button:hover) .fancy-button-shadow {
+/* ========== SHADOW HOVER / ACTIVE ========== */
+
+.fancy-button-wrap:has(.fancy-button:hover:not(:disabled)) .fancy-button-shadow {
 	filter: blur(clamp(2px, 0.0625em, 6px));
-	-webkit-filter: blur(clamp(2px, 0.0625em, 6px));
-	-moz-filter: blur(clamp(2px, 0.0625em, 6px));
-	-ms-filter: blur(clamp(2px, 0.0625em, 6px));
-	transition: filter var(--anim--hover-time) var(--anim--hover-ease);
 }
 
-.fancy-button-wrap:has(.fancy-button:hover) .fancy-button-shadow::after {
+.fancy-button-wrap:has(.fancy-button:hover:not(:disabled)) .fancy-button-shadow::after {
 	top: calc(var(--shadow-cuttoff-fix) - 0.875em);
 	opacity: 1;
 }
 
-/* Rotation */
-.fancy-button-wrap:has(.fancy-button:active) {
+.fancy-button-wrap:has(.fancy-button:active:not(:disabled)) {
 	transform: rotate3d(1, 0, 0, 25deg);
 }
 
-.fancy-button-wrap:has(.fancy-button:active) .fancy-button {
+.fancy-button-wrap:has(.fancy-button:active:not(:disabled)) .fancy-button {
 	box-shadow:
 		inset 0 0.125em 0.125em rgba(0, 0, 0, 0.05),
 		inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.5),
@@ -310,18 +316,15 @@
 		inset 0 0.25em 0.05em 0 rgba(0, 0, 0, 0.15);
 }
 
-.fancy-button-wrap:has(.fancy-button:active) .fancy-button-shadow {
+.fancy-button-wrap:has(.fancy-button:active:not(:disabled)) .fancy-button-shadow {
 	filter: blur(clamp(2px, 0.125em, 12px));
-	-webkit-filter: blur(clamp(2px, 0.125em, 12px));
-	-moz-filter: blur(clamp(2px, 0.125em, 12px));
-	-ms-filter: blur(clamp(2px, 0.125em, 12px));
 }
 
-.fancy-button-wrap:has(.fancy-button:active) .fancy-button-shadow::after {
+.fancy-button-wrap:has(.fancy-button:active:not(:disabled)) .fancy-button-shadow::after {
 	top: calc(var(--shadow-cuttoff-fix) - 0.5em);
 	opacity: 0.75;
 }
 
-.fancy-button-wrap:has(.fancy-button:active) .fancy-button-content {
+.fancy-button-wrap:has(.fancy-button:active:not(:disabled)) .fancy-button-content {
 	text-shadow: 0.025em 0.25em 0.05em rgba(0, 0, 0, 0.12);
 }
