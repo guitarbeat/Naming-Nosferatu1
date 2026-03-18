@@ -6,6 +6,7 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
+import { useAdminActionConfirmation } from "@/features/tournament/hooks/useAdminActionConfirmation";
 import Button from "@/shared/components/layout/Button";
 import { Card } from "@/shared/components/layout/Card";
 import CatImage from "@/shared/components/layout/CatImage";
@@ -14,7 +15,6 @@ import { ConfirmDialog } from "@/shared/components/layout/ConfirmDialog";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Lightbox } from "@/shared/components/layout/Lightbox";
 import { useCollapsible, useNamesCache } from "@/shared/hooks";
-import { useAdminActionConfirmation } from "@/features/tournament/hooks/useAdminActionConfirmation";
 import {
 	getActiveNames,
 	getHiddenNames,
@@ -384,7 +384,9 @@ export function NameSelector() {
 					try {
 						const client = await resolveSupabaseClient();
 						if (client) {
-							await client.rpc("set_user_context", { user_name_param: userName.trim() });
+							await client.rpc("set_user_context", {
+								user_name_param: userName.trim(),
+							});
 						}
 					} catch {
 						/* ignore */
@@ -436,7 +438,9 @@ export function NameSelector() {
 			try {
 				const result = await withSupabase(async (client) => {
 					try {
-						await client.rpc("set_user_context", { user_name_param: userName.trim() });
+						await client.rpc("set_user_context", {
+							user_name_param: userName.trim(),
+						});
 					} catch {
 						/* ignore */
 					}
@@ -1076,7 +1080,11 @@ export function NameSelector() {
 													tabIndex={0}
 													whileHover={{ scale: 1.02 }}
 													whileTap={{ scale: 0.98 }}
-													transition={{ type: "spring", stiffness: 400, damping: 25 }}
+													transition={{
+														type: "spring",
+														stiffness: 400,
+														damping: 25,
+													}}
 													className={`mobile-readable-card relative rounded-lg sm:rounded-xl border-2 overflow-hidden cursor-pointer ${
 														isSelected
 															? "border-primary bg-primary/20 shadow-lg shadow-primary/20 ring-2 ring-primary/50"
@@ -1155,7 +1163,11 @@ export function NameSelector() {
 																disabled={togglingHidden.has(nameItem.id)}
 																whileHover={{ scale: 1.05 }}
 																whileTap={{ scale: 0.95 }}
-																transition={{ type: "spring", stiffness: 400, damping: 25 }}
+																transition={{
+																	type: "spring",
+																	stiffness: 400,
+																	damping: 25,
+																}}
 																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
 																	isNameHidden(nameItem)
 																		? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/25"
@@ -1194,7 +1206,11 @@ export function NameSelector() {
 																disabled={togglingLocked.has(nameItem.id)}
 																whileHover={{ scale: 1.05 }}
 																whileTap={{ scale: 0.95 }}
-																transition={{ type: "spring", stiffness: 400, damping: 25 }}
+																transition={{
+																	type: "spring",
+																	stiffness: 400,
+																	damping: 25,
+																}}
 																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
 																	isNameLocked(nameItem)
 																		? "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/25"

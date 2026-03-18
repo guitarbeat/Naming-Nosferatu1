@@ -198,7 +198,18 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
 		initializedRef.current = true;
 		setRefreshKey((k) => k + 1);
-	}, [namesKey, persistentState, names, updatePersistentState, tournamentMode]);
+	}, [
+		namesKey,
+		persistentState.namesKey,
+		persistentState.mode,
+		persistentState.teams,
+		persistentState.bracketEntrants,
+		persistentState.ratings,
+		persistentState.matchHistory,
+		names,
+		updatePersistentState,
+		tournamentMode,
+	]);
 
 	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
 	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
