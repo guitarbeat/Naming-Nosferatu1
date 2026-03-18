@@ -15,7 +15,7 @@ import {
 
 export const catAppUsers = pgTable("cat_app_users", {
 	userId: uuid("user_id").defaultRandom().primaryKey(),
-	userName: text("user_name").unique(), // User name (legacy PK, now just unique/lookup)
+	userName: text("user_name").unique(), // User name (previously the PK; now unique/lookup)
 	preferences: jsonb("preferences").default({}),
 	isDeleted: boolean("is_deleted").default(false),
 	deletedAt: timestamp("deleted_at", { withTimezone: true }),

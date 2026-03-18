@@ -59,7 +59,6 @@ function reportMetric(name: string, value: number, unit = ""): void {
 
 /**
  * Report navigation timing using the Navigation Timing Level 2 API.
- * (The legacy `performance.timing` property is deprecated.)
  */
 function reportNavigationMetrics(): void {
 	const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];

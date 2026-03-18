@@ -223,6 +223,144 @@ Recommended daily cadence:
 
 ---
 
+## � AI Development Guidelines
+
+### Tech Stack Overview
+- **React 19 + TypeScript** for all UI and application code
+- **React Router DOM v6** for client-side routing
+- **Tailwind CSS v4** for all styling (layout, spacing, colors, responsiveness)
+- **CVA (Class Variance Authority)** for component variants
+- **Zustand** for state management
+- **Supabase** for backend (PostgreSQL, Auth)
+- **lucide-react** for icons
+- **Vite** build system with feature-first organization
+
+### Development Rules
+
+#### Routing & Structure
+- Keep all routes defined in `src/app/App.tsx`
+- Features live under `src/features/` (tournament, analytics, admin)
+- Shared components in `src/shared/components/layout/`
+- Put all application code under `src/`
+
+#### Component Development
+- Use existing design system components first (`Button`, `Card`, `Section`)
+- Follow feature-first organization: domain behavior under `src/features/`
+- Use CVA variants for component styling instead of hardcoded classes
+- Prefer lazy loading for heavy components (`Dashboard`, `Tournament`)
+
+#### Styling Guidelines
+- Use Tailwind CSS exclusively with design tokens from `src/styles/tokens.css`
+- Follow the established glass surface design system
+- Use semantic spacing tokens (--space-1 through --space-24)
+- Maintain accessibility standards (focus management, keyboard navigation)
+
+#### State Management
+- Use Zustand store slices from `src/store/appStore.ts`
+- Feature-specific hooks in `src/features/*/hooks/`
+- Shared hooks in `src/hooks/`
+- TanStack Query for server state synchronization
+
+#### Safety & Quality
+- Validate at system boundaries (user input, API endpoints)
+- Use error boundaries for graceful error handling
+- Keep changes minimal and focused
+- Avoid introducing security issues (XSS, injection)
+- Test critical paths: API routes, validation, business logic
+
+#### File Organization Patterns
+```
+src/
+├── app/                # App entry, providers, deployment/config
+├── features/           # Domain features (admin, analytics, tournament)
+├── hooks/              # Reusable React hooks
+├── services/           # API and Supabase runtime/api wrappers
+├── shared/             # Shared components, hooks, utils, types
+├── store/              # Zustand app store
+├── styles/             # CSS layers/tokens/effects
+└── types/              # App-level types
+```
+
+---
+
+## �🧪 Testing Strategy
+
+This project uses **Vitest** for testing, with **React Testing Library** for frontend components and **Supertest** for backend routes.
+
+### Test Commands
+
+- **Run all tests**: `pnpm test`
+- **Run tests in watch mode**: `pnpm run test:watch`
+- **Run tests with coverage**: `pnpm run test:coverage`
+
+### Backend Testing
+
+The backend tests are split into two categories:
+
+#### 1. Mock Mode (`server/routes.test.ts`)
+These tests verify API endpoints when the database is unavailable. The server falls back to "mock mode", returning static data.
+
+- **Focus**: Route handling, input validation, fallback logic
+- **Mocking**: `server/db` is mocked to be `null`
+
+#### 2. Database Mode (`server/routes.db.test.ts`)
+These tests verify API endpoints when the database is available, mocking the Drizzle ORM to simulate database interactions.
+
+- **Focus**: Database queries, CRUD operations, business logic
+- **Mocking**: `server/db` provides mocked methods (`insert`, `select`, `update`, `delete`)
+
+### Frontend Testing
+
+Frontend tests are located alongside components (e.g., `src/app/App.test.tsx`).
+
+- **Tools**: React Testing Library, Vitest
+- **Mocking**:
+  - `@/shared/services/supabase/client`: Mocked to prevent network calls
+  - `@/shared/services/apiClient`: Mocked to simulate API responses
+  - Complex providers/hooks (`useAuth`, `useAppStore`) mocked to isolate component logic
+
+### Coverage
+
+We aim for high test coverage in critical paths:
+- Server API routes (`server/routes.ts`)
+- Data validation (`server/validation.ts`)
+- Core business logic (`src/services/`)
+
+Run `pnpm run test:coverage` to view the current coverage report.
+
+---
+
+## 🎨 Component Quality Guidelines
+
+### Component Audit Results (March 15, 2026)
+
+#### Strengths
+- Consistent use of `Card`, `Section`, and layout primitives for visual cohesion
+- Centralized loading and error handling patterns (`Loading`, `ErrorBoundary`, `ErrorComponent`)
+- Navigation and analytics surfaces decomposed into reusable subcomponents
+
+#### Resolved Issues
+- Icon-only controls now expose accessible labels (Lightbox, tournament audio)
+- Hidden-names disclosure uses native `<button>` in `NameSelector`
+- `Lightbox` traps focus and restores focus on close
+- Timer-based follow-ups clear pending timers on unmount
+- `ConfirmDialog` traps focus and returns focus to triggering control
+
+#### Current Watchpoints
+- Keep modal focus-management covered by tests to prevent keyboard navigation regressions
+
+### Component Organization
+
+| Category | Location | Examples |
+|----------|---------|----------|
+| **Layout Primitives** | `src/shared/components/layout/` | `Button`, `Card`, `Section`, `FormPrimitives` |
+| **Feedback Components** | `src/shared/components/layout/Feedback/` | `ErrorBoundary`, `Loading`, `OfflineIndicator` |
+| **Tournament** | `src/features/tournament/` | `Tournament`, `NameSelector`, `ProfileSection` |
+| **Analytics** | `src/features/analytics/` | `Dashboard`, `PersonalResults`, `RankingAdjustment` |
+| **Admin** | `src/features/admin/` | `AdminDashboard` |
+
+---
+
 ## 🗑️ Dead Code Prevention
 
 Use these tools to keep the codebase clean:

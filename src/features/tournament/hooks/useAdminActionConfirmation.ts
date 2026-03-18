@@ -8,8 +8,8 @@ import { useCallback, useMemo, useState } from "react";
 import type { IdType, NameItem } from "@/shared/types";
 
 type AdminActionNotifier = {
-	showWarning: (message: string) => string | void;
-	showError: (message: string) => string | void;
+	showWarning: (message: string) => string | undefined;
+	showError: (message: string) => string | undefined;
 };
 
 export type PendingAdminAction = {

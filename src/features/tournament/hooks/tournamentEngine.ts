@@ -36,6 +36,16 @@ interface BracketDerivation {
         pendingMatchIds: { leftId: string; rightId: string } | null;
 }
 
+// Cache for bracket state calculations
+const bracketStateCache = new Map<string, BracketDerivation>();
+const MAX_CACHE_SIZE = 100;
+
+function getCacheKey(bracketEntrants: string[], matchHistory: MatchRecord[]): string {
+        const entrantsKey = bracketEntrants.map(String).filter(Boolean).sort().join(',');
+        const historyKey = matchHistory.map(m => `${m.left}-${m.right}-${m.winner}`).join('|');
+        return `${entrantsKey}:${historyKey}`;
+}
+
 const BYE_PREFIX = "__BYE__";
 
 function nextPowerOfTwo(value: number): number {
@@ -85,12 +95,19 @@ export function deriveBracketState(
         bracketEntrants: string[],
         matchHistory: MatchRecord[],
 ): BracketDerivation {
+        // Check cache first
+        const cacheKey = getCacheKey(bracketEntrants, matchHistory);
+        const cached = bracketStateCache.get(cacheKey);
+        if (cached) {
+                return cached;
+        }
+
         const entrants = bracketEntrants.map(String).filter(Boolean);
         const realEntrants = entrants.filter((id) => !isBye(id));
         const totalEntrants = realEntrants.length;
 
         if (totalEntrants < 2) {
-                return {
+                const result = {
                         isComplete: true,
                         totalMatches: 0,
                         completedMatches: 0,
@@ -100,6 +117,18 @@ export function deriveBracketState(
                         roundSize: totalEntrants,
                         pendingMatchIds: null,
                 };
+                
+                // Cache and return result
+                bracketStateCache.set(cacheKey, result);
+                if (bracketStateCache.size > MAX_CACHE_SIZE) {
+                        // Clear oldest entries when cache gets too large
+                        const firstKey = bracketStateCache.keys().next().value;
+                        if (firstKey) {
+                                bracketStateCache.delete(firstKey);
+                        }
+                }
+                
+                return result;
         }
 
         const totalMatches = Math.max(0, totalEntrants - 1);
@@ -179,7 +208,7 @@ export function deriveBracketState(
                 currentRoundEntrants = padForRound(winners, round);
         }
 
-        return {
+        const result = {
                 isComplete: true,
                 totalMatches,
                 completedMatches: Math.min(cursor, totalMatches),
@@ -189,6 +218,18 @@ export function deriveBracketState(
                 roundSize: 1,
                 pendingMatchIds: null,
         };
+
+        // Cache and return result
+        bracketStateCache.set(cacheKey, result);
+        if (bracketStateCache.size > MAX_CACHE_SIZE) {
+                // Clear oldest entries when cache gets too large
+                const firstKey = bracketStateCache.keys().next().value;
+                if (firstKey) {
+                        bracketStateCache.delete(firstKey);
+                }
+        }
+
+        return result;
 }
 
 export function resolveCurrentMatch({

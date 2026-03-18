@@ -8,6 +8,7 @@ import {
 	getBracketStageLabel,
 	resolveTournamentMode,
 } from "./tournament";
+import type { Team } from "@/shared/types";
 
 describe("EloRating", () => {
 	describe("constructor", () => {
