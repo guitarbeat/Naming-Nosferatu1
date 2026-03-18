@@ -5,6 +5,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { coreAPI } from "@/shared/services/supabase/client";
+import {
+	getStorageString,
+	parseJsonValue,
+	readStorageJson,
+	removeStorageItem,
+	writeStorageJson,
+} from "@/shared/lib/storage";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Internal Utilities
@@ -280,12 +287,9 @@ export function useLocalStorage<T>(
 		if (!IS_BROWSER) {
 			return initialRef.current;
 		}
-		try {
-			const raw = localStorage.getItem(key);
-			return raw !== null ? (JSON.parse(raw) as T) : initialRef.current;
-		} catch {
-			return initialRef.current;
-		}
+
+		const raw = getStorageString(key, null);
+		return raw === null ? initialRef.current : parseJsonValue(raw, initialRef.current);
 	}, [key]);
 
 	const [stored, setStored] = useState<T>(readValue);
@@ -302,7 +306,7 @@ export function useLocalStorage<T>(
 		if (options.debounceWait && options.debounceWait > 0) {
 			debouncedSetItemRef.current = debounce((val: T) => {
 				if (IS_BROWSER) {
-					localStorage.setItem(key, JSON.stringify(val));
+					writeStorageJson(key, val);
 				}
 			}, options.debounceWait);
 		} else {
@@ -320,7 +324,7 @@ export function useLocalStorage<T>(
 					debouncedSetItemRef.current(resolved);
 				} else {
 					if (IS_BROWSER) {
-						localStorage.setItem(key, JSON.stringify(resolved));
+						writeStorageJson(key, resolved);
 					}
 				}
 			} catch {
@@ -335,11 +339,7 @@ export function useLocalStorage<T>(
 		setStored(fallback);
 		valueRef.current = fallback;
 		if (IS_BROWSER) {
-			try {
-				localStorage.removeItem(key);
-			} catch {
-				/* quota / security errors */
-			}
+			removeStorageItem(key);
 		}
 	}, [key]);
 
@@ -352,14 +352,14 @@ export function useLocalStorage<T>(
 			if (e.key !== key) {
 				return;
 			}
-			try {
-				const parsed = e.newValue !== null ? (JSON.parse(e.newValue) as T) : initialRef.current;
-				setStored(parsed);
-				valueRef.current = parsed;
-			} catch {
+			if (e.newValue === null) {
 				setStored(initialRef.current);
 				valueRef.current = initialRef.current;
+				return;
 			}
+			const parsed = parseJsonValue<T>(e.newValue, initialRef.current);
+			setStored(parsed);
+			valueRef.current = parsed;
 		};
 		window.addEventListener("storage", onStorage);
 		return () => window.removeEventListener("storage", onStorage);
@@ -391,14 +391,7 @@ interface CollapsibleReturn {
 export function useCollapsible(defaultValue = false, storageKey?: string): CollapsibleReturn {
 	const [value, setValueRaw] = useState<boolean>(() => {
 		if (storageKey && IS_BROWSER) {
-			try {
-				const raw = localStorage.getItem(storageKey);
-				if (raw !== null) {
-					return JSON.parse(raw) as boolean;
-				}
-			} catch {
-				/* fall through */
-			}
+			return readStorageJson<boolean>(storageKey, defaultValue);
 		}
 		return defaultValue;
 	});
@@ -410,11 +403,7 @@ export function useCollapsible(defaultValue = false, storageKey?: string): Colla
 		(next: boolean) => {
 			setValueRaw(next);
 			if (storageKey && IS_BROWSER) {
-				try {
-					localStorage.setItem(storageKey, JSON.stringify(next));
-				} catch {
-					/* quota errors */
-				}
+				writeStorageJson(storageKey, next);
 			}
 		},
 		[storageKey],

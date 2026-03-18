@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
+import { getStorageString, isStorageAvailable, setStorageString } from "@/shared/lib/storage";
 import {
 	getCurrentTrack,
 	playBackgroundMusic,
@@ -55,50 +56,33 @@ const BACKGROUND_MUSIC_ENABLED_KEY = "tournamentBackgroundMusicEnabled";
 const DEFAULT_EFFECTS_VOLUME = 0.3;
 const DEFAULT_MUSIC_VOLUME = 0.1;
 
-const isBrowser = () => typeof window !== "undefined" && typeof localStorage !== "undefined";
-
 function readStoredNumber(key: string, fallback: number): number {
-	if (!isBrowser()) {
+	if (!isStorageAvailable()) {
 		return fallback;
 	}
 
-	try {
-		const rawValue = localStorage.getItem(key);
-		const parsed = rawValue ? Number.parseFloat(rawValue) : Number.NaN;
-		if (Number.isNaN(parsed)) {
-			return fallback;
-		}
-		return Math.min(1, Math.max(0, parsed));
-	} catch {
+	const rawValue = getStorageString(key);
+	const parsed = rawValue ? Number.parseFloat(rawValue) : Number.NaN;
+	if (Number.isNaN(parsed)) {
 		return fallback;
 	}
+	return Math.min(1, Math.max(0, parsed));
 }
 
 function readStoredBoolean(key: string): boolean | null {
-	if (!isBrowser()) {
+	if (!isStorageAvailable()) {
 		return null;
 	}
 
-	try {
-		const rawValue = localStorage.getItem(key);
-		if (rawValue === null) {
-			return null;
-		}
-		return rawValue !== "false";
-	} catch {
+	const rawValue = getStorageString(key);
+	if (rawValue === null) {
 		return null;
 	}
+	return rawValue !== "false";
 }
 
 function writeStorage(key: string, value: string) {
-	if (!isBrowser()) {
-		return;
-	}
-	try {
-		localStorage.setItem(key, value);
-	} catch {
-		/* ignore storage quota/private-mode errors */
-	}
+	setStorageString(key, value);
 }
 
 export function useAudioManager(): UseAudioManagerResult {

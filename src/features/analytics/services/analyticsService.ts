@@ -1,4 +1,5 @@
 import { api } from "@/shared/services/apiClient";
+import { isNameHidden } from "@/shared/lib/basic";
 import type { IdType, NameItem } from "@/shared/types";
 
 export interface LeaderboardItem {
@@ -118,7 +119,7 @@ export const statsAPI = {
 					user_wins: toNumber(userRating?.wins),
 					user_losses: toNumber(userRating?.losses),
 					has_user_rating: Boolean(userRating),
-					isHidden: Boolean(item.isHidden ?? item.is_hidden),
+					isHidden: isNameHidden(item),
 				};
 			});
 		} catch {

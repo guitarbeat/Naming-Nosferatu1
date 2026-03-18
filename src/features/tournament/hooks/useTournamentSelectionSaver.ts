@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { NameItem } from "@/shared/types";
+import { isStorageAvailable, readStorageJson, writeStorageJson } from "@/shared/lib/storage";
 
 interface SaverOptions {
 	userName: string | null;
@@ -16,10 +17,6 @@ function saveSelectionHash(selectedNames: NameItem[]): string {
 		.map((n) => n.id)
 		.sort()
 		.join(",");
-}
-
-function isBrowser(): boolean {
-	return typeof window !== "undefined";
 }
 
 function isSaverOptions(value: NameItem[] | SaverOptions): value is SaverOptions {
@@ -49,7 +46,7 @@ export function useTournamentSelectionSaver(
 
 	const scheduleSave = useCallback(
 		(names: NameItem[]) => {
-			if (!userName || !enableAutoSave || !isBrowser()) {
+			if (!userName || !enableAutoSave || !isStorageAvailable()) {
 				return;
 			}
 
@@ -61,30 +58,25 @@ export function useTournamentSelectionSaver(
 			}
 
 			saveTimeoutRef.current = globalThis.setTimeout(() => {
-				try {
-					localStorage.setItem(
-						`tournament_selection_${userName}`,
-						JSON.stringify(names.map((n) => n.id)),
-					);
-					lastSavedRef.current = selectionHash;
-				} catch (error) {
-					console.error("Failed to save tournament selection:", error);
-				}
+				writeStorageJson(
+					`tournament_selection_${userName}`,
+					names.map((n) => n.id),
+				);
+				lastSavedRef.current = selectionHash;
 			}, 1000);
 		},
 		[clearPendingSave, userName, enableAutoSave],
 	);
 
 	const loadSavedSelection = useCallback(() => {
-		if (!userName || !isBrowser()) {
+		if (!userName || !isStorageAvailable()) {
 			return [];
 		}
-		try {
-			const saved = localStorage.getItem(`tournament_selection_${userName}`);
-			return saved ? JSON.parse(saved) : [];
-		} catch {
-			return [];
-		}
+
+		return readStorageJson<Array<string | number>>(
+			`tournament_selection_${userName}`,
+			[],
+		);
 	}, [userName]);
 
 	useEffect(() => clearPendingSave, [clearPendingSave]);

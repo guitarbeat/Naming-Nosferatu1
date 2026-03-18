@@ -18,7 +18,7 @@ describe("Validation Schemas", () => {
 			],
 		};
 
-		const result = createNameSchema.parse(input) as any;
+		const result = createNameSchema.parse(input);
 
 		expect(result).toHaveProperty("name", "Test Cat");
 		expect(result).not.toHaveProperty("status");
@@ -30,7 +30,7 @@ describe("Validation Schemas", () => {
 			name: "Valid Cat",
 			description: "Just a cat",
 		};
-		const result = createNameSchema.parse(input) as any;
+		const result = createNameSchema.parse(input);
 		expect(result.name).toBe("Valid Cat");
 		expect(result.description).toBe("Just a cat");
 		expect(result.status).toBeUndefined();

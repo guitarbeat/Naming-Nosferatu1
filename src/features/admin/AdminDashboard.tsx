@@ -4,16 +4,32 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
 import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
+import {
+	getActiveNames,
+	getHiddenNames,
+	getLockedNames,
+	isNameHidden,
+	isNameLocked,
+	matchesNameSearchTerm,
+} from "@/shared/lib/basic";
 import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/shared/services/supabase/api";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
+
+type DashboardTab = "overview" | "names" | "users" | "analytics";
+type NameFilter = "all" | "active" | "hidden" | "locked";
+type BulkAction = "hide" | "unhide" | "lock" | "unlock";
+
+type ToggleOptions = {
+	skipRefresh?: boolean;
+};
 
 interface AdminStats {
 	totalNames: number;
@@ -21,7 +37,6 @@ interface AdminStats {
 	hiddenNames: number;
 	lockedInNames: number;
 	totalUsers: number;
-	activeTournaments: number;
 	recentVotes: number;
 }
 
@@ -31,180 +46,250 @@ interface NameWithStats extends NameItem {
 	popularityScore?: number;
 }
 
+interface SiteStatsLike {
+	totalUsers?: unknown;
+	totalRatings?: unknown;
+}
+
+const ADMIN_TABS: readonly { id: DashboardTab; label: string }[] = [
+	{ id: "overview", label: "Overview" },
+	{ id: "names", label: "Names" },
+	{ id: "users", label: "Users" },
+	{ id: "analytics", label: "Analytics" },
+];
+
+const FILTER_OPTIONS: readonly { value: NameFilter; label: string }[] = [
+	{ value: "all", label: "All Names" },
+	{ value: "active", label: "Active" },
+	{ value: "hidden", label: "Hidden" },
+	{ value: "locked", label: "Locked In" },
+];
+
+function toNumber(value: unknown): number {
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function mapNameToDisplay(name: NameItem): NameWithStats {
+	return {
+		...name,
+		votes: Number((name.wins || 0) + (name.losses || 0)),
+		lastVoted: undefined,
+		popularityScore: Number(name.popularity_score ?? 0),
+	};
+}
+
+function buildAdminStats(names: NameWithStats[], siteStats: SiteStatsLike | null): AdminStats {
+	return {
+		totalNames: names.length,
+		activeNames: getActiveNames(names).length,
+		hiddenNames: getHiddenNames(names).length,
+		lockedInNames: getLockedNames(names).length,
+		totalUsers: toNumber(siteStats?.totalUsers),
+		recentVotes: toNumber(siteStats?.totalRatings),
+	};
+}
+
+function filterNamesByStatusAndSearch(
+	names: NameWithStats[],
+	filterStatus: NameFilter,
+	searchTerm: string,
+): NameWithStats[] {
+	let filtered = names;
+
+	if (filterStatus === "active") {
+		filtered = getActiveNames(filtered);
+	} else if (filterStatus === "hidden") {
+		filtered = getHiddenNames(filtered);
+	} else if (filterStatus === "locked") {
+		filtered = getLockedNames(filtered);
+	}
+
+	const normalizedSearch = searchTerm.trim().toLowerCase();
+	if (!normalizedSearch) {
+		return filtered;
+	}
+
+	return filtered.filter(
+		(name) => matchesNameSearchTerm(name, normalizedSearch),
+	);
+}
+
 export function AdminDashboard() {
 	const { user } = useAppStore();
-	const [activeTab, setActiveTab] = useState<"overview" | "names" | "users" | "analytics">(
-		"overview",
-	);
+	const actorName = user.name.trim();
+
+	const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 	const [stats, setStats] = useState<AdminStats | null>(null);
 	const [names, setNames] = useState<NameWithStats[]>([]);
-	const [filteredNames, setFilteredNames] = useState<NameWithStats[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [filterStatus, setFilterStatus] = useState<"all" | "active" | "hidden" | "locked">("all");
+	const [filterStatus, setFilterStatus] = useState<NameFilter>("all");
 	const [isLoading, setIsLoading] = useState(true);
 	const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 
-	// Load admin stats and names
-	// biome-ignore lint/correctness/useExhaustiveDependencies: loadAdminData is stable
-	useEffect(() => {
-		loadAdminData();
-	}, []);
-
-	// Filter names based on search and status
-	useEffect(() => {
-		let filtered = names;
-
-		// Status filter
-		if (filterStatus === "active") {
-			filtered = filtered.filter((n) => !n.isHidden && !(n.lockedIn || n.locked_in));
-		} else if (filterStatus === "hidden") {
-			filtered = filtered.filter((n) => n.isHidden);
-		} else if (filterStatus === "locked") {
-			filtered = filtered.filter((n) => n.lockedIn || n.locked_in);
-		}
-
-		// Search filter
-		if (searchTerm) {
-			filtered = filtered.filter(
-				(n) =>
-					n.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					n.description?.toLowerCase().includes(searchTerm.toLowerCase()),
-			);
-		}
-
-		setFilteredNames(filtered);
-	}, [names, searchTerm, filterStatus]);
-
-	const loadAdminData = async () => {
+	const loadAdminData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			// Load all names with admin visibility
-			const [allNames, siteStats] = await Promise.all([
-				coreAPI.getTrendingNames(true),
-				statsAPI.getSiteStats(),
-			]);
+			const [allNames, siteStats] = await Promise.all([coreAPI.getTrendingNames(true), statsAPI.getSiteStats()]);
 
-			// Load stats (we'll simulate some for now)
-			const adminStats: AdminStats = {
-				totalNames: allNames.length,
-				activeNames: allNames.filter((n) => !n.isHidden && !(n.lockedIn || n.locked_in)).length,
-				hiddenNames: allNames.filter((n) => n.isHidden).length,
-				lockedInNames: allNames.filter((n) => n.lockedIn || n.locked_in).length,
-				totalUsers: siteStats?.totalUsers || 0,
-				activeTournaments: 0, // TODO: Implement tournament count
-				recentVotes: siteStats?.totalRatings || 0,
-			};
-
-			// Derive stats from real name data instead of mock/random placeholders
-			const namesWithStats: NameWithStats[] = allNames.map((name) => ({
-				...name,
-				votes: Number((name.wins || 0) + (name.losses || 0)),
-				lastVoted: undefined,
-				popularityScore: Number(name.popularity_score || 0),
-			}));
-
-			setStats(adminStats);
+			const namesWithStats = allNames.map(mapNameToDisplay);
+			setStats(buildAdminStats(namesWithStats, siteStats));
 			setNames(namesWithStats);
 		} catch (error) {
 			console.error("Failed to load admin data:", error);
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, []);
 
-	const handleToggleHidden = async (nameId: string | number, isHidden: boolean) => {
-		try {
-			const idStr = String(nameId);
-			if (isHidden) {
-				const result = await hiddenNamesAPI.unhideName(user.name, idStr);
+	useEffect(() => {
+		void loadAdminData();
+	}, [loadAdminData]);
+
+	const filteredNames = useMemo(
+		() => filterNamesByStatusAndSearch(names, filterStatus, searchTerm),
+		[names, filterStatus, searchTerm],
+	);
+
+	const nameById = useMemo(() => {
+		const map = new Map<string, NameWithStats>();
+		for (const name of names) {
+			map.set(String(name.id), name);
+		}
+		return map;
+	}, [names]);
+
+	const handleToggleHidden = useCallback(
+		async (nameId: string | number, isHidden: boolean, options: ToggleOptions = {}) => {
+			try {
+				const idStr = String(nameId);
+				const result = isHidden
+					? await hiddenNamesAPI.unhideName(actorName, idStr)
+					: await hiddenNamesAPI.hideName(actorName, idStr);
+
 				if (!result.success) {
-					throw new Error(result.error || "Failed to unhide name");
+					throw new Error(result.error || "Failed to update name visibility");
 				}
-			} else {
-				const result = await hiddenNamesAPI.hideName(user.name, idStr);
-				if (!result.success) {
-					throw new Error(result.error || "Failed to hide name");
+
+				if (!options.skipRefresh) {
+					await loadAdminData();
 				}
+			} catch (error) {
+				console.error("Failed to toggle hidden status:", error);
 			}
-			await loadAdminData();
-		} catch (error) {
-			console.error("Failed to toggle hidden status:", error);
-		}
-	};
+		},
+		[actorName, loadAdminData],
+	);
 
-	const handleToggleLocked = async (nameId: string | number, isLocked: boolean) => {
-		try {
-			const idStr = String(nameId);
-			// Call the admin function to toggle locked_in status
-			await withSupabase(async (client) => {
-				await client.rpc("set_user_context", { user_name_param: user.name });
-				const canonicalArgs = {
-					p_name_id: idStr,
-					p_locked_in: !isLocked,
-				};
-				let result = await client.rpc("toggle_name_locked_in" as any, canonicalArgs);
+	const handleToggleLocked = useCallback(
+		async (nameId: string | number, isLocked: boolean, options: ToggleOptions = {}) => {
+			try {
+				const idStr = String(nameId);
+				await withSupabase(async (client) => {
+					await client.rpc("set_user_context", { user_name_param: actorName });
 
-				if (result.error && isRpcSignatureError(result.error.message || "")) {
-					result = await client.rpc("toggle_name_locked_in" as any, {
-						...canonicalArgs,
-						p_user_name: user.name,
-					});
-				}
+					const canonicalArgs = {
+						p_name_id: idStr,
+						p_locked_in: !isLocked,
+					};
 
-				if (result.error) {
-					throw new Error(result.error.message || "Failed to toggle locked status");
-				}
-				return result.data;
-			}, null);
-
-			await loadAdminData();
-		} catch (error) {
-			console.error("Failed to toggle locked status:", error);
-		}
-	};
-
-	const handleBulkAction = async (action: "hide" | "unhide" | "lock" | "unlock") => {
-		if (selectedNames.size === 0) {
-			return;
-		}
-
-		try {
-			for (const nameId of selectedNames) {
-				if (action === "hide" || action === "unhide") {
-					const name = names.find((n) => n.id === nameId);
-					if (name) {
-						await handleToggleHidden(nameId, name.isHidden || false);
+					let result = await client.rpc("toggle_name_locked_in", canonicalArgs);
+					if (result.error && isRpcSignatureError(result.error.message || "")) {
+						result = await client.rpc("toggle_name_locked_in", {
+							...canonicalArgs,
+							p_user_name: actorName,
+						});
 					}
-				} else if (action === "lock" || action === "unlock") {
-					const name = names.find((n) => n.id === nameId);
-					if (name) {
-						await handleToggleLocked(nameId, name.lockedIn || name.locked_in || false);
+
+					if (result.error) {
+						throw new Error(result.error.message || "Failed to toggle locked status");
 					}
+					return result.data;
+				}, null);
+
+				if (!options.skipRefresh) {
+					await loadAdminData();
 				}
+			} catch (error) {
+				console.error("Failed to toggle locked status:", error);
 			}
-			setSelectedNames(new Set());
-		} catch (error) {
-			console.error("Failed to perform bulk action:", error);
-		}
-	};
+		},
+		[actorName, loadAdminData],
+	);
 
-	const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (!file) {
-			return;
-		}
+	const handleBulkAction = useCallback(
+		async (action: BulkAction) => {
+			if (selectedNames.size === 0) {
+				return;
+			}
 
-		try {
-			const result = await imagesAPI.upload(file, user.name);
-			if (result.success) {
-				console.log("Image uploaded successfully:", result.path);
+			const actionHandlers: Record<BulkAction, (name: NameWithStats) => Promise<void>> = {
+				hide: (name) => handleToggleHidden(name.id, false, { skipRefresh: true }),
+				unhide: (name) => handleToggleHidden(name.id, true, { skipRefresh: true }),
+				lock: (name) => handleToggleLocked(name.id, false, { skipRefresh: true }),
+				unlock: (name) => handleToggleLocked(name.id, true, { skipRefresh: true }),
+			};
+
+			try {
+				for (const nameId of selectedNames) {
+					const name = nameById.get(nameId);
+					if (!name) {
+						continue;
+					}
+					await actionHandlers[action](name);
+				}
+				await loadAdminData();
+				setSelectedNames(new Set());
+			} catch (error) {
+				console.error("Failed to perform bulk action:", error);
+			}
+		},
+		[handleToggleHidden, handleToggleLocked, loadAdminData, nameById, selectedNames],
+	);
+
+	const handleImageUpload = useCallback(
+		async (event: ChangeEvent<HTMLInputElement>) => {
+			const file = event.target.files?.[0];
+			if (!file) {
+				return;
+			}
+
+			try {
+				const result = await imagesAPI.upload(file, actorName);
+				if (result.success) {
+					console.log("Image uploaded successfully:", result.path);
+				} else {
+					console.error("Upload failed:", result.error);
+				}
+			} catch (error) {
+				console.error("Upload error:", error);
+			}
+		},
+		[actorName],
+	);
+
+	const handleSelectionChange = useCallback((nameId: string, checked: boolean) => {
+		setSelectedNames((prevSelectedNames) => {
+			const next = new Set(prevSelectedNames);
+			if (checked) {
+				next.add(nameId);
 			} else {
-				console.error("Upload failed:", result.error);
+				next.delete(nameId);
 			}
-		} catch (error) {
-			console.error("Upload error:", error);
+			return next;
+		});
+	}, []);
+
+	const handleTabChange = useCallback((tab: DashboardTab) => {
+		setActiveTab(tab);
+	}, []);
+
+	const handleFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+		const option = FILTER_OPTIONS.find((item) => item.value === event.target.value);
+		if (option) {
+			setFilterStatus(option.value);
 		}
-	};
+	}, []);
 
 	if (isLoading) {
 		return (
@@ -216,7 +301,6 @@ export function AdminDashboard() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground p-6">
-			{/* Header */}
 			<div className="mb-8">
 				<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 					Admin Dashboard
@@ -224,7 +308,6 @@ export function AdminDashboard() {
 				<p className="text-muted-foreground">Manage names and monitor site activity</p>
 			</div>
 
-			{/* Stats Overview */}
 			{stats && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 					<div className="p-6">
@@ -261,24 +344,22 @@ export function AdminDashboard() {
 				</div>
 			)}
 
-			{/* Tab Navigation */}
 			<div className="flex gap-2 mb-6 border-b border-border/10">
-				{["overview", "names", "users", "analytics"].map((tab) => (
+				{ADMIN_TABS.map((tab) => (
 					<button
-						key={tab}
-						onClick={() => setActiveTab(tab as any)}
+						key={tab.id}
+						onClick={() => handleTabChange(tab.id)}
 						className={`px-4 py-2 font-medium transition-colors ${
-							activeTab === tab
+							activeTab === tab.id
 								? "text-foreground border-b-2 border-primary"
 								: "text-muted-foreground hover:text-foreground"
 						}`}
 					>
-						{tab.charAt(0).toUpperCase() + tab.slice(1)}
+						{tab.label}
 					</button>
 				))}
 			</div>
 
-			{/* Tab Content */}
 			<AnimatePresence mode="wait">
 				{activeTab === "names" && (
 					<motion.div
@@ -287,51 +368,49 @@ export function AdminDashboard() {
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -20 }}
 					>
-						{/* Search and Filters */}
 						<div className="flex flex-col lg:flex-row gap-4 mb-6">
 							<div className="flex-1">
 								<Input
 									type="text"
 									placeholder="Search names..."
 									value={searchTerm}
-									onChange={(e) => setSearchTerm(e.target.value)}
+									onChange={(event) => setSearchTerm(event.target.value)}
 									className="w-full"
 								/>
 							</div>
-
 							<div className="flex gap-2">
 								<select
 									value={filterStatus}
-									onChange={(e) => setFilterStatus(e.target.value as any)}
+									onChange={handleFilterChange}
 									className="px-4 py-2 bg-foreground/10 border border-border/20 rounded-lg text-foreground"
 								>
-									<option value="all">All Names</option>
-									<option value="active">Active</option>
-									<option value="hidden">Hidden</option>
-									<option value="locked">Locked In</option>
+									{FILTER_OPTIONS.map((option) => (
+										<option value={option.value} key={option.value}>
+											{option.label}
+										</option>
+									))}
 								</select>
 
-								<Button onClick={loadAdminData} variant="ghost" size="small">
+								<Button onClick={() => void loadAdminData()} variant="ghost" size="small">
 									<Loader2 size={16} />
 								</Button>
 							</div>
 						</div>
 
-						{/* Bulk Actions */}
 						{selectedNames.size > 0 && (
 							<div className="mb-4 py-4 border-y border-border/10">
 								<p className="text-sm text-primary mb-2">{selectedNames.size} names selected</p>
 								<div className="flex gap-2">
-									<Button onClick={() => handleBulkAction("hide")} size="small">
+									<Button onClick={() => void handleBulkAction("hide")} size="small">
 										<EyeOff size={14} /> Hide
 									</Button>
-									<Button onClick={() => handleBulkAction("unhide")} size="small">
+									<Button onClick={() => void handleBulkAction("unhide")} size="small">
 										<Eye size={14} /> Unhide
 									</Button>
-									<Button onClick={() => handleBulkAction("lock")} size="small">
+									<Button onClick={() => void handleBulkAction("lock")} size="small">
 										<Lock size={14} /> Lock
 									</Button>
-									<Button onClick={() => handleBulkAction("unlock")} size="small">
+									<Button onClick={() => void handleBulkAction("unlock")} size="small">
 										<Lock size={14} /> Unlock
 									</Button>
 									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="small">
@@ -341,83 +420,68 @@ export function AdminDashboard() {
 							</div>
 						)}
 
-						{/* Names List */}
 						<div className="divide-y divide-border/10">
-							{filteredNames.map((name) => (
-								<div key={name.id} className="py-4">
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-4">
-											<input
+							{filteredNames.map((name) => {
+								const nameId = String(name.id);
+								const hidden = isNameHidden(name);
+								const locked = isNameLocked(name);
+								return (
+									<div key={name.id} className="py-4">
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-4">
+												<input
 												type="checkbox"
-												checked={selectedNames.has(String(name.id))}
-												onChange={(e) => {
-													const newSelected = new Set(selectedNames);
-													const idStr = String(name.id);
-													if (e.target.checked) {
-														newSelected.add(idStr);
-													} else {
-														newSelected.delete(idStr);
-													}
-													setSelectedNames(newSelected);
-												}}
-												className="w-4 h-4"
-											/>
-
+													checked={selectedNames.has(nameId)}
+													onChange={(event) => handleSelectionChange(nameId, event.target.checked)}
+													className="w-4 h-4"
+												/>
 											<div>
 												<h3 className="font-semibold text-foreground">{name.name}</h3>
-												{name.description && (
-													<p className="text-sm text-muted-foreground">{name.description}</p>
-												)}
+												{name.description && <p className="text-sm text-muted-foreground">{name.description}</p>}
 												<div className="flex gap-4 mt-1 text-xs text-muted-foreground/60">
 													<span>Votes: {name.votes}</span>
-													<span>Score: {name.popularityScore?.toFixed(1)}</span>
-													{name.lastVoted && (
-														<span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>
-													)}
+													<span>
+														Score: {name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
+													</span>
+													{name.lastVoted && <span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>}
 												</div>
 											</div>
 										</div>
 
-										<div className="flex items-center gap-2">
-											{/* Status indicators */}
-											{(name.lockedIn || name.locked_in) && (
-												<div className="text-xs text-chart-4 font-semibold">
-													<Lock size={12} /> Locked
-												</div>
-											)}
-											{name.isHidden && (
-												<div className="text-xs text-destructive font-semibold">
-													<EyeOff size={12} /> Hidden
-												</div>
-											)}
+											<div className="flex items-center gap-2">
+												{locked && (
+													<div className="text-xs text-chart-4 font-semibold">
+														<Lock size={12} /> Locked
+													</div>
+												)}
+												{hidden && (
+													<div className="text-xs text-destructive font-semibold">
+														<EyeOff size={12} /> Hidden
+													</div>
+												)}
 
-											{/* Action buttons */}
-											<div className="flex gap-1">
-												<Button
-													onClick={() => handleToggleHidden(name.id, name.isHidden || false)}
-													variant="ghost"
-													size="small"
-												>
-													{name.isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
-												</Button>
-												<Button
-													onClick={() =>
-														handleToggleLocked(name.id, name.lockedIn || name.locked_in || false)
-													}
-													variant="ghost"
-													size="small"
-												>
-													{name.lockedIn || name.locked_in ? (
+												<div className="flex gap-1">
+													<Button
+														onClick={() => void handleToggleHidden(name.id, hidden)}
+														variant="ghost"
+														size="small"
+													>
+														{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
+													</Button>
+													<Button
+														onClick={() => void handleToggleLocked(name.id, locked)}
+														variant="ghost"
+														size="small"
+														aria-label={locked ? "Unlock name" : "Lock name"}
+													>
 														<Lock size={14} />
-													) : (
-														<Lock size={14} />
-													)}
-												</Button>
+													</Button>
 											</div>
 										</div>
 									</div>
 								</div>
-							))}
+								);
+							})}
 						</div>
 					</motion.div>
 				)}

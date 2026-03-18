@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { QueryClient } from "@tanstack/react-query";
 import type { Database } from "@/integrations/supabase/types";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
+import { getStorageString, isStorageAvailable } from "@/shared/lib/storage";
 
 export const queryClient = new QueryClient({
 	defaultOptions: {
@@ -73,34 +74,23 @@ const createSupabaseClient = async (): Promise<SupabaseClient<Database> | null> 
 			persistSession: true,
 			autoRefreshToken: true,
 			storage: (() => {
+				if (!isStorageAvailable()) {
+					return undefined;
+				}
 				try {
-					return typeof window !== "undefined" ? window.localStorage : undefined;
+					return window.localStorage;
 				} catch {
 					return undefined;
 				}
 			})(),
 		} as const;
 
-		let currentUserName: string | null = null;
-		try {
-			if (typeof window !== "undefined" && window.localStorage) {
-				currentUserName = window.localStorage.getItem(STORAGE_KEYS.USER);
-			}
-		} catch {
-			/* ignore */
-		}
+		const currentUserName: string | null = getStorageString(STORAGE_KEYS.USER);
 
 		/* ----------------------------------------------------------------------
 		   MIGRATION UPDATE: Using x-user-id for future RLS policies
 		   ---------------------------------------------------------------------- */
-		let currentUserId: string | null = null;
-		try {
-			if (typeof window !== "undefined" && window.localStorage) {
-				currentUserId = window.localStorage.getItem(STORAGE_KEYS.USER_ID);
-			}
-		} catch {
-			/* ignore */
-		}
+		const currentUserId: string | null = getStorageString(STORAGE_KEYS.USER_ID);
 
 		const client = createClient<Database>(SupabaseUrl, SupabaseAnonKey, {
 			auth: authOptions,

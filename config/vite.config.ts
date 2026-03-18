@@ -98,7 +98,7 @@ export default defineConfig(({ command }) => ({
 	},
 	plugins: [
 		react(),
-		tailwindcss({ config: path.resolve(__dirname, "tailwind.config.js") }),
+		tailwindcss(),
 		consoleForwardPlugin({
 			enabled: command === "serve",
 			endpoint: "/api/debug/client-logs",

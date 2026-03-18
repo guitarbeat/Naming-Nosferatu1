@@ -11,6 +11,8 @@ vi.mock("@/shared/services/supabase/client", () => ({
 }));
 
 describe("useNameSuggestion", () => {
+	const mockedCoreAPI = vi.mocked(coreAPI);
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -47,7 +49,7 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion({ onSuccess: onSuccessMock }));
 
 		// Setup mock success response
-		(coreAPI.addName as any).mockResolvedValue({
+		mockedCoreAPI.addName.mockResolvedValue({
 			success: true,
 			data: { id: "123", name: "Test Cat" },
 		});
@@ -71,7 +73,7 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion());
 
 		// Setup mock error response
-		(coreAPI.addName as any).mockResolvedValue({ success: false, error: "Duplicate name" });
+		mockedCoreAPI.addName.mockResolvedValue({ success: false, error: "Duplicate name" });
 
 		act(() => {
 			result.current.handleChange("name", "Duplicate Cat");
@@ -92,7 +94,7 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion());
 
 		// Setup mock exception
-		(coreAPI.addName as any).mockRejectedValue(new Error("Network error"));
+		mockedCoreAPI.addName.mockRejectedValue(new Error("Network error"));
 
 		act(() => {
 			result.current.handleChange("name", "Error Cat");
