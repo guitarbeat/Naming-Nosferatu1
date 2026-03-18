@@ -33,6 +33,35 @@ export interface UserStats {
 	[key: string]: unknown;
 }
 
+export interface EngagementMetrics {
+	totalTournaments: number;
+	completedTournaments: number;
+	averageTournamentTime: number; // in minutes
+	totalMatches: number;
+	peakActiveUsers: number;
+	dailyActiveUsers: number;
+	weeklyActiveUsers: number;
+	monthlyActiveUsers: number;
+	mostActiveHour: string;
+	mostActiveDay: string;
+	userRetentionRate: number; // percentage of users who return after 7 days
+	averageSessionDuration: number; // in minutes
+	totalPageViews: number;
+	bounceRate: number; // percentage of single-page sessions
+	[key: string]: unknown;
+}
+
+export interface DetailedUserStats extends UserStats {
+	lastActiveAt?: string;
+	totalTournaments?: number;
+	completedTournaments?: number;
+	averageTournamentTime?: number;
+	favoriteNames?: string[];
+	preferredCategories?: string[];
+	engagementScore?: number; // 0-100 based on activity level
+	[key: string]: unknown;
+}
+
 interface UserRatingRow {
 	nameId: IdType;
 	rating: number;
@@ -93,6 +122,60 @@ export const statsAPI = {
 				totalRatings: toNumber(stats.totalRatings),
 				totalSelections: toNumber(stats.totalSelections),
 				avgRating: toNumber(stats.avgRating),
+			};
+		} catch {
+			return null;
+		}
+	},
+
+	getEngagementMetrics: async (timeframe: 'day' | 'week' | 'month' | 'year'): Promise<EngagementMetrics | null> => {
+		try {
+			const metrics = await api.get<Partial<EngagementMetrics>>(`/analytics/engagement?timeframe=${timeframe}`);
+			if (!metrics) {
+				return null;
+			}
+			return {
+				totalTournaments: toNumber(metrics.totalTournaments),
+				completedTournaments: toNumber(metrics.completedTournaments),
+				averageTournamentTime: toNumber(metrics.averageTournamentTime),
+				totalMatches: toNumber(metrics.totalMatches),
+				peakActiveUsers: toNumber(metrics.peakActiveUsers),
+				dailyActiveUsers: toNumber(metrics.dailyActiveUsers),
+				weeklyActiveUsers: toNumber(metrics.weeklyActiveUsers),
+				monthlyActiveUsers: toNumber(metrics.monthlyActiveUsers),
+				mostActiveHour: String(metrics.mostActiveHour),
+				mostActiveDay: String(metrics.mostActiveDay),
+				userRetentionRate: toNumber(metrics.userRetentionRate),
+				averageSessionDuration: toNumber(metrics.averageSessionDuration),
+				totalPageViews: toNumber(metrics.totalPageViews),
+				bounceRate: toNumber(metrics.bounceRate),
+			};
+		} catch {
+			return null;
+		}
+	},
+
+	getDetailedUserStats: async (userName: string): Promise<DetailedUserStats | null> => {
+		try {
+			const stats = await api.get<Partial<DetailedUserStats>>(
+				`/analytics/user-stats?userName=${encodeURIComponent(userName)}`,
+			);
+			if (!stats) {
+				return null;
+			}
+			return {
+				totalRatings: toNumber(stats.totalRatings),
+				totalSelections: toNumber(stats.totalSelections),
+				totalWins: toNumber(stats.totalWins),
+				totalLosses: toNumber(stats.totalLosses),
+				winRate: toNumber(stats.winRate),
+				lastActiveAt: String(stats.lastActiveAt),
+				totalTournaments: toNumber(stats.totalTournaments),
+				completedTournaments: toNumber(stats.completedTournaments),
+				averageTournamentTime: toNumber(stats.averageTournamentTime),
+				favoriteNames: stats.favoriteNames ? String(stats.favoriteNames).split(',') : [],
+				preferredCategories: stats.preferredCategories ? String(stats.preferredCategories).split(',') : [],
+				engagementScore: toNumber(stats.engagementScore),
 			};
 		} catch {
 			return null;

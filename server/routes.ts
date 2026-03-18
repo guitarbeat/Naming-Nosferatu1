@@ -270,51 +270,6 @@ router.patch("/api/names/:id/lock", requireAdmin, async (req, res) => {
 	}
 });
 
-// User management endpoints - DEPRECATED: Use Supabase Auth instead
-router.post("/api/users", async (req, res) => {
-	try {
-		const { userName, preferences } = createUserSchema.parse(req.body);
-
-		if (!db) {
-			// Mock response for development without database
-			return res.json({
-				success: true,
-				data: {
-					message: "User management deprecated. Please use Supabase Auth.",
-					userName,
-					preferences: preferences || {},
-				},
-			});
-		}
-
-		// Upsert user based on userName (assuming unique) to get userId
-		const [inserted] = await db
-			.insert(catAppUsers)
-			.values({
-				userName,
-				preferences: preferences || {},
-			})
-			.onConflictDoUpdate({
-				target: catAppUsers.userName,
-				set: { preferences: sql`COALESCE(excluded.preferences, cat_app_users.preferences)` },
-			})
-			.returning();
-		res.json({
-			success: true,
-			data: { 
-				...inserted, 
-				message: "User preferences saved. Please use Supabase Auth for authentication." 
-			},
-		});
-	} catch (error) {
-		if (error instanceof ZodError) {
-			return res.status(400).json({ success: false, error: error.issues });
-		}
-		console.error("Error creating user:", error);
-		res.status(500).json({ error: "Failed to create user" });
-	}
-});
-
 // Get user roles (requires authentication)
 router.get("/api/users/:userId/roles", requireSupabaseAuth, async (req, res) => {
 	try {

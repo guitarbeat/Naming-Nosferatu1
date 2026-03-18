@@ -32,6 +32,7 @@ import {
         sanitizePersistentState,
 } from "./tournamentPersistence";
 import { useAudioManager } from "./useHelpers";
+import { useWebSocket } from "@/features/websocket/hooks/useWebSocket";
 
 interface UseTournamentStateResult {
         currentMatch: Match | null;
@@ -52,6 +53,9 @@ interface UseTournamentStateResult {
         isVoting: boolean;
         handleVoteWithAnimation: (winnerId: string, loserId: string) => void;
         matchHistory: MatchRecord[];
+        subscribeToTournamentUpdates?: (tournamentId: string, callback: (update: any) => void) => void;
+        subscribeToMatchResults?: (callback: (result: any) => void) => void;
+        subscribeToUserActivity?: (callback: (activity: any) => void) => void;
 }
 
 const VOTE_COOLDOWN = 500;
@@ -78,6 +82,12 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
         const namesKey = useMemo(() => createNamesKey(names), [names]);
         const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
 
+        // WebSocket integration
+        const webSocket = useWebSocket({ 
+            url: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080',
+            autoConnect: true 
+        });
+
         const defaultPersistentState = useMemo(
                 () => createDefaultPersistentState(userName || "anonymous"),
                 [userName],
@@ -103,15 +113,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                 ) => {
                         setPersistentState((prev) => {
                                 const delta = typeof updates === "function" ? updates(prev) || {} : updates || {};
-                                return {
-                                        ...prev,
-                                        ...delta,
-                                        lastUpdated: Date.now(),
-                                        userName: userName || "anonymous",
-                                };
+                                return { ...prev, ...delta };
                         });
                 },
-                [setPersistentState, userName],
+                [persistentStateRaw, userName],
         );
 
         const ratingsRef = useRef(ratings);
@@ -362,5 +367,8 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
                 isVoting,
                 handleVoteWithAnimation,
                 matchHistory: persistentState.matchHistory,
+                subscribeToTournamentUpdates: webSocket.subscribeToTournament,
+                subscribeToMatchResults: webSocket.subscribeToMatches,
+                subscribeToUserActivity: webSocket.subscribeToUserActivity,
         };
 }
