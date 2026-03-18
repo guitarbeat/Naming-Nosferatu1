@@ -22,10 +22,11 @@ const authRateLimiter = rateLimit({
 	message: { error: "Too many requests, please try again later." },
 });
 
-const ratingsRateLimiter = rateLimit({
+// Analytics rate limiter
+const analyticsRateLimiter = rateLimit({
 	windowMs: 60 * 1000, // 1 minute
-	max: 10, // Limit to 10 rating submissions per minute
-	message: { error: "Too many rating submissions, please try again later." },
+	max: 30, // Limit to 30 analytics requests per minute
+	message: { error: "Too many analytics requests, please try again later." },
 	skipSuccessfulRequests: false,
 	skipFailedRequests: false,
 });
@@ -375,7 +376,7 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 });
 
 // Get analytics - popularity
-router.get("/api/analytics/popularity", async (req, res) => {
+router.get("/api/analytics/popularity", analyticsRateLimiter, async (req, res) => {
 	try {
 		// Limit to max 100 to prevent DoS
 		const rawLimit = parseInt(req.query.limit as string, 10) || 20;
@@ -410,7 +411,7 @@ router.get("/api/analytics/popularity", async (req, res) => {
 });
 
 // Get analytics - ranking history
-router.get("/api/analytics/ranking-history", async (_req, res) => {
+router.get("/api/analytics/ranking-history", analyticsRateLimiter, async (_req, res) => {
 	try {
 		if (!db) {
 			return res.json(
@@ -441,7 +442,7 @@ router.get("/api/analytics/ranking-history", async (_req, res) => {
 });
 
 // Get analytics - leaderboard
-router.get("/api/analytics/leaderboard", async (req, res) => {
+router.get("/api/analytics/leaderboard", analyticsRateLimiter, async (req, res) => {
 	try {
 		// Limit to max 100 to prevent DoS
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
@@ -483,7 +484,7 @@ router.get("/api/analytics/leaderboard", async (req, res) => {
 });
 
 // Site stats
-router.get("/api/analytics/site-stats", async (_req, res) => {
+router.get("/api/analytics/site-stats", analyticsRateLimiter, async (_req, res) => {
 	try {
 		if (!db) {
 			return res.json({
@@ -514,7 +515,7 @@ router.get("/api/analytics/site-stats", async (_req, res) => {
 });
 
 // Get analytics - top-selected names (alias for popularity endpoint)
-router.get("/api/analytics/top-selected", async (req, res) => {
+router.get("/api/analytics/top-selected", analyticsRateLimiter, async (req, res) => {
 	try {
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
 		const limit = Math.min(Math.max(rawLimit, 1), 100);
@@ -548,7 +549,7 @@ router.get("/api/analytics/top-selected", async (req, res) => {
 });
 
 // Get analytics - popularity scores (combined popularity + rating data)
-router.get("/api/analytics/popularity-scores", async (req, res) => {
+router.get("/api/analytics/popularity-scores", analyticsRateLimiter, async (req, res) => {
 	try {
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
 		const limit = Math.min(Math.max(rawLimit, 1), 100);
@@ -586,7 +587,7 @@ router.get("/api/analytics/popularity-scores", async (req, res) => {
 });
 
 // Get raw ratings for a user (used by personal analytics)
-router.get("/api/analytics/ratings-raw", async (req, res) => {
+router.get("/api/analytics/ratings-raw", analyticsRateLimiter, async (req, res) => {
 	try {
 		const userName = req.query.userName as string | undefined;
 
@@ -627,7 +628,7 @@ router.get("/api/analytics/ratings-raw", async (req, res) => {
 });
 
 // Get aggregated user stats
-router.get("/api/analytics/user-stats", async (req, res) => {
+router.get("/api/analytics/user-stats", analyticsRateLimiter, async (req, res) => {
 	try {
 		const userName = req.query.userName as string | undefined;
 

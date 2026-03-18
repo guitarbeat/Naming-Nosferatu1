@@ -5,8 +5,13 @@ const rawApiBase =
 
 const API_BASE = rawApiBase.replace(/\/+$/, "");
 
-// Request deduplication cache
-const pendingRequests = new Map<string, AbortController>();
+// Request deduplication cache with TTL
+const pendingRequests = new Map<string, { controller: AbortController; timestamp: number }>();
+const REQUEST_CACHE_TTL = 30 * 1000; // 30 seconds
+
+// Response cache for GET requests
+const responseCache = new Map<string, { data: any; timestamp: number }>();
+const RESPONSE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function resolveRequestUrl(url: string): string {
 	if (/^https?:\/\//i.test(url)) {
@@ -16,20 +21,38 @@ function resolveRequestUrl(url: string): string {
 	return `${API_BASE}${normalizedPath}`;
 }
 
-// Enhanced fetch with request deduplication
+// Enhanced fetch with request deduplication and response caching
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
 	const requestUrl = resolveRequestUrl(url);
+	const isGetRequest = !options?.method || options.method === 'GET';
+	
+	// Check response cache for GET requests
+	if (isGetRequest) {
+		const cached = responseCache.get(requestUrl);
+		if (cached && Date.now() - cached.timestamp < RESPONSE_CACHE_TTL) {
+			return cached.data;
+		}
+	}
+	
+	// Clean up expired entries
+	const now = Date.now();
+	for (const [key, entry] of pendingRequests.entries()) {
+		if (now - entry.timestamp > REQUEST_CACHE_TTL) {
+			entry.controller.abort();
+			pendingRequests.delete(key);
+		}
+	}
 	
 	// Check for existing request
-	const existingController = pendingRequests.get(requestUrl);
-	if (existingController) {
+	const existing = pendingRequests.get(requestUrl);
+	if (existing) {
 		// Cancel existing request and wait for it to complete
-		existingController.abort();
+		existing.controller.abort();
 	}
 	
 	// Create new AbortController for this request
 	const abortController = new AbortController();
-	pendingRequests.set(requestUrl, abortController);
+	pendingRequests.set(requestUrl, { controller: abortController, timestamp: now });
 	
 	try {
 		const res = await fetch(requestUrl, {
@@ -46,7 +69,15 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
 			const message = error.error || error.message || `Request failed: ${res.status}`;
 			throw new Error(res.status === 404 ? `${message} (${requestUrl})` : message);
 		}
-		return res.json();
+		
+		const data = await res.json();
+		
+		// Cache response for GET requests
+		if (isGetRequest) {
+			responseCache.set(requestUrl, { data, timestamp: now });
+		}
+		
+		return data;
 	} catch (error) {
 		// Clear the pending request on error
 		pendingRequests.delete(requestUrl);
