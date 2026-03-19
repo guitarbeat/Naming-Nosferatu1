@@ -1095,7 +1095,7 @@ export function NameSelector() {
                                                                 <Button
                                                                         variant="outline"
                                                                         iconOnly={true}
-                                                                        className="h-16 w-16 rounded-full border-2 border-red-500/20 hover:bg-red-500/10 hover:border-red-500 text-red-500 transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:scale-110 active:scale-95"
+                                                                        className="h-16 w-16 rounded-full border-2 border-destructive/20 hover:bg-destructive/10 hover:border-destructive text-destructive transition-all duration-300 shadow-lg hover:shadow-destructive/25 hover:scale-110 active:scale-95"
                                                                         onClick={() => {
                                                                                 const currentCard = visibleCards[0];
                                                                                 if (currentCard) {
