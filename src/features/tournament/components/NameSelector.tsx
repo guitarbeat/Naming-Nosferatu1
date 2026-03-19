@@ -1012,9 +1012,9 @@ export function NameSelector() {
                                                                                                                                 <h3 className="font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full">
                                                                                                                                         {nameItem.name}
                                                                                                                                         {nameItem.pronunciation && (
-                                                                                                                                                <span className="ml-3 text-amber-400 text-2xl lg:text-3xl font-bold italic opacity-90">
-                                                                                                                                                        [{nameItem.pronunciation}]
-                                                                                                                                                </span>
+                                                                                                                                        <span className="ml-3 text-warning text-2xl lg:text-3xl font-bold italic opacity-90">
+                                                                                                                                                [{nameItem.pronunciation}]
+                                                                                                                                        </span>
                                                                                                                                         )}
                                                                                                                                 </h3>
                                                                                                                                 {nameItem.description && (
