@@ -823,7 +823,7 @@ export function NameSelector() {
                                         );
                                 })()}
 
-                                <div className="text-center space-y-3">
+                                <div className="text-center space-y-4 mt-2">
                                         <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                                                 {isSwipeMode
                                                         ? "Swipe right to select, left to skip. You can also use arrow keys (or A/D) and Ctrl+Z to undo."
