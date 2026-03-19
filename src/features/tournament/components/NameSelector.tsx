@@ -1037,8 +1037,8 @@ export function NameSelector() {
                                                                                                                                                 disabled={togglingHidden.has(nameItem.id)}
                                                                                                                                                 className={`mt-4 flex items-center gap-2 pointer-events-auto w-fit text-sm font-bold tracking-wider uppercase transition-all ${
                                                                                                                                                         togglingHidden.has(nameItem.id)
-                                                                                                                                                                ? "text-slate-500 cursor-not-allowed"
-                                                                                                                                                                : "text-amber-400 hover:text-amber-300 hover:scale-105 active:scale-95"
+                                                                                                                                                                ? "text-muted-foreground cursor-not-allowed"
+                                                                                                                                                                : "text-warning hover:text-warning/80 hover:scale-105 active:scale-95"
                                                                                                                                                 }`}
                                                                                                                                         >
                                                                                                                                                 {togglingHidden.has(nameItem.id) ? (
