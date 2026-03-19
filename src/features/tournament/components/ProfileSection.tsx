@@ -27,31 +27,19 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isEditing, setIsEditing] = useState(!user.isLoggedIn);
 	const [avatarSrc, setAvatarSrc] = useState(user.avatarUrl || defaultAvatar);
-	const previousLoginStateRef = useRef(user.isLoggedIn);
-	const previousEditingStateRef = useRef(isEditing);
 
 	useEffect(() => {
 		setEditedName(user.name || "");
 		setAvatarSrc(user.avatarUrl || defaultAvatar);
-	}, [defaultAvatar, user.name, user.avatarUrl]);
-
-	useEffect(() => {
-		const wasLoggedIn = previousLoginStateRef.current;
 		if (!user.isLoggedIn) {
 			setIsEditing(true);
-		} else if (!wasLoggedIn) {
-			setIsEditing(false);
 		}
-		previousLoginStateRef.current = user.isLoggedIn;
-	}, [user.isLoggedIn]);
+	}, [defaultAvatar, user.name, user.isLoggedIn, user.avatarUrl]);
 
 	useEffect(() => {
-		const enteredEditingWhileLoggedIn =
-			user.isLoggedIn && !previousEditingStateRef.current && isEditing;
-		if (enteredEditingWhileLoggedIn) {
+		if (isEditing && user.isLoggedIn) {
 			nameInputRef.current?.focus();
 		}
-		previousEditingStateRef.current = isEditing;
 	}, [isEditing, user.isLoggedIn]);
 
 	const handleSave = async () => {

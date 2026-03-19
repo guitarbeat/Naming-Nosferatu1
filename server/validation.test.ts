@@ -58,8 +58,8 @@ describe("Validation Schemas", () => {
 	it("saveRatingsSchema should enforce max array length", () => {
 		const input = {
 			userId: "mocked-jwt-token",
-			ratings: Array.from({ length: 51 }, (_, i) => ({
-				nameId: i + 1,
+			ratings: Array.from({ length: 101 }, (_, i) => ({
+				nameId: i,
 				rating: 1500,
 			})),
 		};
@@ -69,7 +69,7 @@ describe("Validation Schemas", () => {
 	it("saveRatingsSchema should allow valid array length", () => {
 		const input = {
 			userId: "mocked-jwt-token",
-			ratings: Array.from({ length: 50 }, (_, i) => ({
+			ratings: Array.from({ length: 100 }, (_, i) => ({
 				nameId: i + 1,
 				rating: 1500,
 			})),

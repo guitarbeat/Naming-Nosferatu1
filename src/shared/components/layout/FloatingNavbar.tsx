@@ -46,7 +46,7 @@ function FloatingNavItem({
 			type="button"
 			whileTap={{ scale: 0.97 }}
 			className={cn(
-				"group flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-transparent px-3 py-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
+				"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
 				isActive && "bg-foreground/15 text-foreground",
 				className,
 			)}
@@ -57,7 +57,7 @@ function FloatingNavItem({
 			<span className="flex shrink-0 items-center justify-center">
 				{customIcon || <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
 			</span>
-			<span className="hidden min-w-0 max-w-[11ch] truncate whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm lg:max-w-none">
+			<span className="hidden whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm">
 				{label}
 			</span>
 		</motion.button>
@@ -232,7 +232,7 @@ export function FloatingNavbar() {
 		<nav
 			aria-label="Primary"
 			className={cn(
-				"fixed bottom-5 left-1/2 z-[100] flex w-[min(95vw,56rem)] -translate-x-1/2 items-center gap-1 overflow-hidden rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5",
+				"fixed bottom-5 left-1/2 z-[100] flex max-w-[95vw] -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5",
 				!prefersReducedMotion && "transition-transform transition-opacity duration-300",
 				prefersReducedMotion && "transition-none",
 				isNavVisible

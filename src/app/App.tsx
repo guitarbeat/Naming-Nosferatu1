@@ -111,26 +111,22 @@ function HomeContent() {
 				</Suspense>
 			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="full">
-				<div className="mx-auto flex w-full max-w-4xl flex-col items-center">
-					<SectionHeading
-						icon={Lightbulb}
-						title="Suggest a Name"
-						subtitle="Got a great cat name? Share it with the community"
-					/>
-					<NameSuggestionInner />
-				</div>
+			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="lg" centered>
+				<SectionHeading
+					icon={Lightbulb}
+					title="Suggest a Name"
+					subtitle="Got a great cat name? Share it with the community"
+				/>
+				<NameSuggestionInner />
 			</Section>
 
-			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="full">
-				<div className="mx-auto flex w-full max-w-2xl flex-col items-center">
-					<SectionHeading
-						icon={User}
-						title="Your Profile"
-						subtitle="Track your rankings and tournament history"
-					/>
-					<ProfileInner onLogin={(name) => login({ name })} />
-				</div>
+			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="md" centered>
+				<SectionHeading
+					icon={User}
+					title="Your Profile"
+					subtitle="Track your rankings and tournament history"
+				/>
+				<ProfileInner onLogin={(name) => login({ name })} />
 			</Section>
 		</>
 	);

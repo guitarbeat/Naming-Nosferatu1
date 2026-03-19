@@ -17,13 +17,7 @@ import {
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 import { api } from "@/shared/services/apiClient";
 
-class SupabaseAuthAdapter implements AuthAdapter {
-	/**
-	 * Cache for admin status checks to reduce database queries
-	 */
-	private adminStatusCache: Map<string, { isAdmin: boolean; timestamp: number }> = new Map();
-	private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
+export const supabaseAuthAdapter: AuthAdapter = {
 	/**
 	 * Get current user from Supabase auth or localStorage fallback
 	 */
@@ -73,7 +67,7 @@ class SupabaseAuthAdapter implements AuthAdapter {
 			console.error("Error getting current user:", error);
 			return null;
 		}
-	}
+	},
 
 	/**
 	 * Login with Supabase Auth
@@ -114,14 +108,14 @@ class SupabaseAuthAdapter implements AuthAdapter {
 			console.error("Login error:", error);
 			return false;
 		}
-	}
+	},
 
 	/**
 	 * Register new user with Supabase Auth
 	 */
 	async register(): Promise<void> {
 		throw new Error("Registration not implemented. Please use Supabase Auth directly.");
-	}
+	},
 
 	/**
 	 * Logout - clear Supabase session and localStorage
@@ -138,24 +132,15 @@ class SupabaseAuthAdapter implements AuthAdapter {
 				removeStorageItem(STORAGE_KEYS.USER);
 				removeStorageItem(STORAGE_KEYS.USER_ID);
 			}
-
-			// Clear admin status cache
-			this.adminStatusCache.clear();
 		} catch (error) {
 			console.error("Logout error:", error);
 		}
-	}
+	},
 
 	/**
-	 * Check if a user is admin based on Supabase roles with caching
+	 * Check if a user is admin based on Supabase roles
 	 */
 	async checkAdminStatus(userId: string): Promise<boolean> {
-		// Check cache first
-		const cached = this.adminStatusCache.get(userId);
-		if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-			return cached.isAdmin;
-		}
-
 		try {
 			const client = await resolveSupabaseClient();
 			if (!client) {
@@ -169,20 +154,14 @@ class SupabaseAuthAdapter implements AuthAdapter {
 				.eq("role", "admin")
 				.single();
 
-			const isAdmin = !error && !!data;
-			
-			// Cache the result
-			this.adminStatusCache.set(userId, {
-				isAdmin,
-				timestamp: Date.now(),
-			});
+			if (error || !data) {
+				return false;
+			}
 
-			return isAdmin;
+			return true;
 		} catch (error) {
 			console.error("Error checking admin status:", error);
 			return false;
 		}
-	}
-}
-
-export const supabaseAuthAdapter = new SupabaseAuthAdapter();
+	},
+};

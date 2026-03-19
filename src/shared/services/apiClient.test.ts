@@ -37,15 +37,11 @@ describe("apiClient", () => {
 		it("api.get constructs correct URL and passes correct method/headers", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
 
-			const result = await api.get("/test-endpoint-get");
+			const result = await api.get("/test-endpoint");
 
-			expect(fetchMock).toHaveBeenCalledWith(
-				"/api/test-endpoint-get",
-				expect.objectContaining({
-					headers: { "Content-Type": "application/json" },
-					signal: expect.any(AbortSignal),
-				}),
-			);
+			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
+				headers: { "Content-Type": "application/json" },
+			});
 			expect(result).toEqual({ success: true });
 		});
 
@@ -53,17 +49,13 @@ describe("apiClient", () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
 
 			const payload = { foo: "bar" };
-			const result = await api.post("/test-endpoint-post", payload);
+			const result = await api.post("/test-endpoint", payload);
 
-			expect(fetchMock).toHaveBeenCalledWith(
-				"/api/test-endpoint-post",
-				expect.objectContaining({
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(payload),
-					signal: expect.any(AbortSignal),
-				}),
-			);
+			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
 			expect(result).toEqual({ success: true });
 		});
 
@@ -71,33 +63,25 @@ describe("apiClient", () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
 
 			const payload = { foo: "bar" };
-			const result = await api.patch("/test-endpoint-patch", payload);
+			const result = await api.patch("/test-endpoint", payload);
 
-			expect(fetchMock).toHaveBeenCalledWith(
-				"/api/test-endpoint-patch",
-				expect.objectContaining({
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(payload),
-					signal: expect.any(AbortSignal),
-				}),
-			);
+			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
 			expect(result).toEqual({ success: true });
 		});
 
 		it("api.delete passes DELETE method", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
 
-			const result = await api.delete("/test-endpoint-delete");
+			const result = await api.delete("/test-endpoint");
 
-			expect(fetchMock).toHaveBeenCalledWith(
-				"/api/test-endpoint-delete",
-				expect.objectContaining({
-					method: "DELETE",
-					headers: { "Content-Type": "application/json" },
-					signal: expect.any(AbortSignal),
-				}),
-			);
+			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+			});
 			expect(result).toEqual({ success: true });
 		});
 	});
@@ -108,7 +92,7 @@ describe("apiClient", () => {
 				createMockResponse(false, 400, { message: "Bad Request Data" }),
 			);
 
-			await expect(api.get("/error-message-endpoint")).rejects.toThrow("Bad Request Data");
+			await expect(api.get("/test-endpoint")).rejects.toThrow("Bad Request Data");
 		});
 
 		it("throws an error with error from error object if ok is false", async () => {
@@ -116,41 +100,39 @@ describe("apiClient", () => {
 				createMockResponse(false, 500, { error: "Internal Server Error" }),
 			);
 
-			await expect(api.get("/error-object-endpoint")).rejects.toThrow("Internal Server Error");
+			await expect(api.get("/test-endpoint")).rejects.toThrow("Internal Server Error");
 		});
 
 		it("throws an error with statusText if ok is false and json parsing fails", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponseRejectJson(false, 502, "Bad Gateway"));
 
-			await expect(api.get("/status-text-endpoint")).rejects.toThrow("Bad Gateway");
+			await expect(api.get("/test-endpoint")).rejects.toThrow("Bad Gateway");
 		});
 
 		it("throws an error with fallback message if ok is false, json parsing fails, and no statusText", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponseRejectJson(false, 418));
 
-			await expect(api.get("/fallback-error-endpoint")).rejects.toThrow("Request failed: 418");
+			await expect(api.get("/test-endpoint")).rejects.toThrow("Request failed: 418");
 		});
 
 		it("includes requestUrl in the error message if status is 404", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(false, 404, { message: "Not Found" }));
 
-			await expect(api.get("/not-found-endpoint")).rejects.toThrow(
-				"Not Found (/api/not-found-endpoint)",
-			);
+			await expect(api.get("/test-endpoint")).rejects.toThrow("Not Found (/api/test-endpoint)");
 		});
 	});
 
 	describe("URL resolution", () => {
 		it("adds /api prefix if url starts with /", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, {}));
-			await api.get("/path-with-slash");
-			expect(fetchMock).toHaveBeenCalledWith("/api/path-with-slash", expect.any(Object));
+			await api.get("/path");
+			expect(fetchMock).toHaveBeenCalledWith("/api/path", expect.any(Object));
 		});
 
 		it("adds /api/ prefix if url does not start with /", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, {}));
-			await api.get("path-without-slash");
-			expect(fetchMock).toHaveBeenCalledWith("/api/path-without-slash", expect.any(Object));
+			await api.get("path");
+			expect(fetchMock).toHaveBeenCalledWith("/api/path", expect.any(Object));
 		});
 
 		it("does not add prefix if url is absolute (http)", async () => {

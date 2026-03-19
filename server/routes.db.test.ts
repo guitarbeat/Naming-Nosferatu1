@@ -2,6 +2,7 @@
 
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
+import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,11 +17,9 @@ const { dbMocks } = vi.hoisted(() => {
 	const limitMock = vi.fn().mockResolvedValue([]);
 	const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
 	const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock, limit: limitMock });
-	const fromMock = vi.fn().mockReturnValue({
-		where: whereMock,
-		orderBy: orderByMock,
-		limit: limitMock,
-	});
+	const fromMock = vi
+		.fn()
+		.mockReturnValue({ where: whereMock, orderBy: orderByMock, limit: limitMock });
 	const selectMock = vi.fn().mockReturnValue({ from: fromMock });
 
 	// Chainable mocks for INSERT
@@ -71,19 +70,6 @@ vi.mock("./db", () => ({
 		delete: dbMocks.delete,
 		update: dbMocks.update,
 	},
-}));
-
-vi.mock("./supabaseAuth", () => ({
-	requireSupabaseAuth: (req: any, _res: any, next: any) => {
-		req.user = {
-			id: "test-user-id",
-			email: "test@example.com",
-			user_name: "test-user",
-		};
-		next();
-	},
-	optionalSupabaseAuth: (_req: any, _res: any, next: any) => next(),
-	isSupabaseAdmin: vi.fn().mockResolvedValue(false),
 }));
 
 // Import router AFTER mocking
@@ -173,10 +159,16 @@ describe("Server Routes (DB Mode)", () => {
 			// Mock onConflictDoUpdate to return a thenable
 			dbMocks.values.mockReturnValue(mockQuery);
 
-			const res = await request(app).post("/api/ratings").send({
-				userId: "test-user-id",
-				ratings,
-			});
+			// Note: validation schema requires userId to be a valid UUID
+			const res = await request(app)
+				.post("/api/ratings")
+				.send({
+					userId: jwt.sign(
+						{ userId: "00000000-0000-0000-0000-000000000000" },
+						process.env.JWT_SECRET as string,
+					),
+					ratings,
+				});
 
 			expect(res.status).toBe(200);
 			expect(dbMocks.insert).toHaveBeenCalledTimes(1);
