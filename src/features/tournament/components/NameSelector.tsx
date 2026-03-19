@@ -1507,7 +1507,7 @@ export function NameSelector() {
                                                                                                                                                         });
                                                                                                                                                 }}
                                                                                                                                                 disabled={togglingHidden.has(nameItem.id)}
-                                                                                                                                                className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-green-600 hover:bg-green-700 text-white ${
+                                                                                                                                        className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-success hover:bg-success/80 text-success-foreground ${
                                                                                                                                                         togglingHidden.has(nameItem.id)
                                                                                                                                                                 ? "opacity-50 cursor-not-allowed"
                                                                                                                                                                 : ""
