@@ -788,7 +788,7 @@ export function NameSelector() {
                                                                         <motion.div
                                                                                 key={nameItem.id}
                                                                                 whileHover={{ y: -4, scale: 1.02 }}
-                                                                                className="group relative shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border-[1px] md:border-2 border-amber-500/30 bg-amber-500/10 ring-1 md:ring-2 ring-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] rounded-sm"
+                                                                                className="group relative shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border-[1px] md:border-2 border-warning/30 bg-warning/10 ring-1 md:ring-2 ring-warning/40 shadow-[0_0_15px_hsl(var(--warning)/0.15)] rounded-sm"
                                                                         >
                                                                                 <div className="text-foreground font-bold text-xs sm:text-sm md:text-base lg:text-lg">
                                                                                         {nameItem.name}
@@ -937,7 +937,7 @@ export function NameSelector() {
                                                                                                         <Card
                                                                                                                 className={`relative overflow-hidden group transition-all duration-200 h-full ${
                                                                                                                         selectedNames.has(nameItem.id)
-                                                                                                                                ? "shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+                                                                                                                                ? "shadow-[0_0_30px_hsl(var(--success)/0.3)]"
                                                                                                                                 : ""
                                                                                                                 } ${
                                                                                                                         index === 0
@@ -957,9 +957,9 @@ export function NameSelector() {
                                                                                                                                                 scale: dragOffset < -50 ? 1 : 0.8,
                                                                                                                                         }}
                                                                                                                                 >
-                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-red-500/90 backdrop-blur-md rounded-full border-2 border-red-500 shadow-lg rotate-[-20deg]">
-                                                                                                                                                <X size={24} className="text-white" />
-                                                                                                                                                <span className="text-white font-black text-lg uppercase">
+                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-destructive/90 backdrop-blur-md rounded-full border-2 border-destructive shadow-lg rotate-[-20deg]">
+                                                                                                                                                <X size={24} className="text-destructive-foreground" />
+                                                                                                                                                <span className="text-destructive-foreground font-black text-lg uppercase">
                                                                                                                                                         Nope
                                                                                                                                                 </span>
                                                                                                                                         </div>
@@ -973,9 +973,9 @@ export function NameSelector() {
                                                                                                                                                 scale: dragOffset > 50 ? 1 : 0.8,
                                                                                                                                         }}
                                                                                                                                 >
-                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-green-500/90 backdrop-blur-md rounded-full border-2 border-green-500 shadow-lg rotate-[20deg]">
-                                                                                                                                                <Heart size={24} className="text-white fill-white" />
-                                                                                                                                                <span className="text-white font-black text-lg uppercase">
+                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-success/90 backdrop-blur-md rounded-full border-2 border-success shadow-lg rotate-[20deg]">
+                                                                                                                                                <Heart size={24} className="text-success-foreground fill-success-foreground" />
+                                                                                                                                                <span className="text-success-foreground font-black text-lg uppercase">
                                                                                                                                                         Like
                                                                                                                                                 </span>
                                                                                                                                         </div>
@@ -1000,7 +1000,7 @@ export function NameSelector() {
                                                                                                                                                 e.stopPropagation();
                                                                                                                                                 handleOpenLightbox(nameItem.id);
                                                                                                                                         }}
-                                                                                                                                        className="absolute top-4 right-4 p-2.5 rounded-full bg-black/50 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/70 z-30"
+                                                                                                                                        className="absolute top-4 right-4 p-2.5 rounded-full bg-foreground/50 backdrop-blur-sm text-background opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:outline-none transition-opacity hover:bg-foreground/70 z-30"
                                                                                                                                         aria-label="View full size"
                                                                                                                                 >
                                                                                                                                         <ZoomIn size={18} />
@@ -1012,9 +1012,9 @@ export function NameSelector() {
                                                                                                                                 <h3 className="font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full">
                                                                                                                                         {nameItem.name}
                                                                                                                                         {nameItem.pronunciation && (
-                                                                                                                                                <span className="ml-3 text-amber-400 text-2xl lg:text-3xl font-bold italic opacity-90">
-                                                                                                                                                        [{nameItem.pronunciation}]
-                                                                                                                                                </span>
+                                                                                                                                        <span className="ml-3 text-warning text-2xl lg:text-3xl font-bold italic opacity-90">
+                                                                                                                                                [{nameItem.pronunciation}]
+                                                                                                                                        </span>
                                                                                                                                         )}
                                                                                                                                 </h3>
                                                                                                                                 {nameItem.description && (
@@ -1037,8 +1037,8 @@ export function NameSelector() {
                                                                                                                                                 disabled={togglingHidden.has(nameItem.id)}
                                                                                                                                                 className={`mt-4 flex items-center gap-2 pointer-events-auto w-fit text-sm font-bold tracking-wider uppercase transition-all ${
                                                                                                                                                         togglingHidden.has(nameItem.id)
-                                                                                                                                                                ? "text-slate-500 cursor-not-allowed"
-                                                                                                                                                                : "text-amber-400 hover:text-amber-300 hover:scale-105 active:scale-95"
+                                                                                                                                                                ? "text-muted-foreground cursor-not-allowed"
+                                                                                                                                                                : "text-warning hover:text-warning/80 hover:scale-105 active:scale-95"
                                                                                                                                                 }`}
                                                                                                                                         >
                                                                                                                                                 {togglingHidden.has(nameItem.id) ? (
@@ -1062,9 +1062,9 @@ export function NameSelector() {
 
                                                                                                                                 {selectedNames.has(nameItem.id) && (
                                                                                                                                         <div className="flex mt-4">
-                                                                                                                                                <div className="px-4 py-1.5 bg-green-500/30 backdrop-blur-md border border-green-500/40 rounded-full flex items-center gap-2 shadow-lg shadow-green-500/20">
-                                                                                                                                                        <Check size={16} className="text-green-400" />
-                                                                                                                                                        <span className="text-green-400 font-black text-xs tracking-[0.2em] uppercase">
+                                                                                                                                        <div className="px-4 py-1.5 bg-success/30 backdrop-blur-md border border-success/40 rounded-full flex items-center gap-2 shadow-lg shadow-success/20">
+                                                                                                                                                        <Check size={16} className="text-success" />
+                                                                                                                                                        <span className="text-success font-black text-xs tracking-[0.2em] uppercase">
                                                                                                                                                                 Selected
                                                                                                                                                         </span>
                                                                                                                                                 </div>
@@ -1095,7 +1095,7 @@ export function NameSelector() {
                                                                 <Button
                                                                         variant="outline"
                                                                         iconOnly={true}
-                                                                        className="h-16 w-16 rounded-full border-2 border-red-500/20 hover:bg-red-500/10 hover:border-red-500 text-red-500 transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:scale-110 active:scale-95"
+                                                                        className="h-16 w-16 rounded-full border-2 border-destructive/20 hover:bg-destructive/10 hover:border-destructive text-destructive transition-all duration-300 shadow-lg hover:shadow-destructive/25 hover:scale-110 active:scale-95"
                                                                         onClick={() => {
                                                                                 const currentCard = visibleCards[0];
                                                                                 if (currentCard) {
@@ -1111,7 +1111,7 @@ export function NameSelector() {
                                                                 <Button
                                                                         variant="outline"
                                                                         iconOnly={true}
-                                                                        className="h-16 w-16 rounded-full border-2 border-green-500/20 hover:bg-green-500/10 hover:border-green-500 text-green-500 transition-all duration-300 shadow-lg hover:shadow-green-500/25 hover:scale-110 active:scale-95"
+                                                                        className="h-16 w-16 rounded-full border-2 border-success/20 hover:bg-success/10 hover:border-success text-success transition-all duration-300 shadow-lg hover:shadow-success/25 hover:scale-110 active:scale-95"
                                                                         onClick={() => {
                                                                                 const currentCard = visibleCards[0];
                                                                                 if (currentCard) {
@@ -1180,12 +1180,12 @@ export function NameSelector() {
                                                                                                                                                         animate={{ scale: 1, opacity: 1 }}
                                                                                                                                                         className="shrink-0 size-5 bg-primary rounded-full flex items-center justify-center shadow-lg"
                                                                                                                                                 >
-                                                                                                                                                        <Check size={12} className="text-white" />
+                                                                                                                                                        <Check size={12} className="text-primary-foreground" />
                                                                                                                                                 </motion.div>
                                                                                                                                         )}
                                                                                                                                 </div>
                                                                                                                                 {nameItem.pronunciation && (
-                                                                                                                                        <span className="mobile-readable-meta text-amber-300 text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
+                                                                                                                                        <span className="mobile-readable-meta text-warning text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
                                                                                                                                                 [{nameItem.pronunciation}]
                                                                                                                                         </span>
                                                                                                                                 )}
@@ -1203,7 +1203,7 @@ export function NameSelector() {
                                                                                                                                 e.stopPropagation();
                                                                                                                                 handleOpenLightbox(nameItem.id);
                                                                                                                         }}
-                                                                                                                        className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/60 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/img:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/80 z-10"
+                                                                                                                        className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-foreground/60 backdrop-blur-sm text-background opacity-100 md:opacity-0 md:group-hover/img:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:outline-none transition-opacity hover:bg-foreground/80 z-10"
                                                                                                                         aria-label="View full size"
                                                                                                                 >
                                                                                                                         <ZoomIn size={14} />
@@ -1233,8 +1233,8 @@ export function NameSelector() {
                                                                                                                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                                                                                                                 className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                                                                                                                                         isNameHidden(nameItem)
-                                                                                                                                                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/25"
-                                                                                                                                                : "bg-red-600 hover:bg-red-700 text-white shadow-red-500/25"
+                                                                                                                                                ? "bg-success hover:bg-success/80 text-success-foreground shadow-success/25"
+                                                                                                                                                : "bg-destructive hover:bg-destructive/80 text-destructive-foreground shadow-destructive/25"
                                                                                                                                 } ${togglingHidden.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
                                                                                                                         >
                                                                                                                                 {togglingHidden.has(nameItem.id) ? (
@@ -1272,8 +1272,8 @@ export function NameSelector() {
                                                                                                                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                                                                                                                 className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                                                                                                                                         isNameLocked(nameItem)
-                                                                                                                                                ? "bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/25"
-                                                                                                                                                : "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/25"
+                                                                                                                                                ? "bg-muted hover:bg-muted/80 text-muted-foreground shadow-muted/25"
+                                                                                                                                                : "bg-warning hover:bg-warning/80 text-warning-foreground shadow-warning/25"
                                                                                                                                 } ${togglingLocked.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
                                                                                                                         >
                                                                                                                                 {togglingLocked.has(nameItem.id) ? (
@@ -1465,14 +1465,14 @@ export function NameSelector() {
                                                                                                                                                                         animate={{ scale: 1, opacity: 1 }}
                                                                                                                                                                         className="shrink-0 size-4 bg-primary rounded-full flex items-center justify-center shadow-md"
                                                                                                                                                                 >
-                                                                                                                                                                        <Check size={10} className="text-white" />
+                                                                                                                                                                        <Check size={10} className="text-primary-foreground" />
                                                                                                                                                                 </motion.div>
                                                                                                                                                         )}
                                                                                                                                                 </div>
                                                                                                                                                 {nameItem.pronunciation && (
-                                                                                                                                                        <span className="mobile-readable-meta text-amber-300 text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
-                                                                                                                                                                [{nameItem.pronunciation}]
-                                                                                                                                                        </span>
+                                                                                                                                        <span className="mobile-readable-meta text-warning text-[11px] sm:text-sm leading-tight font-bold italic opacity-95 drop-shadow-md truncate">
+                                                                                                                                                [{nameItem.pronunciation}]
+                                                                                                                                        </span>
                                                                                                                                                 )}
                                                                                                                                                 {nameItem.description && (
                                                                                                                                                         <p className="mobile-readable-description text-foreground/95 text-[11px] sm:text-sm leading-snug line-clamp-2 sm:line-clamp-3 mt-1 drop-shadow-sm italic">
@@ -1488,7 +1488,7 @@ export function NameSelector() {
                                                                                                                                                 e.stopPropagation();
                                                                                                                                                 handleOpenLightbox(nameItem.id);
                                                                                                                                         }}
-                                                                                                                                        className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-black/60 backdrop-blur-sm text-white opacity-100 md:opacity-0 md:group-hover/hidden:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-opacity hover:bg-black/80 z-10"
+                                                                                                                                        className="absolute top-1.5 right-1.5 p-1.5 sm:top-2 sm:right-2 sm:p-2 rounded-full bg-foreground/60 backdrop-blur-sm text-background opacity-100 md:opacity-0 md:group-hover/hidden:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:outline-none transition-opacity hover:bg-foreground/80 z-10"
                                                                                                                                         aria-label="View full size"
                                                                                                                                 >
                                                                                                                                         <ZoomIn size={14} />
@@ -1507,7 +1507,7 @@ export function NameSelector() {
                                                                                                                                                         });
                                                                                                                                                 }}
                                                                                                                                                 disabled={togglingHidden.has(nameItem.id)}
-                                                                                                                                                className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-green-600 hover:bg-green-700 text-white ${
+                                                                                                                                        className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-success hover:bg-success/80 text-success-foreground ${
                                                                                                                                                         togglingHidden.has(nameItem.id)
                                                                                                                                                                 ? "opacity-50 cursor-not-allowed"
                                                                                                                                                                 : ""
