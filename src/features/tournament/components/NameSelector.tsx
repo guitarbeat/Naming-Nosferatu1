@@ -973,9 +973,9 @@ export function NameSelector() {
                                                                                                                                                 scale: dragOffset > 50 ? 1 : 0.8,
                                                                                                                                         }}
                                                                                                                                 >
-                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-green-500/90 backdrop-blur-md rounded-full border-2 border-green-500 shadow-lg rotate-[20deg]">
-                                                                                                                                                <Heart size={24} className="text-white fill-white" />
-                                                                                                                                                <span className="text-white font-black text-lg uppercase">
+                                                                                                                                        <div className="flex items-center gap-2 px-6 py-3 bg-success/90 backdrop-blur-md rounded-full border-2 border-success shadow-lg rotate-[20deg]">
+                                                                                                                                                <Heart size={24} className="text-success-foreground fill-success-foreground" />
+                                                                                                                                                <span className="text-success-foreground font-black text-lg uppercase">
                                                                                                                                                         Like
                                                                                                                                                 </span>
                                                                                                                                         </div>
