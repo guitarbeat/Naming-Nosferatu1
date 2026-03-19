@@ -937,7 +937,7 @@ export function NameSelector() {
                                                                                                         <Card
                                                                                                                 className={`relative overflow-hidden group transition-all duration-200 h-full ${
                                                                                                                         selectedNames.has(nameItem.id)
-                                                                                                                                ? "shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+                                                                                                                                ? "shadow-[0_0_30px_hsl(var(--success)/0.3)]"
                                                                                                                                 : ""
                                                                                                                 } ${
                                                                                                                         index === 0
