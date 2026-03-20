@@ -633,7 +633,7 @@ const CardNameBase = memo(function CardName({
 							id={`${getSafeId(name)}-pronunciation`}
 							className={cn(
 								"m-0 font-medium",
-								image ? "text-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/80",
+								image ? "text-warning drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/80",
 								size === "small" ? "text-[10px]" : "text-xs",
 								isHidden && "text-chart-4/70",
 							)}
