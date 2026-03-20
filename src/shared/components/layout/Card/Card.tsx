@@ -615,7 +615,7 @@ const CardNameBase = memo(function CardName({
 				<div
 					className={cn(
 						"z-10 flex flex-col items-center gap-1",
-						image && "mt-auto pb-3 px-3 w-full",
+						image && "absolute inset-0 justify-center px-3 w-full",
 					)}
 				>
 					<h3
