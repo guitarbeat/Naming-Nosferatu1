@@ -11,8 +11,9 @@ import {
 	catTournamentSelections,
 	userRoles,
 } from "../shared/schema";
+import { requireAdmin } from "./auth";
 import { db } from "./db";
-import { requireSupabaseAuth, optionalSupabaseAuth, isSupabaseAdmin } from "./supabaseAuth";
+import { isSupabaseAdmin, optionalSupabaseAuth, requireSupabaseAuth } from "./supabaseAuth";
 // JWT authentication removed - now using Supabase Auth exclusively
 // import jwt from "jsonwebtoken";
 
