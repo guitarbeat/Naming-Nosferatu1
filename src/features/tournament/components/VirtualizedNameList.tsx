@@ -5,12 +5,12 @@
 
 import { useCallback, useMemo } from "react";
 import { FixedSizeList as List } from "react-window";
-import type { NameItem } from "@/shared/types";
 import CatImage from "@/shared/components/layout/CatImage";
-import { Check, Heart, Shuffle, X } from "@/shared/lib/icons";
+import { Check, Shuffle, X } from "@/shared/lib/icons";
+import type { NameItem as TournamentNameItem } from "@/shared/types";
 
 interface VirtualizedNameListProps {
-	names: NameItem[];
+	names: TournamentNameItem[];
 	selectedNames: Set<string>;
 	onToggleName: (nameId: string) => void;
 	onClearSelection: () => void;
@@ -24,23 +24,27 @@ interface NameItemProps {
 	index: number;
 	style: React.CSSProperties;
 	data: {
-		names: NameItem[];
+		names: TournamentNameItem[];
 		selectedNames: Set<string>;
 		onToggleName: (nameId: string) => void;
-		searchTerm: string;
 	};
 }
 
-const NameItem: React.FC<NameItemProps> = ({ index, style, data }) => {
-	const { names, selectedNames, onToggleName, searchTerm } = data;
+const VirtualizedNameItem: React.FC<NameItemProps> = ({ index, style, data }) => {
+	const { names, selectedNames, onToggleName } = data;
 	const name = names[index];
-	const isSelected = selectedNames.has(String(name.id));
+	const nameId = name ? String(name.id) : "";
+	const isSelected = name ? selectedNames.has(nameId) : false;
 
 	const handleToggle = useCallback(() => {
-		onToggleName(String(name.id));
-	}, [name.id, onToggleName]);
+		if (name) {
+			onToggleName(nameId);
+		}
+	}, [name, nameId, onToggleName]);
 
-	if (!name) return null;
+	if (!name) {
+		return null;
+	}
 
 	return (
 		<div
@@ -87,7 +91,7 @@ const NameItem: React.FC<NameItemProps> = ({ index, style, data }) => {
 function getRandomCatImage(): string {
 	const images = [
 		"https://images.unsplash.com/photo-1514888286974-6c03e2ca4dba?w=64&h=64&fit=crop&crop=faces",
-		"https://images.unsplash.com/photo-1513245543132-31f50141621b?w=64&h=64&fit=crop&crop=faces", 
+		"https://images.unsplash.com/photo-1513245543132-31f50141621b?w=64&h=64&fit=crop&crop=faces",
 		"https://images.unsplash.com/photo-1574158622682-e40e69881006?w=64&h=64&fit=crop&crop=faces",
 		"https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=64&h=64&fit=crop&crop=faces",
 	];
@@ -109,9 +113,8 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 			names,
 			selectedNames,
 			onToggleName,
-			searchTerm,
 		}),
-		[names, selectedNames, onToggleName, searchTerm]
+		[names, selectedNames, onToggleName],
 	);
 
 	const handleClearSelection = useCallback(() => {
@@ -128,10 +131,7 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 			<div className="flex flex-col items-center justify-center h-96 text-center">
 				<p className="text-muted-foreground mb-4">No names found</p>
 				{searchTerm && (
-					<button
-						onClick={handleClearSelection}
-						className="text-primary hover:underline"
-					>
+					<button onClick={handleClearSelection} className="text-primary hover:underline">
 						Clear search
 					</button>
 				)}
@@ -174,7 +174,7 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 				itemData={itemData}
 				className="border border-border rounded-lg"
 			>
-				{NameItem}
+				{VirtualizedNameItem}
 			</List>
 		</div>
 	);

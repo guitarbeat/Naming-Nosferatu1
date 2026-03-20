@@ -3,7 +3,6 @@
  * @description Main application layout component with floating primary nav
  */
 
-
 import { ScrollToTopButton } from "@/shared/components/layout/Button";
 import {
 	ErrorBoundary,
@@ -62,9 +61,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 					)}
 
 					{/* Page content */}
-					<div className="flex w-full flex-1 flex-col gap-8 sm:gap-12">
-						{children}
-					</div>
+					<div className="flex w-full flex-1 flex-col items-center gap-8 sm:gap-12">{children}</div>
 
 					{/* Loading overlay */}
 					{tournament.isLoading && (

@@ -2,13 +2,23 @@
 
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
-import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock requireAdmin to allow access
 vi.mock("./auth", () => ({
 	requireAdmin: (_req: Request, _res: Response, next: NextFunction) => next(),
+}));
+
+vi.mock("./supabaseAuth", () => ({
+	requireSupabaseAuth: (req: Request, _res: Response, next: NextFunction) => {
+		req.user = {
+			id: "supabase-user-123",
+			email: "supabase-user@example.com",
+			user_name: "supabase-user",
+		};
+		next();
+	},
 }));
 
 // Hoist mocks to be available in vi.mock
@@ -159,16 +169,10 @@ describe("Server Routes (DB Mode)", () => {
 			// Mock onConflictDoUpdate to return a thenable
 			dbMocks.values.mockReturnValue(mockQuery);
 
-			// Note: validation schema requires userId to be a valid UUID
-			const res = await request(app)
-				.post("/api/ratings")
-				.send({
-					userId: jwt.sign(
-						{ userId: "00000000-0000-0000-0000-000000000000" },
-						process.env.JWT_SECRET as string,
-					),
-					ratings,
-				});
+			const res = await request(app).post("/api/ratings").send({
+				userId: "client-supplied-user-id",
+				ratings,
+			});
 
 			expect(res.status).toBe(200);
 			expect(dbMocks.insert).toHaveBeenCalledTimes(1);

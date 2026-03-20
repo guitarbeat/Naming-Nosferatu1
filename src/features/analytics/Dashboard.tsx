@@ -3,11 +3,21 @@
  * @description Dashboard component for analytics and results
  */
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { leaderboardAPI, statsAPI } from "@/features/analytics/services/analyticsService";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
-import { BarChart3, Eye, EyeOff, Trophy, TrendingUp, Users, Clock, Target, Activity } from "@/shared/lib/icons";
+import {
+	Activity,
+	BarChart3,
+	Clock,
+	Eye,
+	EyeOff,
+	Target,
+	TrendingUp,
+	Trophy,
+	Users,
+} from "@/shared/lib/icons";
 import { coreAPI, hiddenNamesAPI } from "@/shared/services/supabase/api";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RandomGenerator } from "../tournament/components/RandomGenerator";
@@ -61,18 +71,15 @@ export function Dashboard({
 			total_ratings: number;
 		}>
 	>([]);
-	const [siteStats, setSiteStats] = useState<
-		| {
-				totalNames: number;
-				activeNames: number;
-				hiddenNames: number;
-				totalUsers: number;
-				totalRatings: number;
-				totalSelections: number;
-				avgRating: number;
-		  }
-		| null
-	>(null);
+	const [siteStats, setSiteStats] = useState<{
+		totalNames: number;
+		activeNames: number;
+		hiddenNames: number;
+		totalUsers: number;
+		totalRatings: number;
+		totalSelections: number;
+		avgRating: number;
+	} | null>(null);
 	const [userStats, setUserStats] = useState<{
 		totalRatings: number;
 		totalSelections: number;
@@ -84,7 +91,7 @@ export function Dashboard({
 	const [hiddenNames, setHiddenNames] = useState<Array<{ id: string | number; name: string }>>([]);
 	const [showHiddenNames, setShowHiddenNames] = useState(false);
 	const [engagementMetrics, setEngagementMetrics] = useState<EngagementMetrics | null>(null);
-	const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
+	const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
 
 	// Fetch leaderboard
 	useEffect(() => {
@@ -102,21 +109,22 @@ export function Dashboard({
 		fetchLeaderboard();
 	}, []);
 
+	const fetchEngagementMetrics = useCallback(async () => {
+		setIsLoadingStats(true);
+		try {
+			const metrics = await statsAPI.getEngagementMetrics(timeframe);
+			setEngagementMetrics(metrics);
+		} catch (error) {
+			console.error("Failed to fetch engagement metrics:", error);
+		} finally {
+			setIsLoadingStats(false);
+		}
+	}, [timeframe]);
+
 	// Fetch engagement metrics
 	useEffect(() => {
-		const fetchEngagementMetrics = async () => {
-			setIsLoadingStats(true);
-			try {
-				const metrics = await statsAPI.getEngagementMetrics(timeframe);
-				setEngagementMetrics(metrics);
-			} catch (error) {
-				console.error("Failed to fetch engagement metrics:", error);
-			} finally {
-				setIsLoadingStats(false);
-			}
-		};
 		fetchEngagementMetrics();
-	}, [timeframe]);
+	}, [fetchEngagementMetrics]);
 
 	// Fetch stats
 	useEffect(() => {
@@ -333,7 +341,7 @@ export function Dashboard({
 						<div className="flex gap-2">
 							<select
 								value={timeframe}
-								onChange={(e) => setTimeframe(e.target.value as 'day' | 'week' | 'month')}
+								onChange={(e) => setTimeframe(e.target.value as "day" | "week" | "month")}
 								className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
 							>
 								<option value="day">Last 24 Hours</option>
@@ -351,45 +359,55 @@ export function Dashboard({
 							</Button>
 						</div>
 					</div>
-				
+
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 						<div className="p-4 border border-border rounded-lg bg-card">
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Total Tournaments</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.totalTournaments}</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.totalTournaments}
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
 								<Trophy className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Completed</p>
-									<p className="text-2xl font-bold text-chart-4">{engagementMetrics.completedTournaments}</p>
+									<p className="text-2xl font-bold text-chart-4">
+										{engagementMetrics.completedTournaments}
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
 								<Clock className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Avg Duration</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.averageTournamentTime}m</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.averageTournamentTime}m
+									</p>
 								</div>
 							</div>
 						</div>
-						
+
 						<div className="p-4 border border-border rounded-lg bg-card">
 							<div className="flex items-center gap-2 mb-2">
 								<Target className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Peak Active Users</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.peakActiveUsers}</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.peakActiveUsers}
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
 								<Activity className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">User Retention</p>
-									<p className="text-2xl font-bold text-chart-4">{engagementMetrics.userRetentionRate}%</p>
+									<p className="text-2xl font-bold text-chart-4">
+										{engagementMetrics.userRetentionRate}%
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
@@ -400,34 +418,40 @@ export function Dashboard({
 								</div>
 							</div>
 						</div>
-						
+
 						<div className="p-4 border border-border rounded-lg bg-card">
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Daily Active</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.dailyActiveUsers}</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.dailyActiveUsers}
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Weekly Active</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.weeklyActiveUsers}</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.weeklyActiveUsers}
+									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Monthly Active</p>
-									<p className="text-2xl font-bold text-foreground">{engagementMetrics.monthlyActiveUsers}</p>
+									<p className="text-2xl font-bold text-foreground">
+										{engagementMetrics.monthlyActiveUsers}
+									</p>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			)}
-			
+
 			{/* Admin: Hidden Names Management */}
 			{isAdmin && (
 				<div className="py-2">

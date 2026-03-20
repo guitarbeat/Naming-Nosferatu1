@@ -33,15 +33,21 @@ describe("apiClient", () => {
 		};
 	}
 
+	function expectJsonRequest(overrides: Record<string, unknown> = {}) {
+		return expect.objectContaining({
+			headers: { "Content-Type": "application/json" },
+			signal: expect.anything(),
+			...overrides,
+		});
+	}
+
 	describe("methods", () => {
 		it("api.get constructs correct URL and passes correct method/headers", async () => {
 			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
 
 			const result = await api.get("/test-endpoint");
 
-			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
-				headers: { "Content-Type": "application/json" },
-			});
+			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", expectJsonRequest());
 			expect(result).toEqual({ success: true });
 		});
 
@@ -51,11 +57,13 @@ describe("apiClient", () => {
 			const payload = { foo: "bar" };
 			const result = await api.post("/test-endpoint", payload);
 
-			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
+			expect(fetchMock).toHaveBeenCalledWith(
+				"/api/test-endpoint",
+				expectJsonRequest({
+					method: "POST",
+					body: JSON.stringify(payload),
+				}),
+			);
 			expect(result).toEqual({ success: true });
 		});
 
@@ -65,11 +73,13 @@ describe("apiClient", () => {
 			const payload = { foo: "bar" };
 			const result = await api.patch("/test-endpoint", payload);
 
-			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
+			expect(fetchMock).toHaveBeenCalledWith(
+				"/api/test-endpoint",
+				expectJsonRequest({
+					method: "PATCH",
+					body: JSON.stringify(payload),
+				}),
+			);
 			expect(result).toEqual({ success: true });
 		});
 
@@ -78,11 +88,34 @@ describe("apiClient", () => {
 
 			const result = await api.delete("/test-endpoint");
 
-			expect(fetchMock).toHaveBeenCalledWith("/api/test-endpoint", {
-				method: "DELETE",
-				headers: { "Content-Type": "application/json" },
-			});
+			expect(fetchMock).toHaveBeenCalledWith(
+				"/api/test-endpoint",
+				expectJsonRequest({ method: "DELETE" }),
+			);
 			expect(result).toEqual({ success: true });
+		});
+
+		it("does not abort an in-flight request for the same URL when the method differs", async () => {
+			let resolveFirstRequest: ((value: unknown) => void) | undefined;
+			let firstSignal: AbortSignal | undefined;
+
+			fetchMock.mockImplementationOnce((_url: string, options?: RequestInit) => {
+				firstSignal = options?.signal as AbortSignal | undefined;
+				return new Promise((resolve) => {
+					resolveFirstRequest = resolve;
+				});
+			});
+			fetchMock.mockResolvedValueOnce(createMockResponse(true, 200, { success: true }));
+
+			const firstRequest = api.get("/test-endpoint");
+			await Promise.resolve();
+			const secondResult = await api.post("/test-endpoint", { foo: "bar" });
+
+			expect(firstSignal?.aborted).toBe(false);
+			resolveFirstRequest?.(createMockResponse(true, 200, { first: true }));
+
+			await expect(firstRequest).resolves.toEqual({ first: true });
+			expect(secondResult).toEqual({ success: true });
 		});
 	});
 

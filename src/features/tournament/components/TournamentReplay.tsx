@@ -3,10 +3,20 @@
  * @description Tournament replay and match history viewer component
  */
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, SkipBack, SkipForward, Download, Calendar, Trophy, Target, Clock, BarChart3 } from "@/shared/lib/icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
+import {
+	BarChart3,
+	Calendar,
+	Download,
+	Pause,
+	Play,
+	SkipBack,
+	SkipForward,
+	Target,
+	Trophy,
+} from "@/shared/lib/icons";
 
 export interface MatchRecord {
 	id: string;
@@ -29,7 +39,7 @@ export interface TournamentHistory {
 	name: string;
 	startTime: string;
 	endTime?: string;
-	status: 'completed' | 'in_progress' | 'abandoned';
+	status: "completed" | "in_progress" | "abandoned";
 	totalMatches: number;
 	completedMatches: number;
 	winnerId?: string;
@@ -43,98 +53,102 @@ interface TournamentReplayProps {
 	onReplayMatch?: (matchId: string) => void;
 }
 
-export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch }: TournamentReplayProps) {
-	const [selectedTournament, setSelectedTournament] = useState<string>('');
-	const [selectedMatch, setSelectedMatch] = useState<string>('');
+export function TournamentReplay({
+	tournamentId,
+	onExportHistory,
+	onReplayMatch,
+}: TournamentReplayProps) {
+	const [selectedTournament, setSelectedTournament] = useState<string>(tournamentId ?? "");
+	const [selectedMatch, setSelectedMatch] = useState<string>("");
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [playbackSpeed, setPlaybackSpeed] = useState(1);
 	const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 	const [matches, setMatches] = useState<MatchRecord[]>([]);
 	const [tournaments, setTournaments] = useState<TournamentHistory[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [viewMode, setViewMode] = useState<'matches' | 'bracket'>('matches');
+	const [viewMode, setViewMode] = useState<"matches" | "bracket">("matches");
 
 	// Mock data - in real implementation, this would fetch from API
 	useEffect(() => {
 		const loadMockData = async () => {
 			setIsLoading(true);
-			
+
 			// Mock tournament history
 			const mockTournaments: TournamentHistory[] = [
 				{
-					id: 'tourn_1',
-					name: 'Spring Cat Championship',
-					startTime: '2026-03-15T10:00:00Z',
-					endTime: '2026-03-15T11:30:00Z',
-					status: 'completed',
+					id: "tourn_1",
+					name: "Spring Cat Championship",
+					startTime: "2026-03-15T10:00:00Z",
+					endTime: "2026-03-15T11:30:00Z",
+					status: "completed",
 					totalMatches: 15,
 					completedMatches: 15,
-					winnerId: 'name_42',
+					winnerId: "name_42",
 					duration: 90,
 					finalRatings: {
-						'name_42': 2850,
-						'name_17': 2200,
-						'name_8': 1950
-					}
+						name_42: 2850,
+						name_17: 2200,
+						name_8: 1950,
+					},
 				},
 				{
-					id: 'tourn_2',
-					name: 'Summer Kitty League',
-					startTime: '2026-03-10T14:00:00Z',
-					status: 'in_progress',
+					id: "tourn_2",
+					name: "Summer Kitty League",
+					startTime: "2026-03-10T14:00:00Z",
+					status: "in_progress",
 					totalMatches: 8,
 					completedMatches: 6,
-					duration: 45
-				}
+					duration: 45,
+				},
 			];
 
 			// Mock match history
 			const mockMatches: MatchRecord[] = [
 				{
-					id: 'match_1',
-					tournamentId: 'tourn_1',
+					id: "match_1",
+					tournamentId: "tourn_1",
 					round: 1,
 					matchNumber: 1,
-					leftId: 'name_1',
-					rightId: 'name_2',
-					winnerId: 'name_1',
-					loserId: 'name_2',
+					leftId: "name_1",
+					rightId: "name_2",
+					winnerId: "name_1",
+					loserId: "name_2",
 					leftRating: 1500,
 					rightRating: 1500,
 					ratingChange: 32,
 					duration: 45,
-					timestamp: '2026-03-15T10:05:00Z'
+					timestamp: "2026-03-15T10:05:00Z",
 				},
 				{
-					id: 'match_2',
-					tournamentId: 'tourn_1',
+					id: "match_2",
+					tournamentId: "tourn_1",
 					round: 1,
 					matchNumber: 2,
-					leftId: 'name_3',
-					rightId: 'name_4',
-					winnerId: 'name_4',
-					loserId: 'name_3',
+					leftId: "name_3",
+					rightId: "name_4",
+					winnerId: "name_4",
+					loserId: "name_3",
 					leftRating: 1600,
 					rightRating: 1550,
 					ratingChange: -28,
 					duration: 38,
-					timestamp: '2026-03-15T10:12:00Z'
+					timestamp: "2026-03-15T10:12:00Z",
 				},
 				{
-					id: 'match_3',
-					tournamentId: 'tourn_1',
+					id: "match_3",
+					tournamentId: "tourn_1",
 					round: 2,
 					matchNumber: 3,
-					leftId: 'name_5',
-					rightId: 'name_6',
-					winnerId: 'name_5',
-					loserId: 'name_6',
+					leftId: "name_5",
+					rightId: "name_6",
+					winnerId: "name_5",
+					loserId: "name_6",
 					leftRating: 1650,
 					rightRating: 1480,
 					ratingChange: 24,
 					duration: 52,
-					timestamp: '2026-03-15T10:25:00Z'
-				}
+					timestamp: "2026-03-15T10:25:00Z",
+				},
 			];
 
 			setTournaments(mockTournaments);
@@ -145,33 +159,44 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 		loadMockData();
 	}, []);
 
+	useEffect(() => {
+		if (tournamentId) {
+			setSelectedTournament(tournamentId);
+		}
+	}, [tournamentId]);
+
 	// Filter matches by selected tournament
 	const filteredMatches = useMemo(() => {
-		if (!selectedTournament) return matches;
-		return matches.filter(match => match.tournamentId === selectedTournament);
+		if (!selectedTournament) {
+			return matches;
+		}
+		return matches.filter((match) => match.tournamentId === selectedTournament);
 	}, [matches, selectedTournament]);
 
 	// Calculate statistics
 	const matchStats = useMemo(() => {
-		if (filteredMatches.length === 0) return null;
-		
+		if (filteredMatches.length === 0) {
+			return null;
+		}
+
 		const totalDuration = filteredMatches.reduce((sum, match) => sum + match.duration, 0);
 		const avgDuration = totalDuration / filteredMatches.length;
-		const avgRatingChange = filteredMatches.reduce((sum, match) => sum + match.ratingChange, 0) / filteredMatches.length;
-		
+		const avgRatingChange =
+			filteredMatches.reduce((sum, match) => sum + match.ratingChange, 0) / filteredMatches.length;
+
 		const winsByRound = new Map<number, number>();
-		filteredMatches.forEach(match => {
+		filteredMatches.forEach((match) => {
 			winsByRound.set(match.round, (winsByRound.get(match.round) || 0) + 1);
 		});
-		
+
 		return {
 			totalMatches: filteredMatches.length,
 			totalDuration,
 			avgDuration,
 			avgRatingChange,
 			roundsCompleted: winsByRound.size,
-			longestMatch: Math.max(...filteredMatches.map(m => m.duration)),
-			shortestMatch: Math.min(...filteredMatches.map(m => m.duration))
+			longestMatch: Math.max(...filteredMatches.map((m) => m.duration)),
+			shortestMatch: Math.min(...filteredMatches.map((m) => m.duration)),
 		};
 	}, [filteredMatches]);
 
@@ -184,11 +209,11 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 	}, []);
 
 	const handlePreviousMatch = useCallback(() => {
-		setCurrentMatchIndex(prev => Math.max(0, prev - 1));
+		setCurrentMatchIndex((prev) => Math.max(0, prev - 1));
 	}, []);
 
 	const handleNextMatch = useCallback(() => {
-		setCurrentMatchIndex(prev => Math.min(filteredMatches.length - 1, prev + 1));
+		setCurrentMatchIndex((prev) => Math.min(filteredMatches.length - 1, prev + 1));
 	}, [filteredMatches.length]);
 
 	const handleExportHistory = useCallback(() => {
@@ -197,18 +222,21 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 				tournaments,
 				matches,
 				exportDate: new Date().toISOString(),
-				stats: matchStats
+				stats: matchStats,
 			};
 			onExportHistory([exportData as any]);
 		}
 	}, [tournaments, matches, matchStats, onExportHistory]);
 
-	const handleReplayMatch = useCallback((matchId: string) => {
-		setSelectedMatch(matchId);
-		if (onReplayMatch) {
-			onReplayMatch(matchId);
-		}
-	}, [onReplayMatch]);
+	const handleReplayMatch = useCallback(
+		(matchId: string) => {
+			setSelectedMatch(matchId);
+			if (onReplayMatch) {
+				onReplayMatch(matchId);
+			}
+		},
+		[onReplayMatch],
+	);
 
 	if (isLoading) {
 		return (
@@ -244,14 +272,16 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 			{/* Tournament Selection */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<div>
-					<label className="block text-sm font-medium text-foreground mb-2">Select Tournament</label>
+					<label className="block text-sm font-medium text-foreground mb-2">
+						Select Tournament
+					</label>
 					<select
 						value={selectedTournament}
 						onChange={(e) => setSelectedTournament(e.target.value)}
 						className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
 					>
 						<option value="">All Tournaments</option>
-						{tournaments.map(tournament => (
+						{tournaments.map((tournament) => (
 							<option key={tournament.id} value={tournament.id}>
 								{tournament.name} ({tournament.status})
 							</option>
@@ -263,22 +293,22 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 					<label className="block text-sm font-medium text-foreground mb-2">View Mode</label>
 					<div className="flex gap-2">
 						<button
-							onClick={() => setViewMode('matches')}
+							onClick={() => setViewMode("matches")}
 							className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-								viewMode === 'matches'
-									? 'bg-chart-4 text-white'
-									: 'bg-foreground/10 text-foreground hover:bg-foreground/20'
+								viewMode === "matches"
+									? "bg-chart-4 text-white"
+									: "bg-foreground/10 text-foreground hover:bg-foreground/20"
 							}`}
 						>
 							<Target size={16} className="mr-1" />
 							Matches
 						</button>
 						<button
-							onClick={() => setViewMode('bracket')}
+							onClick={() => setViewMode("bracket")}
 							className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-								viewMode === 'bracket'
-									? 'bg-chart-4 text-white'
-									: 'bg-foreground/10 text-foreground hover:bg-foreground/20'
+								viewMode === "bracket"
+									? "bg-chart-4 text-white"
+									: "bg-foreground/10 text-foreground hover:bg-foreground/20"
 							}`}
 						>
 							<Trophy size={16} className="mr-1" />
@@ -303,7 +333,9 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 						</div>
 						<div>
 							<span className="text-muted-foreground">Avg Duration:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.avgDuration.toFixed(1)}s</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.avgDuration.toFixed(1)}s
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Rounds Completed:</span>
@@ -319,13 +351,15 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 						</div>
 						<div>
 							<span className="text-muted-foreground">Avg Rating Change:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.avgRatingChange.toFixed(1)}</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.avgRatingChange.toFixed(1)}
+							</span>
 						</div>
 					</div>
 				</div>
 			)}
 
-			{viewMode === 'matches' && (
+			{viewMode === "matches" && (
 				<div className="space-y-4">
 					{/* Playback Controls */}
 					{filteredMatches.length > 0 && (
@@ -337,14 +371,14 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 							>
 								<SkipBack size={20} />
 							</button>
-							
+
 							<button
 								onClick={handlePlayPause}
 								className="p-3 rounded-full bg-chart-4 text-white hover:bg-chart-4/80"
 							>
 								{isPlaying ? <Pause size={20} /> : <Play size={20} />}
 							</button>
-							
+
 							<button
 								onClick={handleNextMatch}
 								disabled={currentMatchIndex === filteredMatches.length - 1}
@@ -377,9 +411,9 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 								onClick={() => handleReplayMatch(match.id)}
 								className={`p-4 border border-border rounded-lg cursor-pointer transition-colors ${
 									selectedMatch === match.id
-										? 'border-chart-4 bg-chart-4/10'
-										: 'border-border/20 hover:border-chart-4/50 hover:bg-foreground/5'
-								} ${index === currentMatchIndex ? 'ring-2 ring-chart-4' : ''}`}
+										? "border-chart-4 bg-chart-4/10"
+										: "border-border/20 hover:border-chart-4/50 hover:bg-foreground/5"
+								} ${index === currentMatchIndex ? "ring-2 ring-chart-4" : ""}`}
 							>
 								<div className="flex items-center justify-between">
 									<div>
@@ -395,20 +429,18 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 											{new Date(match.timestamp).toLocaleString()}
 										</div>
 										<div className="flex items-center gap-2">
-											<span className={`px-2 py-1 rounded text-xs font-medium ${
-												match.winnerId === match.leftId
-													? 'bg-green-100 text-green-800'
-													: 'bg-red-100 text-red-800'
-											}`}>
-												{match.winnerId === match.leftId ? 'W' : 'L'}
+											<span
+												className={`px-2 py-1 rounded text-xs font-medium ${
+													match.winnerId === match.leftId
+														? "bg-green-100 text-green-800"
+														: "bg-red-100 text-red-800"
+												}`}
+											>
+												{match.winnerId === match.leftId ? "W" : "L"}
 											</span>
-											<span className="font-semibold text-foreground">
-												{match.winnerId}
-											</span>
+											<span className="font-semibold text-foreground">{match.winnerId}</span>
 										</div>
-										<div className="text-xs text-muted-foreground">
-											{match.duration}s
-										</div>
+										<div className="text-xs text-muted-foreground">{match.duration}s</div>
 									</div>
 								</div>
 								<div className="mt-2 pt-2 border-t border-border/10">
@@ -433,7 +465,7 @@ export function TournamentReplay({ tournamentId, onExportHistory, onReplayMatch 
 				</div>
 			)}
 
-			{viewMode === 'bracket' && (
+			{viewMode === "bracket" && (
 				<div className="flex items-center justify-center p-8">
 					<div className="text-center text-muted-foreground">
 						<Trophy size={48} className="mx-auto mb-4" />

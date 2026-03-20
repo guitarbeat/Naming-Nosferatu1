@@ -14,6 +14,12 @@ const bootstrapMocks = vi.hoisted(() => {
 
 vi.mock("../polyfills", () => ({}));
 
+vi.mock("@sentry/react", () => ({
+	init: vi.fn(),
+	browserTracingIntegration: vi.fn(),
+	replayIntegration: vi.fn(),
+}));
+
 vi.mock("react-dom/client", () => ({
 	createRoot: bootstrapMocks.createRootMock,
 	default: {

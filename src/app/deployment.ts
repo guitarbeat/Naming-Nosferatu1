@@ -23,8 +23,12 @@ const originalConsoleError = console.error;
 console.error = (...args: unknown[]) => {
 	const message = args
 		.map((arg) => {
-			if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
-			if (typeof arg === "object") return JSON.stringify(arg, null, 2);
+			if (arg instanceof Error) {
+				return `${arg.name}: ${arg.message}`;
+			}
+			if (typeof arg === "object") {
+				return JSON.stringify(arg, null, 2);
+			}
 			return String(arg);
 		})
 		.join(" ");
@@ -125,7 +129,9 @@ function runDiagnostics(): DiagnosticResult[] {
 }
 
 function renderDiagnostics(diagnostics: DiagnosticResult[]): string {
-	if (!diagnostics || diagnostics.length === 0) return "";
+	if (!diagnostics || diagnostics.length === 0) {
+		return "";
+	}
 
 	const statusIcons: Record<string, string> = {
 		ok: '<span style="color:#22c55e">&#10003;</span>',
@@ -168,7 +174,9 @@ function renderDiagnostics(diagnostics: DiagnosticResult[]): string {
 }
 
 function renderConsoleErrors(errors: string[]): string {
-	if (!errors || errors.length === 0) return "";
+	if (!errors || errors.length === 0) {
+		return "";
+	}
 
 	const errorItems = errors
 		.slice(0, 10) // Limit to 10 most recent

@@ -11,22 +11,14 @@ import {
 	catTournamentSelections,
 	userRoles,
 } from "../shared/schema";
+import { requireAdmin } from "./auth";
 import { db } from "./db";
-import { requireSupabaseAuth, optionalSupabaseAuth, isSupabaseAdmin } from "./supabaseAuth";
-// JWT authentication removed - now using Supabase Auth exclusively
-// import jwt from "jsonwebtoken";
+import { requireSupabaseAuth } from "./supabaseAuth";
 
-const authRateLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000,
-	max: 100,
-	message: { error: "Too many requests, please try again later." },
-});
-
-// Analytics rate limiter
-const analyticsRateLimiter = rateLimit({
+const ratingsRateLimiter = rateLimit({
 	windowMs: 60 * 1000, // 1 minute
-	max: 30, // Limit to 30 analytics requests per minute
-	message: { error: "Too many analytics requests, please try again later." },
+	max: 10, // Limit to 10 rating submissions per minute
+	message: { error: "Too many rating submissions, please try again later." },
 	skipSuccessfulRequests: false,
 	skipFailedRequests: false,
 });
@@ -37,8 +29,8 @@ const upload = multer({
 		fileSize: 5 * 1024 * 1024, // 5MB
 		files: 1,
 	},
-	fileFilter: (req, file, cb) => {
-		const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+	fileFilter: (_req, file, cb) => {
+		const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 		cb(null, allowedTypes.includes(file.mimetype));
 	},
 });
@@ -46,7 +38,6 @@ const upload = multer({
 import {
 	batchHideSchema,
 	createNameSchema,
-	createUserSchema,
 	imageUploadSchema,
 	saveRatingsSchema,
 	updateHideSchema,
@@ -65,7 +56,7 @@ const getRouteParam = (value: string | string[] | undefined, key: string) => {
 	}
 
 	throw new TypeError(`Expected route param "${key}" to be a string`);
-}
+};
 
 // Mock data for when database is unavailable
 const mockNames = getFallbackNames(true);
@@ -290,7 +281,7 @@ router.get("/api/users/:userId/roles", requireSupabaseAuth, async (req, res) => 
 // Save ratings
 router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req, res) => {
 	try {
-		const { userId, ratings } = saveRatingsSchema.parse(req.body);
+		const { ratings } = saveRatingsSchema.parse(req.body);
 
 		// Additional security checks
 		if (ratings.length > 50) {
@@ -301,24 +292,26 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 		for (const rating of ratings) {
 			// Rating bounds check (already in schema but double-check)
 			if (rating.rating < 1000 || rating.rating > 3000) {
-				return res.status(400).json({ error: `Invalid rating value: ${rating.rating}. Must be between 1000-3000` });
+				return res
+					.status(400)
+					.json({ error: `Invalid rating value: ${rating.rating}. Must be between 1000-3000` });
 			}
-			
+
 			// Win/loss validation
 			const wins = rating.wins || 0;
 			const losses = rating.losses || 0;
 			if (wins < 0 || losses < 0) {
 				return res.status(400).json({ error: "Invalid win/loss values: cannot be negative" });
 			}
-			
+
 			// Reasonable total games check (prevent data corruption)
 			const totalGames = wins + losses;
 			if (totalGames > 1000) {
 				return res.status(400).json({ error: "Unrealistic game count detected" });
 			}
-			
+
 			// Check for duplicate nameIds in the same request
-			const duplicateCount = ratings.filter(r => r.nameId === rating.nameId).length;
+			const duplicateCount = ratings.filter((r) => r.nameId === rating.nameId).length;
 			if (duplicateCount > 1) {
 				return res.status(400).json({ error: `Duplicate nameId ${rating.nameId} in request` });
 			}
@@ -361,13 +354,13 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 		res.json({ success: true, count: records.length });
 	} catch (error) {
 		if (error instanceof ZodError) {
-			return res.status(400).json({ 
-				success: false, 
-				error: "Validation failed", 
-				details: error.issues.map(issue => ({
-					field: issue.path.join('.'),
-					message: issue.message
-				}))
+			return res.status(400).json({
+				success: false,
+				error: "Validation failed",
+				details: error.issues.map((issue) => ({
+					field: issue.path.join("."),
+					message: issue.message,
+				})),
 			});
 		}
 		console.error("Error saving ratings:", error);
@@ -376,7 +369,7 @@ router.post("/api/ratings", ratingsRateLimiter, requireSupabaseAuth, async (req,
 });
 
 // Get analytics - popularity
-router.get("/api/analytics/popularity", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/popularity", async (req, res) => {
 	try {
 		// Limit to max 100 to prevent DoS
 		const rawLimit = parseInt(req.query.limit as string, 10) || 20;
@@ -411,7 +404,7 @@ router.get("/api/analytics/popularity", analyticsRateLimiter, async (req, res) =
 });
 
 // Get analytics - ranking history
-router.get("/api/analytics/ranking-history", analyticsRateLimiter, async (_req, res) => {
+router.get("/api/analytics/ranking-history", async (_req, res) => {
 	try {
 		if (!db) {
 			return res.json(
@@ -442,7 +435,7 @@ router.get("/api/analytics/ranking-history", analyticsRateLimiter, async (_req, 
 });
 
 // Get analytics - leaderboard
-router.get("/api/analytics/leaderboard", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/leaderboard", async (req, res) => {
 	try {
 		// Limit to max 100 to prevent DoS
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
@@ -484,7 +477,7 @@ router.get("/api/analytics/leaderboard", analyticsRateLimiter, async (req, res) 
 });
 
 // Site stats
-router.get("/api/analytics/site-stats", analyticsRateLimiter, async (_req, res) => {
+router.get("/api/analytics/site-stats", async (_req, res) => {
 	try {
 		if (!db) {
 			return res.json({
@@ -515,7 +508,7 @@ router.get("/api/analytics/site-stats", analyticsRateLimiter, async (_req, res) 
 });
 
 // Get analytics - top-selected names (alias for popularity endpoint)
-router.get("/api/analytics/top-selected", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/top-selected", async (req, res) => {
 	try {
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
 		const limit = Math.min(Math.max(rawLimit, 1), 100);
@@ -549,7 +542,7 @@ router.get("/api/analytics/top-selected", analyticsRateLimiter, async (req, res)
 });
 
 // Get analytics - popularity scores (combined popularity + rating data)
-router.get("/api/analytics/popularity-scores", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/popularity-scores", async (req, res) => {
 	try {
 		const rawLimit = parseInt(req.query.limit as string, 10) || 50;
 		const limit = Math.min(Math.max(rawLimit, 1), 100);
@@ -587,7 +580,7 @@ router.get("/api/analytics/popularity-scores", analyticsRateLimiter, async (req,
 });
 
 // Get raw ratings for a user (used by personal analytics)
-router.get("/api/analytics/ratings-raw", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/ratings-raw", async (req, res) => {
 	try {
 		const userName = req.query.userName as string | undefined;
 
@@ -628,7 +621,7 @@ router.get("/api/analytics/ratings-raw", analyticsRateLimiter, async (req, res) 
 });
 
 // Get aggregated user stats
-router.get("/api/analytics/user-stats", analyticsRateLimiter, async (req, res) => {
+router.get("/api/analytics/user-stats", async (req, res) => {
 	try {
 		const userName = req.query.userName as string | undefined;
 
@@ -684,12 +677,12 @@ router.post("/api/images/upload", requireAdmin, upload.single("image"), async (r
 
 		// Here you would integrate with your imagesAPI
 		// For now, return success response
-		res.json({ 
+		res.json({
 			success: true,
 			message: "Image upload endpoint is ready",
 			fileName: file.originalname,
 			size: file.size,
-			userName
+			userName,
 		});
 	} catch (error) {
 		if (error instanceof ZodError) {
@@ -704,10 +697,10 @@ router.post("/api/images/upload", requireAdmin, upload.single("image"), async (r
 router.get("/api/images", requireAdmin, async (_req, res) => {
 	try {
 		// Here you would integrate with your imagesAPI.list()
-		res.json({ 
+		res.json({
 			success: true,
 			images: [],
-			message: "Image listing endpoint is ready"
+			message: "Image listing endpoint is ready",
 		});
 	} catch (error) {
 		console.error("Error listing images:", error);

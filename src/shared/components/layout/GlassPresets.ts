@@ -20,6 +20,21 @@ interface GlassPreset {
  */
 export const GLASS_PRESETS = {
 	/**
+	 * Navbar preset - Used for the floating primary navigation shell
+	 * Tuned for compact controls with a stronger edge definition
+	 */
+	navbar: {
+		radius: 32,
+		frost: 0.12,
+		saturation: 1.08,
+		outputBlur: 0.75,
+		inputBlur: 10,
+		scale: -92,
+		width: 928,
+		height: 86,
+	} satisfies GlassPreset,
+
+	/**
 	 * Card preset - Used for ProfileSection, NameSuggestion, and similar containers
 	 * Provides a subtle, elegant frosted glass effect
 	 */

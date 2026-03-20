@@ -410,20 +410,25 @@ function sendToErrorService(logData: ErrorServiceLogData): void {
 		e.name = logData.context;
 		e.stack = logData.error.stack || undefined;
 		sentry.captureException(e, {
-			tags: { 
+			tags: {
 				context: logData.context,
 				errorType: logData.error.type,
-				severity: logData.error.severity 
+				severity: logData.error.severity,
 			},
-			extra: { 
+			extra: {
 				...logData.metadata,
 				errorId: logData.error.id,
 				userMessage: logData.error.userMessage,
-				isRetryable: logData.error.isRetryable
+				isRetryable: logData.error.isRetryable,
 			},
-			level: logData.error.severity === 'critical' ? 'fatal' : 
-						 logData.error.severity === 'high' ? 'error' :
-						 logData.error.severity === 'medium' ? 'warning' : 'info'
+			level:
+				logData.error.severity === "critical"
+					? "fatal"
+					: logData.error.severity === "high"
+						? "error"
+						: logData.error.severity === "medium"
+							? "warning"
+							: "info",
 		});
 	}
 }

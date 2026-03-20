@@ -1,6 +1,6 @@
 import { isNameHidden } from "@/shared/lib/basic";
 import { api } from "@/shared/services/apiClient";
-import type { IdType, NameItem } from "@/shared/types/index";
+import type { IdType, NameItem } from "@/shared/types";
 
 export interface LeaderboardItem {
 	name_id: string | number;
@@ -128,9 +128,13 @@ export const statsAPI = {
 		}
 	},
 
-	getEngagementMetrics: async (timeframe: 'day' | 'week' | 'month' | 'year'): Promise<EngagementMetrics | null> => {
+	getEngagementMetrics: async (
+		timeframe: "day" | "week" | "month" | "year",
+	): Promise<EngagementMetrics | null> => {
 		try {
-			const metrics = await api.get<Partial<EngagementMetrics>>(`/analytics/engagement?timeframe=${timeframe}`);
+			const metrics = await api.get<Partial<EngagementMetrics>>(
+				`/analytics/engagement?timeframe=${timeframe}`,
+			);
 			if (!metrics) {
 				return null;
 			}
@@ -173,8 +177,10 @@ export const statsAPI = {
 				totalTournaments: toNumber(stats.totalTournaments),
 				completedTournaments: toNumber(stats.completedTournaments),
 				averageTournamentTime: toNumber(stats.averageTournamentTime),
-				favoriteNames: stats.favoriteNames ? String(stats.favoriteNames).split(',') : [],
-				preferredCategories: stats.preferredCategories ? String(stats.preferredCategories).split(',') : [],
+				favoriteNames: stats.favoriteNames ? String(stats.favoriteNames).split(",") : [],
+				preferredCategories: stats.preferredCategories
+					? String(stats.preferredCategories).split(",")
+					: [],
 				engagementScore: toNumber(stats.engagementScore),
 			};
 		} catch {
@@ -184,29 +190,17 @@ export const statsAPI = {
 
 	getUserRatedNames: async (userName: string): Promise<UserRatedName[]> => {
 		try {
-			// Use Promise.allSettled to handle partial failures gracefully
-			const [namesResult, ratingsResult] = await Promise.allSettled([
+			const [names, ratings] = await Promise.all([
 				api.get<NameItem[]>("/names?includeHidden=false"),
 				api.get<UserRatingRow[]>(`/analytics/ratings-raw?userName=${encodeURIComponent(userName)}`),
 			]);
 
-			const names = namesResult.status === 'fulfilled' ? namesResult.value : [];
-			const ratings = ratingsResult.status === 'fulfilled' ? ratingsResult.value : [];
-
-			// Log errors but don't fail the entire operation
-			if (namesResult.status === 'rejected') {
-				console.error('Failed to fetch names:', namesResult.reason);
-			}
-			if (ratingsResult.status === 'rejected') {
-				console.error('Failed to fetch ratings:', ratingsResult.reason);
-			}
-
 			const ratingMap = new Map<string, UserRatingRow>();
-			for (const rating of ratings) {
+			for (const rating of ratings ?? []) {
 				ratingMap.set(String(rating.nameId), rating);
 			}
 
-			return names.map((item: NameItem) => {
+			return (names ?? []).map((item) => {
 				const userRating = ratingMap.get(String(item.id));
 				return {
 					...item,
@@ -217,8 +211,7 @@ export const statsAPI = {
 					isHidden: isNameHidden(item),
 				};
 			});
-		} catch (error) {
-			console.error('Error in getUserRatedNames:', error);
+		} catch {
 			return [];
 		}
 	},

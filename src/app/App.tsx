@@ -7,8 +7,8 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import { Suspense, useCallback, useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
 import { NameSuggestionInner } from "@/features/tournament/components/NameSuggestion";
@@ -17,8 +17,8 @@ import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
-import { Lightbulb, Trophy, User } from "@/shared/lib/icons";
 import { useOfflineSync } from "@/shared/hooks";
+import { Lightbulb, Trophy, User } from "@/shared/lib/icons";
 import {
 	cleanupPerformanceMonitoring,
 	initializePerformanceMonitoring,
@@ -35,8 +35,17 @@ function App() {
 	const { user: authUser, isLoading } = useAuth();
 	const isInitialized = !isLoading;
 	const { userActions } = useAppStore();
+	const location = useLocation();
+	const { pathname } = location;
 
 	// Sync auth user with store
+	useLayoutEffect(() => {
+		if (pathname) {
+			document.documentElement.scrollTop = 0;
+			document.body.scrollTop = 0;
+		}
+	}, [pathname]);
+
 	useEffect(() => {
 		if (authUser) {
 			userActions.setAdminStatus(Boolean(authUser.isAdmin));
@@ -103,7 +112,6 @@ function HomeContent() {
 					<SectionHeading
 						icon={Trophy}
 						title="Pick Names"
-						subtitle="Select your favorite cat names to battle it out"
 					/>
 				</div>
 				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
@@ -111,7 +119,7 @@ function HomeContent() {
 				</Suspense>
 			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="lg" centered>
+			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="lg" centered={true}>
 				<SectionHeading
 					icon={Lightbulb}
 					title="Suggest a Name"
@@ -120,7 +128,7 @@ function HomeContent() {
 				<NameSuggestionInner />
 			</Section>
 
-			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="md" centered>
+			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="md" centered={true}>
 				<SectionHeading
 					icon={User}
 					title="Your Profile"
@@ -180,7 +188,7 @@ function AnalysisContent() {
 	});
 
 	return (
-		<Section id="analysis" variant="minimal" padding="comfortable" maxWidth="2xl" centered>
+		<Section id="analysis" variant="minimal" padding="comfortable" maxWidth="2xl" centered={true}>
 			<h2 className="mb-8 text-center text-3xl font-bold text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter sm:mb-12 md:text-5xl">
 				The Victors Emerge
 			</h2>
@@ -204,7 +212,7 @@ function AdminContent() {
 
 	if (!user.isAdmin) {
 		return (
-			<Section id="admin" variant="minimal" padding="comfortable" maxWidth="md" centered>
+			<Section id="admin" variant="minimal" padding="comfortable" maxWidth="md" centered={true}>
 				<div className="flex flex-col items-center gap-4 py-10 text-center">
 					<h2 className="text-3xl font-bold text-destructive">Access Denied</h2>
 					<p className="text-muted-foreground">Admin access required to view this page.</p>

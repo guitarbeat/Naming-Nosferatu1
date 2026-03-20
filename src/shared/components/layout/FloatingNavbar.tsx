@@ -4,7 +4,8 @@
  */
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import type { ElementType, ReactNode } from "react";
+import { useEffect, useId, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn, hapticNavTap, hapticTournamentStart } from "@/shared/lib/basic";
 import {
@@ -17,6 +18,8 @@ import {
 	User,
 } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
+import { getGlassPreset } from "./GlassPresets";
+import LiquidGlass from "./LiquidGlass";
 
 type NavSection = "pick" | "suggest" | "profile";
 
@@ -29,35 +32,50 @@ const keyToId: Record<NavSection, string> = {
 function FloatingNavItem({
 	icon: Icon,
 	label,
-	isActive = false,
+	variant = "primary",
+	isCurrent = false,
+	isPressed = false,
+	isAccent = false,
 	onClick,
 	customIcon,
 	className,
+	ariaLabel,
 }: {
-	icon: React.ElementType;
+	icon: ElementType;
 	label: string;
-	isActive?: boolean;
+	variant?: "primary" | "utility";
+	isCurrent?: boolean;
+	isPressed?: boolean;
+	isAccent?: boolean;
 	onClick: () => void;
-	customIcon?: React.ReactNode;
+	customIcon?: ReactNode;
 	className?: string;
+	ariaLabel?: string;
 }) {
 	return (
 		<motion.button
 			type="button"
 			whileTap={{ scale: 0.97 }}
 			className={cn(
-				"group flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-transparent p-2.5 text-foreground/75 transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50",
-				isActive && "bg-foreground/15 text-foreground",
+				"floating-navbar__item",
+				variant === "utility" ? "floating-navbar__item--utility" : "floating-navbar__item--primary",
+				isAccent && "floating-navbar__item--accent",
 				className,
 			)}
 			onClick={onClick}
-			aria-pressed={isActive}
-			aria-label={label}
+			aria-current={variant === "primary" && isCurrent ? "location" : undefined}
+			aria-pressed={variant === "utility" ? isPressed : undefined}
+			aria-label={ariaLabel ?? label}
 		>
-			<span className="flex shrink-0 items-center justify-center">
+			<span className="floating-navbar__icon" aria-hidden="true">
 				{customIcon || <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
 			</span>
-			<span className="hidden whitespace-nowrap text-xs font-semibold sm:inline sm:text-sm">
+			<span
+				className={cn(
+					"floating-navbar__label",
+					variant === "utility" && "floating-navbar__label--utility",
+				)}
+			>
 				{label}
 			</span>
 		</motion.button>
@@ -76,6 +94,7 @@ export function FloatingNavbar() {
 	const [activeSection, setActiveSection] = useState<NavSection>("pick");
 	const [isNavVisible, setIsNavVisible] = useState(true);
 	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+	const navGlassId = useId();
 
 	const isHomeRoute = location.pathname === "/";
 	const isAnalysisRoute = location.pathname === "/analysis";
@@ -85,6 +104,7 @@ export function FloatingNavbar() {
 	const isTournamentActive = Boolean(tournament.names);
 	const isComplete = tournament.isComplete;
 	const profileLabel = isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Profile";
+	const primaryItemCount = Number(!isComplete && !isTournamentActive) + Number(isComplete) + 2;
 
 	const scrollToSection = (key: NavSection) => {
 		const id = keyToId[key];
@@ -229,10 +249,9 @@ export function FloatingNavbar() {
 	}
 
 	return (
-		<nav
-			aria-label="Primary"
+		<motion.div
 			className={cn(
-				"fixed bottom-5 left-1/2 z-[100] flex max-w-[95vw] -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-foreground/10 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:gap-1.5",
+				"floating-navbar-frame",
 				!prefersReducedMotion && "transition-transform transition-opacity duration-300",
 				prefersReducedMotion && "transition-none",
 				isNavVisible
@@ -240,61 +259,78 @@ export function FloatingNavbar() {
 					: "translate-y-[calc(100%+1.25rem)] opacity-0 pointer-events-none",
 			)}
 		>
-			{!isComplete && !isTournamentActive && (
-				<FloatingNavItem
-					icon={selectedCount >= 2 ? Trophy : CheckCircle}
-					label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
-					isActive={isHomeRoute && activeSection === "pick"}
-					onClick={() => (selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick"))}
-					className={cn(selectedCount >= 2 && "text-chart-4 hover:text-chart-4/80")}
-				/>
-			)}
+			<LiquidGlass
+				id={`floating-navbar-${navGlassId.replace(/:/g, "-")}`}
+				{...getGlassPreset("navbar")}
+				className="floating-navbar-shell"
+				style={{ width: "100%", height: "auto" }}
+			>
+				<nav aria-label="Primary" className="floating-navbar">
+					<div
+						className="floating-navbar__primary"
+						style={{ gridTemplateColumns: `repeat(${primaryItemCount}, minmax(0, 1fr))` }}
+					>
+						{!isComplete && !isTournamentActive && (
+							<FloatingNavItem
+								icon={selectedCount >= 2 ? Trophy : CheckCircle}
+								label={selectedCount >= 2 ? `Start (${selectedCount})` : "Pick Names"}
+								isCurrent={isHomeRoute && activeSection === "pick"}
+								isAccent={selectedCount >= 2}
+								onClick={() =>
+									selectedCount >= 2 ? handleStartTournament() : handleNavClick("pick")
+								}
+							/>
+						)}
 
-			{isComplete && (
-				<FloatingNavItem
-					icon={BarChart3}
-					label="Analyze"
-					isActive={isAnalysisRoute}
-					onClick={() => handleNavClick("analyze")}
-				/>
-			)}
+						{isComplete && (
+							<FloatingNavItem
+								icon={BarChart3}
+								label="Analyze"
+								isCurrent={isAnalysisRoute}
+								onClick={() => handleNavClick("analyze")}
+							/>
+						)}
 
-			<FloatingNavItem
-				icon={isSwipeMode ? Layers : LayoutGrid}
-				label={isSwipeMode ? "Grid Mode" : "Swipe Mode"}
-				onClick={() => setSwipeMode(!isSwipeMode)}
-			/>
-
-			<FloatingNavItem
-				icon={Lightbulb}
-				label="Suggest"
-				isActive={isHomeRoute && activeSection === "suggest"}
-				onClick={() => handleNavClick("suggest")}
-			/>
-
-			<FloatingNavItem
-				icon={User}
-				label={profileLabel}
-				isActive={isHomeRoute && activeSection === "profile"}
-				onClick={() => handleNavClick("profile")}
-				customIcon={
-					isLoggedIn && avatarUrl ? (
-						<img
-							src={avatarUrl}
-							alt={profileLabel}
-							className="h-6 w-6 rounded-full border border-border object-cover"
+						<FloatingNavItem
+							icon={Lightbulb}
+							label="Suggest"
+							isCurrent={isHomeRoute && activeSection === "suggest"}
+							onClick={() => handleNavClick("suggest")}
 						/>
-					) : (
-						<User
-							className={cn(
-								"h-6 w-6",
-								isLoggedIn && isAdmin && "text-chart-4",
-								isLoggedIn && !isAdmin && "text-primary",
-							)}
+
+						<FloatingNavItem
+							icon={User}
+							label={profileLabel}
+							isCurrent={isHomeRoute && activeSection === "profile"}
+							onClick={() => handleNavClick("profile")}
+							customIcon={
+								isLoggedIn && avatarUrl ? (
+									<img src={avatarUrl} alt={profileLabel} className="floating-navbar__avatar" />
+								) : (
+									<User
+										className={cn(
+											"h-5 w-5",
+											isLoggedIn && isAdmin && "text-chart-4",
+											isLoggedIn && !isAdmin && "text-primary",
+										)}
+									/>
+								)
+							}
 						/>
-					)
-				}
-			/>
-		</nav>
+					</div>
+
+					<div className="floating-navbar__utility">
+						<FloatingNavItem
+							icon={isSwipeMode ? Layers : LayoutGrid}
+							label={isSwipeMode ? "Swipe" : "Grid"}
+							variant="utility"
+							isPressed={isSwipeMode}
+							ariaLabel={isSwipeMode ? "Swipe mode active" : "Grid mode active"}
+							onClick={() => setSwipeMode(!isSwipeMode)}
+						/>
+					</div>
+				</nav>
+			</LiquidGlass>
+		</motion.div>
 	);
 }

@@ -5,9 +5,10 @@
  */
 
 import { cva } from "class-variance-authority";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import React, { memo, useEffect, useId, useState } from "react";
 import CatImage from "@/shared/components/layout/CatImage";
+import { useTilt } from "@/shared/hooks/useTilt";
 import { cn } from "@/shared/lib/basic";
 import { TIMING } from "@/shared/lib/constants";
 import { ZoomIn } from "@/shared/lib/icons";
@@ -135,14 +136,7 @@ const CardBase = memo(
 			},
 			ref,
 		) => {
-			const mouseX = useMotionValue(0);
-			const mouseY = useMotionValue(0);
-
-			const mouseXSpring = useSpring(mouseX);
-			const mouseYSpring = useSpring(mouseY);
-
-			const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-			const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+			const tilt = useTilt(enableTilt);
 
 			const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 				const rect = e.currentTarget.getBoundingClientRect();
@@ -153,21 +147,12 @@ const CardBase = memo(
 				e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
 				e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
 
-				if (enableTilt) {
-					const xPct = x / rect.width - 0.5;
-					const yPct = y / rect.height - 0.5;
-					mouseX.set(xPct);
-					mouseY.set(yPct);
-				}
-
+				tilt.handleMouseMove(e);
 				onMouseMove?.(e);
 			};
 
 			const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-				if (enableTilt) {
-					mouseX.set(0);
-					mouseY.set(0);
-				}
+				tilt.handleMouseLeave();
 				onMouseLeave?.(e);
 			};
 
@@ -245,18 +230,18 @@ const CardBase = memo(
 				);
 			}
 
-			const motionProps = enableTilt
+			const motionProps = tilt.isEnabled
 				? {
 						style: {
-							rotateX,
-							rotateY,
+							rotateX: tilt.rotateX,
+							rotateY: tilt.rotateY,
 							transformStyle: "preserve-3d" as const,
 							...style,
 						},
 					}
 				: { style };
 
-			const CommonComponent = (enableTilt ? motion.div : Component) as React.ElementType;
+			const CommonComponent = (tilt.isEnabled ? motion.div : Component) as React.ElementType;
 
 			return (
 				<CommonComponent
@@ -273,7 +258,7 @@ const CardBase = memo(
 						style={
 							enableTilt
 								? {
-										transform: "translateZ(20px)",
+										transform: "translateZ(10px)",
 										transformStyle: "preserve-3d",
 									}
 								: undefined
@@ -428,6 +413,7 @@ interface CardNameProps {
 	onSelectionChange?: (selected: boolean) => void;
 	image?: string;
 	onImageClick?: (e: React.MouseEvent) => void;
+	enableTilt?: boolean;
 }
 
 const CardNameBase = memo(function CardName({
@@ -446,10 +432,18 @@ const CardNameBase = memo(function CardName({
 	onSelectionChange,
 	image,
 	onImageClick,
+	enableTilt = true,
 }: CardNameProps) {
 	const [rippleStyle, setRippleStyle] = useState<React.CSSProperties>({});
 	const [isRippling, setIsRippling] = useState(false);
 	const cardRef = React.useRef<HTMLDivElement>(null);
+
+	// Disable tilt on touch devices for better performance
+	const [isTouchDevice, setIsTouchDevice] = useState(false);
+	useEffect(() => {
+		setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
+	}, []);
+	const shouldEnableTilt = enableTilt && !isTouchDevice;
 
 	useEffect(() => {
 		if (isRippling) {
@@ -524,7 +518,7 @@ const CardNameBase = memo(function CardName({
 	const Component = isInteractive ? "button" : "div";
 
 	const cardContent = (
-		<div className="relative w-full h-full">
+		<div className="relative w-full h-full" style={{ perspective: shouldEnableTilt && !disabled ? "800px" : undefined }}>
 			<Card
 				as={Component}
 				ref={cardRef as React.Ref<HTMLDivElement>}
@@ -537,7 +531,7 @@ const CardNameBase = memo(function CardName({
 						: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
 					disabled && "opacity-50 cursor-not-allowed filter grayscale",
 					isHidden && "opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
-					image && "min-h-[220px]",
+					image && "min-h-[220px] p-0 overflow-hidden",
 					className,
 				)}
 				onClick={
@@ -565,6 +559,7 @@ const CardNameBase = memo(function CardName({
 				variant={isSelected ? "primary" : "default"}
 				padding={size === "small" ? "small" : "medium"}
 				interactive={isInteractive}
+				enableTilt={shouldEnableTilt && !disabled}
 			>
 				{/* Hidden Badge */}
 				{isHidden && (
@@ -576,7 +571,7 @@ const CardNameBase = memo(function CardName({
 				{image && (
 					<div
 						className={cn(
-							"relative w-full aspect-square mb-2 rounded-lg overflow-hidden border border-border/10 shadow-inner group/image outline-none focus-visible:ring-2 focus-visible:ring-primary",
+							"absolute inset-0 w-full h-full overflow-hidden rounded-xl group/image outline-none focus-visible:ring-2 focus-visible:ring-primary",
 							onImageClick && "cursor-pointer",
 						)}
 						onClick={(e) => {
@@ -599,8 +594,10 @@ const CardNameBase = memo(function CardName({
 						<CatImage
 							src={image}
 							containerClassName="w-full h-full"
-							imageClassName="w-full h-full object-cover scale-125 transition-transform duration-500 hover:scale-110 group-focus-visible/image:scale-110"
+							imageClassName="w-full h-full object-cover transition-transform duration-500 hover:scale-110 group-focus-visible/image:scale-110"
 						/>
+						{/* Bottom gradient for text legibility */}
+						<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 						{onImageClick && (
 							<div className="absolute inset-0 bg-black/20 opacity-0 group-hover/image:opacity-100 group-focus-visible/image:opacity-100 transition-opacity flex items-center justify-center">
 								<ZoomIn className="text-white w-8 h-8 drop-shadow-md" />
@@ -609,42 +606,57 @@ const CardNameBase = memo(function CardName({
 					</div>
 				)}
 
-				<h3
+				{/* Text content - overlaid on image when present */}
+				<div
 					className={cn(
-						"font-bold leading-tight text-foreground m-0 z-10 tracking-tight",
-						size === "small" ? "text-sm" : "text-lg md:text-xl",
-						isHidden && "text-chart-4/80",
+						"z-10 flex flex-col items-center gap-1",
+						image && "absolute inset-0 justify-center px-3 w-full",
 					)}
-					id={`${getSafeId(name)}-title`}
 				>
-					{name}
-				</h3>
-
-				{pronunciation && (
-					<p
-						id={`${getSafeId(name)}-pronunciation`}
+					<h3
 						className={cn(
-							"m-0 text-foreground/80 font-medium z-10",
-							size === "small" ? "text-[10px]" : "text-xs",
-							isHidden && "text-chart-4/70",
+							"font-bold leading-tight m-0 tracking-tight",
+							image ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]" : "text-foreground",
+							size === "small" ? "text-sm" : "text-lg md:text-xl",
+							isHidden && "text-chart-4/80",
 						)}
+						id={`${getSafeId(name)}-title`}
 					>
-						[{pronunciation}]
-					</p>
-				)}
+						{name}
+					</h3>
 
-				{description && (
-					<p
-						id={`${getSafeId(name)}-description`}
-						className={cn(
-							"flex-1 m-0 text-foreground/70 font-normal leading-tight z-10",
-							size === "small" ? "text-[10px] min-h-[2.5em]" : "text-xs",
-							isHidden && "text-chart-4/60",
-						)}
-					>
-						{description}
-					</p>
-				)}
+					{pronunciation && (
+						<p
+							id={`${getSafeId(name)}-pronunciation`}
+							className={cn(
+								"m-0 font-medium",
+								image
+									? "text-warning drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+									: "text-foreground/80",
+								size === "small" ? "text-[10px]" : "text-xs",
+								isHidden && "text-chart-4/70",
+							)}
+						>
+							[{pronunciation}]
+						</p>
+					)}
+
+					{description && (
+						<p
+							id={`${getSafeId(name)}-description`}
+							className={cn(
+								"m-0 font-normal leading-tight",
+								image
+									? "text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+									: "text-foreground/70",
+								size === "small" ? "text-[10px]" : "text-xs",
+								isHidden && "text-chart-4/60",
+							)}
+						>
+							{description}
+						</p>
+					)}
+				</div>
 
 				{metadata && (
 					<div className="flex flex-col gap-1 mt-auto w-full z-10">

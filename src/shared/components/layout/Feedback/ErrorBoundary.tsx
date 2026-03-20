@@ -69,14 +69,19 @@ function collectDiagnostics(error: Error | null): DiagnosticItem[] {
 	// Error type classification
 	if (error) {
 		let errorType = "Unknown";
-		if (error.name === "TypeError") errorType = "Type Error";
-		else if (error.name === "ReferenceError") errorType = "Reference Error";
-		else if (error.name === "SyntaxError") errorType = "Syntax Error";
-		else if (error.message?.includes("fetch") || error.message?.includes("network"))
+		if (error.name === "TypeError") {
+			errorType = "Type Error";
+		} else if (error.name === "ReferenceError") {
+			errorType = "Reference Error";
+		} else if (error.name === "SyntaxError") {
+			errorType = "Syntax Error";
+		} else if (error.message?.includes("fetch") || error.message?.includes("network")) {
 			errorType = "Network Error";
-		else if (error.message?.includes("supabase") || error.message?.includes("database"))
+		} else if (error.message?.includes("supabase") || error.message?.includes("database")) {
 			errorType = "Database Error";
-		else errorType = error.name || "Runtime Error";
+		} else {
+			errorType = error.name || "Runtime Error";
+		}
 
 		diagnostics.push({
 			label: "Error Type",
@@ -98,7 +103,8 @@ function collectDiagnostics(error: Error | null): DiagnosticItem[] {
 function parseStackTrace(stack: string): { file: string; line: string; func: string }[] {
 	const lines = stack.split("\n").slice(1, 6); // Get first 5 stack frames
 	return lines.map((line) => {
-		const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):\d+\)/) ||
+		const match =
+			line.match(/at\s+(.+?)\s+\((.+?):(\d+):\d+\)/) ||
 			line.match(/at\s+(.+?):(\d+):\d+/) ||
 			line.match(/(.+?)@(.+?):(\d+):\d+/);
 
@@ -186,7 +192,9 @@ ${error?.stack || "No stack trace available"}
 					<div className="flex items-start gap-3">
 						<span className="text-red-400 text-xl shrink-0">!</span>
 						<div className="flex-1 min-w-0">
-							<p className="font-medium text-red-300 break-words">{error?.message || "An unexpected error occurred"}</p>
+							<p className="font-medium text-red-300 break-words">
+								{error?.message || "An unexpected error occurred"}
+							</p>
 							{errorId && (
 								<p className="text-xs text-muted-foreground mt-1 font-mono">ID: {errorId}</p>
 							)}
@@ -211,9 +219,7 @@ ${error?.stack || "No stack trace available"}
 									{statusIcons[item.status] === "close" && "ERR"}
 								</span>
 								<span className="text-muted-foreground">{item.label}:</span>
-								<span className="text-foreground/80 truncate font-mono text-xs">
-									{item.value}
-								</span>
+								<span className="text-foreground/80 truncate font-mono text-xs">{item.value}</span>
 							</div>
 						))}
 					</div>
@@ -308,8 +314,8 @@ ${error?.stack || "No stack trace available"}
 
 				{/* Help text */}
 				<p className="text-xs text-muted-foreground">
-					Press <kbd className="px-1.5 py-0.5 bg-black/30 rounded text-foreground/60">F12</kbd>{" "}
-					to open DevTools for more details
+					Press <kbd className="px-1.5 py-0.5 bg-black/30 rounded text-foreground/60">F12</kbd> to
+					open DevTools for more details
 				</p>
 			</div>
 		</div>

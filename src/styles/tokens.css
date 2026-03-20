@@ -27,6 +27,10 @@
 	--accent-foreground: hsl(0deg 0% 0%);
 	--destructive: hsl(0deg 84% 60%);
 	--destructive-foreground: hsl(0deg 0% 98%);
+	--success: hsl(142deg 71% 45%);
+	--success-foreground: hsl(0deg 0% 100%);
+	--warning: hsl(38deg 92% 50%);
+	--warning-foreground: hsl(0deg 0% 100%);
 	--border: hsl(0deg 0% 0%);
 	--input: hsl(0deg 0% 0%);
 	--ring: hsl(0deg 0% 0%);
@@ -85,6 +89,10 @@
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
 	--color-destructive-foreground: var(--destructive-foreground);
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -506,6 +514,30 @@
 	--nav-text-muted: var(--pw-text-base);
 	--nav-highlight: hsl(var(--pw-sage-hsl));
 	--nav-accent: hsl(var(--pw-coral-hsl));
+	--nav-shell-bg: color-mix(in srgb, var(--surface-floating-bg) 84%, transparent);
+	--nav-shell-border: color-mix(in srgb, var(--nav-highlight) 18%, var(--border-color));
+	--nav-shell-shadow:
+		0 20px 44px color-mix(in srgb, var(--overlay-darker) 42%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+	--nav-pill-bg: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--nav-highlight) 24%, transparent),
+		color-mix(in srgb, var(--nav-accent) 16%, transparent)
+	);
+	--nav-pill-hover-bg: color-mix(in srgb, var(--nav-highlight) 12%, transparent);
+	--nav-pill-border: color-mix(in srgb, var(--nav-highlight) 30%, var(--border-color));
+	--nav-pill-hover-border: color-mix(in srgb, var(--nav-accent) 28%, transparent);
+	--nav-pill-shadow:
+		0 10px 22px color-mix(in srgb, var(--nav-highlight) 14%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
+	--nav-utility-bg: color-mix(in srgb, var(--surface-muted) 28%, transparent);
+	--nav-utility-border: color-mix(in srgb, var(--text-primary) 10%, transparent);
+	--nav-utility-active-bg: color-mix(in srgb, var(--nav-highlight) 18%, transparent);
+	--nav-utility-active-border: color-mix(in srgb, var(--nav-highlight) 32%, transparent);
+	--nav-utility-shadow:
+		0 8px 18px color-mix(in srgb, var(--overlay-darker) 20%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+	--nav-accent-text: color-mix(in srgb, var(--chart-4) 80%, var(--text-primary));
 
 	/* Semantic color overrides */
 	--success-color: var(--color-success);

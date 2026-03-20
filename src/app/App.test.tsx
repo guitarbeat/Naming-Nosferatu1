@@ -83,6 +83,9 @@ vi.mock("@/app/appConfig", () => ({
 
 describe("App Component", () => {
 	it("renders the tournament flow on home route", async () => {
+		document.documentElement.scrollTop = 120;
+		document.body.scrollTop = 120;
+
 		render(
 			<MemoryRouter initialEntries={["/"]}>
 				<App />
@@ -93,6 +96,9 @@ describe("App Component", () => {
 			expect(screen.getByTestId("app-layout")).toBeInTheDocument();
 			expect(screen.getByTestId("tournament-flow")).toBeInTheDocument();
 		});
+
+		expect(document.documentElement.scrollTop).toBe(0);
+		expect(document.body.scrollTop).toBe(0);
 	});
 
 	it("renders the tournament page", async () => {
