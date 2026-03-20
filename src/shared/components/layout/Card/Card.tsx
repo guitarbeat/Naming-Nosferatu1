@@ -537,7 +537,7 @@ const CardNameBase = memo(function CardName({
 						: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
 					disabled && "opacity-50 cursor-not-allowed filter grayscale",
 					isHidden && "opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
-					image && "min-h-[220px]",
+					image && "min-h-[220px] p-0 overflow-hidden",
 					className,
 				)}
 				onClick={
@@ -576,7 +576,7 @@ const CardNameBase = memo(function CardName({
 				{image && (
 					<div
 						className={cn(
-							"relative w-full aspect-square mb-2 rounded-lg overflow-hidden border border-border/10 shadow-inner group/image outline-none focus-visible:ring-2 focus-visible:ring-primary",
+							"absolute inset-0 w-full h-full overflow-hidden rounded-xl group/image outline-none focus-visible:ring-2 focus-visible:ring-primary",
 							onImageClick && "cursor-pointer",
 						)}
 						onClick={(e) => {
@@ -599,8 +599,10 @@ const CardNameBase = memo(function CardName({
 						<CatImage
 							src={image}
 							containerClassName="w-full h-full"
-							imageClassName="w-full h-full object-cover scale-125 transition-transform duration-500 hover:scale-110 group-focus-visible/image:scale-110"
+							imageClassName="w-full h-full object-cover transition-transform duration-500 hover:scale-110 group-focus-visible/image:scale-110"
 						/>
+						{/* Bottom gradient for text legibility */}
+						<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 						{onImageClick && (
 							<div className="absolute inset-0 bg-black/20 opacity-0 group-hover/image:opacity-100 group-focus-visible/image:opacity-100 transition-opacity flex items-center justify-center">
 								<ZoomIn className="text-white w-8 h-8 drop-shadow-md" />
@@ -609,42 +611,51 @@ const CardNameBase = memo(function CardName({
 					</div>
 				)}
 
-				<h3
-					className={cn(
-						"font-bold leading-tight text-foreground m-0 z-10 tracking-tight",
-						size === "small" ? "text-sm" : "text-lg md:text-xl",
-						isHidden && "text-chart-4/80",
+				{/* Text content - overlaid on image when present */}
+				<div className={cn(
+					"z-10 flex flex-col items-center gap-1",
+					image && "mt-auto pb-3 px-3 w-full",
+				)}>
+					<h3
+						className={cn(
+							"font-bold leading-tight m-0 tracking-tight",
+							image ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]" : "text-foreground",
+							size === "small" ? "text-sm" : "text-lg md:text-xl",
+							isHidden && "text-chart-4/80",
+						)}
+						id={`${getSafeId(name)}-title`}
+					>
+						{name}
+					</h3>
+
+					{pronunciation && (
+						<p
+							id={`${getSafeId(name)}-pronunciation`}
+							className={cn(
+								"m-0 font-medium",
+								image ? "text-warning drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/80",
+								size === "small" ? "text-[10px]" : "text-xs",
+								isHidden && "text-chart-4/70",
+							)}
+						>
+							[{pronunciation}]
+						</p>
 					)}
-					id={`${getSafeId(name)}-title`}
-				>
-					{name}
-				</h3>
 
-				{pronunciation && (
-					<p
-						id={`${getSafeId(name)}-pronunciation`}
-						className={cn(
-							"m-0 text-foreground/80 font-medium z-10",
-							size === "small" ? "text-[10px]" : "text-xs",
-							isHidden && "text-chart-4/70",
-						)}
-					>
-						[{pronunciation}]
-					</p>
-				)}
-
-				{description && (
-					<p
-						id={`${getSafeId(name)}-description`}
-						className={cn(
-							"flex-1 m-0 text-foreground/70 font-normal leading-tight z-10",
-							size === "small" ? "text-[10px] min-h-[2.5em]" : "text-xs",
-							isHidden && "text-chart-4/60",
-						)}
-					>
-						{description}
-					</p>
-				)}
+					{description && (
+						<p
+							id={`${getSafeId(name)}-description`}
+							className={cn(
+								"m-0 font-normal leading-tight",
+								image ? "text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/70",
+								size === "small" ? "text-[10px]" : "text-xs",
+								isHidden && "text-chart-4/60",
+							)}
+						>
+							{description}
+						</p>
+					)}
+				</div>
 
 				{metadata && (
 					<div className="flex flex-col gap-1 mt-auto w-full z-10">
