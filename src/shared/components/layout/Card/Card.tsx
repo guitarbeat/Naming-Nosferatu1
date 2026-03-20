@@ -537,7 +537,7 @@ const CardNameBase = memo(function CardName({
 						: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
 					disabled && "opacity-50 cursor-not-allowed filter grayscale",
 					isHidden && "opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
-					image && "min-h-[220px]",
+					image && "min-h-[220px] p-0 overflow-hidden",
 					className,
 				)}
 				onClick={
