@@ -138,11 +138,14 @@ const CardBase = memo(
 			const mouseX = useMotionValue(0);
 			const mouseY = useMotionValue(0);
 
-			const mouseXSpring = useSpring(mouseX);
-			const mouseYSpring = useSpring(mouseY);
+			// Snappy spring config for lively tilt response
+			const springConfig = { stiffness: 400, damping: 25, mass: 0.5 };
+			const mouseXSpring = useSpring(mouseX, springConfig);
+			const mouseYSpring = useSpring(mouseY, springConfig);
 
-			const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-			const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+			// Subtle tilt: max 6 degrees for smooth, refined effect
+			const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
+			const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
 
 			const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 				const rect = e.currentTarget.getBoundingClientRect();
@@ -251,6 +254,7 @@ const CardBase = memo(
 							rotateX,
 							rotateY,
 							transformStyle: "preserve-3d" as const,
+							willChange: "transform",
 							...style,
 						},
 					}
@@ -273,7 +277,7 @@ const CardBase = memo(
 						style={
 							enableTilt
 								? {
-										transform: "translateZ(20px)",
+										transform: "translateZ(10px)",
 										transformStyle: "preserve-3d",
 									}
 								: undefined
@@ -428,6 +432,7 @@ interface CardNameProps {
 	onSelectionChange?: (selected: boolean) => void;
 	image?: string;
 	onImageClick?: (e: React.MouseEvent) => void;
+	enableTilt?: boolean;
 }
 
 const CardNameBase = memo(function CardName({
@@ -446,10 +451,18 @@ const CardNameBase = memo(function CardName({
 	onSelectionChange,
 	image,
 	onImageClick,
+	enableTilt = true,
 }: CardNameProps) {
 	const [rippleStyle, setRippleStyle] = useState<React.CSSProperties>({});
 	const [isRippling, setIsRippling] = useState(false);
 	const cardRef = React.useRef<HTMLDivElement>(null);
+
+	// Disable tilt on touch devices for better performance
+	const [isTouchDevice, setIsTouchDevice] = useState(false);
+	useEffect(() => {
+		setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
+	}, []);
+	const shouldEnableTilt = enableTilt && !isTouchDevice;
 
 	useEffect(() => {
 		if (isRippling) {
@@ -524,7 +537,7 @@ const CardNameBase = memo(function CardName({
 	const Component = isInteractive ? "button" : "div";
 
 	const cardContent = (
-		<div className="relative w-full h-full">
+		<div className="relative w-full h-full" style={{ perspective: shouldEnableTilt && !disabled ? "800px" : undefined }}>
 			<Card
 				as={Component}
 				ref={cardRef as React.Ref<HTMLDivElement>}
@@ -565,6 +578,7 @@ const CardNameBase = memo(function CardName({
 				variant={isSelected ? "primary" : "default"}
 				padding={size === "small" ? "small" : "medium"}
 				interactive={isInteractive}
+				enableTilt={shouldEnableTilt && !disabled}
 			>
 				{/* Hidden Badge */}
 				{isHidden && (
