@@ -612,10 +612,12 @@ const CardNameBase = memo(function CardName({
 				)}
 
 				{/* Text content - overlaid on image when present */}
-				<div className={cn(
-					"z-10 flex flex-col items-center gap-1",
-					image && "mt-auto pb-3 px-3 w-full",
-				)}>
+				<div
+					className={cn(
+						"z-10 flex flex-col items-center gap-1",
+						image && "mt-auto pb-3 px-3 w-full",
+					)}
+				>
 					<h3
 						className={cn(
 							"font-bold leading-tight m-0 tracking-tight",
@@ -633,7 +635,9 @@ const CardNameBase = memo(function CardName({
 							id={`${getSafeId(name)}-pronunciation`}
 							className={cn(
 								"m-0 font-medium",
-								image ? "text-warning drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/80",
+								image
+									? "text-warning drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+									: "text-foreground/80",
 								size === "small" ? "text-[10px]" : "text-xs",
 								isHidden && "text-chart-4/70",
 							)}
@@ -647,7 +651,9 @@ const CardNameBase = memo(function CardName({
 							id={`${getSafeId(name)}-description`}
 							className={cn(
 								"m-0 font-normal leading-tight",
-								image ? "text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" : "text-foreground/70",
+								image
+									? "text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+									: "text-foreground/70",
 								size === "small" ? "text-[10px]" : "text-xs",
 								isHidden && "text-chart-4/60",
 							)}
