@@ -1,6 +1,7 @@
 modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
+integrations = ["javascript_database:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -44,3 +45,4 @@ PORT = "3001"
 JWT_SECRET = "2ae5c0802b5832cf723e475271541e4eb3ebd5e21541c71da1c8aad9c335a298ceac6d2863cc2b19553b937084a0539ca4c580080f1defc8e167b0275d684647"
 VITE_SUPABASE_URL = "https://ocghxwwwuubgmwsxgyoy.supabase.co"
 VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZ2h4d3d3dXViZ213c3hneW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTgzMjksImV4cCI6MjA2NTY3NDMyOX0.93cpwT3YCC5GTwhlw4YAzSBgtxbp6fGkjcfqzdKX4E0"
+SUPABASE_URL = "https://ocghxwwwuubgmwsxgyoy.supabase.co"
