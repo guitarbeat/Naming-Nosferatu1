@@ -780,164 +780,117 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				: null;
 	return (
 		<div className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
-			<header className="pt-2 px-3 sm:px-4 space-y-2 flex-shrink-0">
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex flex-wrap items-center gap-2 sm:gap-4">
-						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
-							<Gamepad2 className="text-primary size-3.5" />
-							<span className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-foreground/90">
-								{isComplete
-									? "Tournament Complete!"
-									: `Round ${roundNumber} / ${totalRounds} · ${bracketStage}`}
-							</span>
-						</div>
-						<div className="px-3 py-1.5 sm:px-4 rounded-full flex items-center gap-2 bg-foreground/10 backdrop-blur-md border border-border/20">
-							<span className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-foreground/90">
-								Mode: {tournamentMode === "2v2" ? "2v2 Teams" : "1v1"}
-							</span>
-						</div>
-						{isComplete && (
-							<div className="px-3 py-1 rounded-full flex items-center gap-2 bg-green-500/20 border border-green-500/30">
-								<PartyPopper className="text-green-400 size-3.5" />
-								<span className="text-[11px] sm:text-xs font-bold text-green-400">
-									Results Downloaded
-								</span>
-							</div>
-						)}
+		<header className="px-3 sm:px-4 pt-2 pb-1 flex-shrink-0 space-y-1.5">
+				{/* Row 1: Round info, progress bar, match count, controls */}
+				<div className="flex items-center gap-2 sm:gap-3">
+					{/* Round / Mode pill */}
+					<div className="shrink-0 px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-foreground/10 backdrop-blur-md border border-border/20">
+						<Gamepad2 className="text-primary size-3" />
+						<span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase text-foreground/90 whitespace-nowrap">
+							{isComplete
+								? "Complete!"
+								: `R${roundNumber}/${totalRounds} · ${bracketStage}`}
+						</span>
+						<span className="text-[10px] sm:text-xs text-foreground/50">·</span>
+						<span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase text-foreground/70">
+							{tournamentMode === "2v2" ? "2v2" : "1v1"}
+						</span>
 					</div>
-					<div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-						<div className="flex items-center gap-2">
-							<Medal className="text-accent" />
-							<span className="text-[11px] sm:text-xs font-bold">
-								{currentMatchNumber} / {totalMatches}
-							</span>
-						</div>
-						{etaMinutes > 0 && !isComplete && (
-							<div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground">
-								<Clock className="size-3.5" />
-								<span>~{etaMinutes}m</span>
-							</div>
-						)}
-					</div>
-				</div>
-				<div className="flex flex-col gap-2">
-					<div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+
+					{/* Progress bar - fills remaining space */}
+					<div className="flex-1 h-1.5 bg-foreground/5 rounded-full overflow-hidden min-w-0">
 						<div
-							className={`h-full rounded-full shadow-[0_0_10px_#a65eed] transition-all duration-500 ${
-								isComplete ? "bg-green-500" : "bg-primary"
+							className={`h-full rounded-full transition-all duration-500 ${
+								isComplete ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" : "bg-primary shadow-[0_0_10px_#a65eed]"
 							}`}
 							style={{ width: `${progress || (currentMatchNumber / totalMatches) * 100}%` }}
 						/>
 					</div>
-					<div className="text-center text-[11px] sm:text-xs text-muted-foreground">
-						{isComplete ? (
-							<span className="text-green-400 font-bold">🎉 Tournament Complete! 🎉</span>
-						) : (
+
+					{/* Match counter */}
+					<div className="shrink-0 flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-foreground/70">
+						<Medal className="text-accent size-3.5" />
+						<span>{currentMatchNumber}/{totalMatches}</span>
+						{etaMinutes > 0 && !isComplete && (
 							<>
-								{progress}% Complete · {bracketStage}
+								<Clock className="size-3 text-muted-foreground" />
+								<span className="text-muted-foreground">~{etaMinutes}m</span>
 							</>
 						)}
 					</div>
-					<BracketTree round={roundNumber} totalRounds={totalRounds} />
-					{dominantStreak && (
-						<div className="text-center text-[11px] sm:text-xs">
-							<span
-								className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
-							>
-								<span>🔥</span>
-								<span>
-									Hot streak: {dominantStreak.name} ({dominantStreak.streak} wins)
-								</span>
-							</span>
-						</div>
-					)}
-				</div>
-			</header>
 
-			<section className="px-3 sm:px-4 py-1.5 flex-shrink-0">
-				<div className="p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<div className="w-full sm:w-auto flex flex-wrap gap-2 items-center justify-center sm:justify-start">
+					{/* Audio & controls cluster */}
+					<div className="shrink-0 flex items-center gap-1">
 						<button
 							type="button"
 							onClick={audioManager.handleToggleMute}
-							className="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
+							className="size-8 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
 							aria-label={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
-							aria-pressed={!audioManager.isMuted}
-							title={audioManager.isMuted ? "Unmute audio" : "Mute audio"}
 						>
-							{audioManager.isMuted ? <VolumeX /> : <Volume2 />}
+							{audioManager.isMuted ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5" />}
 						</button>
-						<input
-							type="range"
-							min="0"
-							max="1"
-							step="0.1"
-							value={audioManager.volume}
-							onChange={(e) => audioManager.handleVolumeChange(null, parseFloat(e.target.value))}
-							className="w-full max-w-[180px] sm:w-20 h-1 bg-foreground/20 rounded-lg appearance-none cursor-pointer slider"
-							aria-label="Volume control"
-							title={`Volume: ${Math.round(audioManager.volume * 100)}%`}
-						/>
 						<button
 							type="button"
 							onClick={audioManager.handlePreviousTrack}
-							className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
+							className="size-8 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
 							aria-label="Previous track"
-							title="Previous track"
 						>
-							<SkipBack className="size-3.5" />
+							<SkipBack className="size-3" />
 						</button>
 						<button
 							type="button"
 							onClick={audioManager.toggleBackgroundMusic}
-							className={`w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg transition-colors ${
+							className={`size-8 flex items-center justify-center rounded-lg transition-colors ${
 								audioManager.backgroundMusicEnabled
 									? "bg-primary/20 text-primary"
 									: "bg-foreground/5 text-muted-foreground hover:text-foreground"
 							}`}
-							aria-label={
-								audioManager.backgroundMusicEnabled
-									? "Stop background music"
-									: "Play background music"
-							}
-							aria-pressed={audioManager.backgroundMusicEnabled}
-							title={`${audioManager.backgroundMusicEnabled ? "Stop" : "Play"} background music: ${audioManager.currentTrack}`}
+							aria-label={audioManager.backgroundMusicEnabled ? "Stop music" : "Play music"}
 						>
-							<Music className="size-3.5" />
+							<Music className="size-3" />
 						</button>
 						<button
 							type="button"
 							onClick={audioManager.handleNextTrack}
-							className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
+							className="size-8 flex items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
 							aria-label="Next track"
-							title="Next track"
 						>
-							<SkipForward className="size-3.5" />
+							<SkipForward className="size-3" />
+						</button>
+						<button
+							type="button"
+							onClick={() => setCatPictures(!showCatPictures)}
+							className={`size-8 flex items-center justify-center rounded-lg transition-colors ${showCatPictures ? "bg-primary/20 text-primary" : "bg-foreground/5 text-muted-foreground hover:text-foreground"}`}
+							aria-label={showCatPictures ? "Names only" : "Show cats"}
+							title={showCatPictures ? "Names only" : "Show cats"}
+						>
+							<PawPrint className="size-3" />
 						</button>
 						{handleQuit && (
 							<button
 								type="button"
 								onClick={handleQuit}
-								className="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-destructive/20 text-destructive hover:text-destructive/80 transition-colors"
+								className="size-8 flex items-center justify-center rounded-lg bg-destructive/20 text-destructive hover:text-destructive/80 transition-colors"
 								aria-label="Quit tournament"
-								title="Quit tournament"
 							>
-								<X />
+								<X className="size-3.5" />
 							</button>
 						)}
 					</div>
-					<button
-						type="button"
-						onClick={() => setCatPictures(!showCatPictures)}
-						className={`w-full sm:w-auto justify-center flex items-center gap-2 px-4 h-11 sm:h-10 rounded-lg font-bold text-[11px] sm:text-xs uppercase tracking-wider shadow-lg ${showCatPictures ? "bg-primary shadow-primary/20" : "bg-foreground/10"}`}
-						aria-pressed={showCatPictures}
-						title={showCatPictures ? "Hide cat pictures" : "Show cat pictures"}
-					>
-						<PawPrint className="size-3.5" />
-						<span>{showCatPictures ? "Names Only" : "Show Cats"}</span>
-					</button>
 				</div>
-			</section>
+
+				{/* Row 2: Bracket path + streak (compact) */}
+				<div className="hidden sm:flex items-center justify-between gap-2">
+					<BracketTree round={roundNumber} totalRounds={totalRounds} />
+					{dominantStreak && (
+						<span
+							className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+						>
+							🔥 {dominantStreak.name} x{dominantStreak.streak}
+						</span>
+					)}
+				</div>
+			</header>
 
 			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
 				{/* Animated blob backgrounds */}

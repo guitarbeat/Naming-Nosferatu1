@@ -51,25 +51,25 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
 	// Update connection state
 	useEffect(() => {
-		if (wsServiceRef.current) {
-			const updateConnectionState = () => {
-				const state = wsServiceRef.current.getConnectionState();
-				setConnectionState(state);
-			};
+		const service = wsServiceRef.current;
+		if (!service) return;
 
-			// Listen for connection state changes
-			const interval = setInterval(updateConnectionState, 1000);
-			wsServiceRef.current.onMessage("connection_state", (message) => {
-				if (message.data) {
-					setConnectionState(message.data as "connecting" | "connected" | "disconnected" | "error");
-				}
-			});
+		const updateConnectionState = () => {
+			const state = service.getConnectionState();
+			setConnectionState(state);
+		};
 
-			return () => {
-				clearInterval(interval);
-				wsServiceRef.current.offMessage("connection_state");
-			};
-		}
+		const interval = setInterval(updateConnectionState, 1000);
+		service.onMessage("connection_state", (message) => {
+			if (message.data) {
+				setConnectionState(message.data as "connecting" | "connected" | "disconnected" | "error");
+			}
+		});
+
+		return () => {
+			clearInterval(interval);
+			service.offMessage("connection_state");
+		};
 	}, []);
 
 	// Tournament subscription
