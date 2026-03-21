@@ -90,6 +90,158 @@ const EXIT_SPRING_CONFIG = {
 	velocity: 50,
 };
 
+// Shared hook for deferred sync to prevent render cycle issues
+const useDeferredSync = () => {
+	const deferredSync = useCallback((syncFn: () => void) => {
+		setTimeout(syncFn, 0);
+	}, []);
+	
+	return deferredSync;
+};
+
+// Shared components for better DRY architecture
+
+// Selection badge component
+const SelectionBadge = () => (
+	<motion.div
+		initial={{ scale: 0, opacity: 0 }}
+		animate={{ scale: 1, opacity: 1 }}
+		className="absolute top-3 right-3 z-20"
+	>
+		<div className="relative">
+			<div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+			<div className="relative size-6 sm:size-7 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-2 border-primary/50">
+				<Check size={14} className="text-primary-foreground" strokeWidth={3} />
+			</div>
+		</div>
+	</motion.div>
+);
+
+// Name content component
+const NameContent = ({ nameItem, variant = "grid" }: { nameItem: NameItem; variant?: "grid" | "swipe" }) => {
+	const isGrid = variant === "grid";
+	const nameClasses = isGrid
+		? "mobile-readable-title font-bold text-foreground text-sm sm:text-base leading-tight drop-shadow-lg"
+		: "font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center";
+	
+	const pronunciationClasses = isGrid
+		? "mobile-readable-meta text-warning/90 text-xs sm:text-sm leading-tight font-bold italic drop-shadow-md"
+		: "text-warning text-2xl lg:text-3xl font-bold italic opacity-90";
+	
+	const descriptionClasses = isGrid
+		? "mobile-readable-description text-foreground/85 text-xs sm:text-sm leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium"
+		: "text-foreground/90 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center";
+
+	return (
+		<>
+			<span className={nameClasses}>
+				{nameItem.name}
+			</span>
+			{nameItem.pronunciation && (
+				<span className={isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`}>
+					[{nameItem.pronunciation}]
+				</span>
+			)}
+			{nameItem.description && (
+				<p className={descriptionClasses}>
+					{nameItem.description}
+				</p>
+			)}
+		</>
+	);
+};
+
+// Zoom button component
+const ZoomButton = ({ nameId, onClick }: { nameId: IdType; onClick: (id: IdType) => void }) => (
+	<button
+		type="button"
+		onClick={(e) => {
+			e.stopPropagation();
+			onClick(nameId);
+		}}
+		className="absolute top-3 right-3 p-2 sm:p-2.5 rounded-full bg-foreground/70 backdrop-blur-md text-background opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:outline-none transition-all duration-300 hover:bg-foreground/90 hover:scale-110 z-10"
+		aria-label="View full size"
+	>
+		<ZoomIn size={14} />
+	</button>
+);
+
+// Admin action button component
+const AdminActionButton = ({ 
+	nameItem, 
+	actionType, 
+	isProcessing, 
+	onClick 
+}: { 
+	nameItem: NameItem; 
+	actionType: "toggle-hidden" | "toggle-locked"; 
+	isProcessing: boolean; 
+	onClick: () => void; 
+}) => {
+	const isHidden = actionType === "toggle-hidden";
+	const isLocked = actionType === "toggle-locked";
+	const isEnabled = isHidden ? isNameHidden(nameItem) : isNameLocked(nameItem);
+	
+	const buttonClasses = `flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+		isHidden
+			? isEnabled
+				? "bg-success hover:bg-success/80 text-success-foreground shadow-success/25"
+				: "bg-destructive hover:bg-destructive/80 text-destructive-foreground shadow-destructive/25"
+			: isEnabled
+				? "bg-muted hover:bg-muted/80 text-muted-foreground shadow-muted/25"
+				: "bg-warning hover:bg-warning/80 text-warning-foreground shadow-warning/25"
+	} ${isProcessing ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`;
+
+	return (
+		<motion.button
+			type="button"
+			onClick={onClick}
+			disabled={isProcessing}
+			whileHover={{ scale: 1.05 }}
+			whileTap={{ scale: 0.95 }}
+			transition={{ type: "spring", stiffness: 400, damping: 25 }}
+			className={buttonClasses}
+		>
+			{isProcessing ? (
+				<div className="flex items-center justify-center gap-1">
+					<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+					<span>Processing...</span>
+				</div>
+			) : isHidden ? (
+				<>
+					<Eye size={12} className="mr-1" />
+					{isEnabled ? "Unhide" : "Hide"}
+				</>
+			) : (
+				<>
+					<CheckCircle size={12} className="mr-1" />
+					{isEnabled ? "Unlock" : "Lock"}
+				</>
+			)}
+		</motion.button>
+);
+};
+
+// Card styles utility
+const getCardStyles = (isSelected: boolean, isLocked: boolean) => {
+	const baseClasses = "mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
+	const selectedClasses = isSelected
+		? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl shadow-primary/20 ring-4 ring-primary/30 scale-[1.02] z-10"
+		: "border-border/20 bg-gradient-to-br from-foreground/5 to-foreground/0 hover:border-border/40 hover:bg-gradient-to-br hover:from-foreground/10 hover:to-foreground/5 hover:shadow-xl hover:shadow-foreground/10";
+	const lockedClasses = isLocked ? "opacity-60 cursor-not-allowed" : "";
+	
+	return `${baseClasses} ${selectedClasses} ${lockedClasses}`;
+};
+
+// Name overlay styles utility
+const getNameOverlayClasses = (variant: "grid" | "swipe") => {
+	const baseClasses = "absolute flex flex-col justify-center items-center text-center pointer-events-none";
+	const gridClasses = "inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent";
+	const swipeClasses = "inset-0 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
+	
+	return `${baseClasses} ${variant === "grid" ? gridClasses : swipeClasses}`;
+};
+
 export function NameSelector() {
 	const toast = useToast();
 	const [selectedNames, setSelectedNames] = useState<Set<IdType>>(new Set());
@@ -117,6 +269,7 @@ export function NameSelector() {
 		Array<{ id: IdType; direction: "left" | "right"; timestamp: number }>
 	>([]);
 	const { tooltipRef, tooltipPosition, measureTooltip } = useSmartTooltip();
+	const deferredSync = useDeferredSync();
 
 	// Memoize cat images and build an id->image lookup map
 	const { catImages, catImageById } = useMemo(() => {
@@ -296,8 +449,8 @@ export function NameSelector() {
 				setSelectedNames((prev) => {
 					const next = new Set(prev);
 					next.add(nameId);
-					// Defer sync to prevent render cycle issue
-					setTimeout(() => syncSelectionToStore(next), 0);
+					// Use deferred sync to prevent render cycle issue
+					deferredSync(() => syncSelectionToStore(next));
 					return next;
 				});
 			}
@@ -319,7 +472,7 @@ export function NameSelector() {
 				}, resetDelay);
 			});
 		},
-		[markSwiped, syncSelectionToStore, triggerHaptic],
+		[markSwiped, syncSelectionToStore, triggerHaptic, deferredSync],
 	);
 
 	const handleDragEnd = useCallback(
@@ -369,14 +522,14 @@ export function NameSelector() {
 			setSelectedNames((prev) => {
 				const next = new Set(prev);
 				next.delete(lastSwipe.id);
-				// Defer sync to prevent render cycle issue
-				setTimeout(() => syncSelectionToStore(next), 0);
+				// Use deferred sync to prevent render cycle issue
+				deferredSync(() => syncSelectionToStore(next));
 				return next;
 			});
 		}
 
 		triggerHaptic();
-	}, [swipeHistory, syncSelectionToStore, triggerHaptic]);
+	}, [swipeHistory, syncSelectionToStore, triggerHaptic, deferredSync]);
 
 	const handleToggleHidden = useCallback(
 		async (nameId: IdType, isCurrentlyHidden: boolean) => {
@@ -639,20 +792,20 @@ export function NameSelector() {
 			availableNames.forEach((name) => {
 				next.add(name.id);
 			});
-			// Defer sync to prevent render cycle issue
-			setTimeout(() => syncSelectionToStore(next), 0);
+			// Use deferred sync to prevent render cycle issue
+			deferredSync(() => syncSelectionToStore(next));
 			return next;
 		});
 		triggerHaptic();
-	}, [availableNames, syncSelectionToStore, triggerHaptic]);
+	}, [availableNames, syncSelectionToStore, triggerHaptic, deferredSync]);
 
 	const handleClearSelection = useCallback(() => {
 		const lockedIds = new Set(getLockedNames(names).map((name) => name.id));
 		setSelectedNames(lockedIds);
-		// Defer sync to prevent render cycle issue
-		setTimeout(() => syncSelectionToStore(lockedIds), 0);
+		// Use deferred sync to prevent render cycle issue
+		deferredSync(() => syncSelectionToStore(lockedIds));
 		triggerHaptic();
-	}, [names, syncSelectionToStore, triggerHaptic]);
+	}, [names, syncSelectionToStore, triggerHaptic, deferredSync]);
 
 	const handleSelectRandomAvailable = useCallback(() => {
 		if (availableNames.length === 0) {
@@ -674,13 +827,13 @@ export function NameSelector() {
 			randomIds.forEach((id) => {
 				next.add(id);
 			});
-			// Defer sync to prevent render cycle issue
-			setTimeout(() => syncSelectionToStore(next), 0);
+			// Use deferred sync to prevent render cycle issue
+			deferredSync(() => syncSelectionToStore(next));
 			return next;
 		});
 		triggerHaptic();
 		toast.showSuccess(`Added ${targetCount} random names.`);
-	}, [availableNames, syncSelectionToStore, toast, triggerHaptic]);
+	}, [availableNames, syncSelectionToStore, toast, triggerHaptic, deferredSync]);
 
 	if (isLoading) {
 		return (
@@ -961,20 +1114,10 @@ export function NameSelector() {
 															)}
 
 															{/* Name and Info Overlay */}
-															<div className="relative z-10 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent flex flex-col justify-center items-center text-center pointer-events-none">
-																<h3 className="font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center">
-																	{nameItem.name}
-																	{nameItem.pronunciation && (
-																		<span className="block mt-2 text-warning text-2xl lg:text-3xl font-bold italic opacity-90">
-																			[{nameItem.pronunciation}]
-																		</span>
-																	)}
-																</h3>
-																{nameItem.description && (
-																	<p className="text-foreground/90 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center">
-																		{nameItem.description}
-																	</p>
-																)}
+															<div className={getNameOverlayClasses("swipe")}>
+																<div className="flex flex-col gap-1.5 max-w-full">
+																	<NameContent nameItem={nameItem} variant="swipe" />
+																</div>
 
 																{isAdmin && (
 																	<button
@@ -1167,11 +1310,7 @@ export function NameSelector() {
 													whileHover={{ scale: 1.03, y: -2 }}
 													whileTap={{ scale: 0.97 }}
 													transition={{ type: "spring", stiffness: 400, damping: 25 }}
-													className={`mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300 ${
-														isSelected
-															? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl shadow-primary/20 ring-4 ring-primary/30 scale-[1.02] z-10"
-															: "border-border/20 bg-gradient-to-br from-foreground/5 to-foreground/0 hover:border-border/40 hover:bg-gradient-to-br hover:from-foreground/10 hover:to-foreground/5 hover:shadow-xl hover:shadow-foreground/10"
-													} ${isNameLocked(nameItem) ? "opacity-60 cursor-not-allowed" : ""}`}
+													className={getCardStyles(isSelected, isNameLocked(nameItem))}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
 														<CatImage
@@ -1183,52 +1322,17 @@ export function NameSelector() {
 														/>
 
 														{/* Selection Badge */}
-														{isSelected && (
-															<motion.div
-																initial={{ scale: 0, opacity: 0 }}
-																animate={{ scale: 1, opacity: 1 }}
-																className="absolute top-3 right-3 z-20"
-															>
-																<div className="relative">
-																	<div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-																	<div className="relative size-6 sm:size-7 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-2 border-primary/50">
-																		<Check size={14} className="text-primary-foreground" strokeWidth={3} />
-																	</div>
-																</div>
-															</motion.div>
-														)}
+														{isSelected && <SelectionBadge />}
 
 														{/* Enhanced Name Overlay */}
-														<div className="absolute inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent flex flex-col justify-center items-center text-center pointer-events-none">
+														<div className={getNameOverlayClasses("grid")}>
 															<div className="flex flex-col gap-1.5 max-w-full">
-																<span className="mobile-readable-title font-bold text-foreground text-sm sm:text-base leading-tight drop-shadow-lg">
-																	{nameItem.name}
-																</span>
-																{nameItem.pronunciation && (
-																	<span className="mobile-readable-meta text-warning/90 text-xs sm:text-sm leading-tight font-bold italic drop-shadow-md">
-																		[{nameItem.pronunciation}]
-																	</span>
-																)}
-																{nameItem.description && (
-																	<p className="mobile-readable-description text-foreground/85 text-xs sm:text-sm leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium">
-																		{nameItem.description}
-																	</p>
-																)}
+																<NameContent nameItem={nameItem} variant="grid" />
 															</div>
 														</div>
 
 														{/* Enhanced Zoom Button */}
-														<button
-															type="button"
-															onClick={(e) => {
-																e.stopPropagation();
-																handleOpenLightbox(nameItem.id);
-															}}
-															className="absolute top-3 right-3 p-2 sm:p-2.5 rounded-full bg-foreground/70 backdrop-blur-md text-background opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:outline-none transition-all duration-300 hover:bg-foreground/90 hover:scale-110 z-10"
-															aria-label="View full size"
-														>
-															<ZoomIn size={14} />
-														</button>
+														<ZoomButton nameId={nameItem.id} onClick={handleOpenLightbox} />
 													</div>
 													{isAdmin && !isSwipeMode && (
 														<motion.div
@@ -1237,83 +1341,27 @@ export function NameSelector() {
 															transition={{ delay: 0.1 }}
 															className="px-3 pb-3 flex gap-2"
 														>
-															{/* Hide/Unhide Button */}
-															<motion.button
-																type="button"
-																onClick={(e) => {
-																	e.stopPropagation();
-																	requestAdminAction({
-																		type: "toggle-hidden",
-																		nameId: nameItem.id,
-																		isCurrentlyEnabled: isNameHidden(nameItem),
-																	});
-																}}
-																disabled={togglingHidden.has(nameItem.id)}
-																whileHover={{ scale: 1.05 }}
-																whileTap={{ scale: 0.95 }}
-																transition={{ type: "spring", stiffness: 400, damping: 25 }}
-																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-																	isNameHidden(nameItem)
-																		? "bg-success hover:bg-success/80 text-success-foreground shadow-success/25"
-																		: "bg-destructive hover:bg-destructive/80 text-destructive-foreground shadow-destructive/25"
-																} ${togglingHidden.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
-															>
-																{togglingHidden.has(nameItem.id) ? (
-																	<div className="flex items-center justify-center gap-1">
-																		<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-																		<span>Processing...</span>
-																	</div>
-																) : isNameHidden(nameItem) ? (
-																	<>
-																		<Eye size={12} className="mr-1" />
-																		Unhide
-																	</>
-																) : (
-																	<>
-																		<EyeOff size={12} className="mr-1" />
-																		Hide
-																	</>
-																)}
-															</motion.button>
+															<AdminActionButton
+																nameItem={nameItem}
+																actionType="toggle-hidden"
+																isProcessing={togglingHidden.has(nameItem.id)}
+																onClick={() => requestAdminAction({
+																	type: "toggle-hidden",
+																	nameId: nameItem.id,
+																	isCurrentlyEnabled: isNameHidden(nameItem),
+																})}
+															/>
 
-															{/* Lock/Unlock Button */}
-															<motion.button
-																type="button"
-																onClick={(e) => {
-																	e.stopPropagation();
-																	requestAdminAction({
-																		type: "toggle-locked",
-																		nameId: nameItem.id,
-																		isCurrentlyEnabled: isNameLocked(nameItem),
-																	});
-																}}
-																disabled={togglingLocked.has(nameItem.id)}
-																whileHover={{ scale: 1.05 }}
-																whileTap={{ scale: 0.95 }}
-																transition={{ type: "spring", stiffness: 400, damping: 25 }}
-																className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-																	isNameLocked(nameItem)
-																		? "bg-muted hover:bg-muted/80 text-muted-foreground shadow-muted/25"
-																		: "bg-warning hover:bg-warning/80 text-warning-foreground shadow-warning/25"
-																} ${togglingLocked.has(nameItem.id) ? "opacity-50 cursor-not-allowed" : ""} shadow-lg`}
-															>
-																{togglingLocked.has(nameItem.id) ? (
-																	<div className="flex items-center justify-center gap-1">
-																		<div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-																		<span>Processing...</span>
-																	</div>
-																) : isNameLocked(nameItem) ? (
-																	<>
-																		<CheckCircle size={12} className="mr-1" />
-																		Unlock
-																	</>
-																) : (
-																	<>
-																		<CheckCircle size={12} className="mr-1" />
-																		Lock
-																	</>
-																)}
-															</motion.button>
+															<AdminActionButton
+																nameItem={nameItem}
+																actionType="toggle-locked"
+																isProcessing={togglingLocked.has(nameItem.id)}
+																onClick={() => requestAdminAction({
+																	type: "toggle-locked",
+																	nameId: nameItem.id,
+																	isCurrentlyEnabled: isNameLocked(nameItem),
+																})}
+															/>
 														</motion.div>
 													)}
 												</motion.div>

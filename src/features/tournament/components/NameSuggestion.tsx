@@ -5,10 +5,11 @@
  */
 
 import { useCallback, useEffect, useId, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
-import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";
+import { CheckCircle, Lightbulb, PartyPopper, X } from "@/shared/lib/icons";
 
 // ============================================================================
 // TYPES
@@ -36,99 +37,259 @@ export function NameSuggestionInner() {
 		await handleSubmit();
 	};
 
+	// Calculate form completion progress
+	const nameProgress = Math.min((values.name.length / 50) * 100, 100);
+	const descriptionProgress = Math.min((values.description.length / 500) * 100, 100);
+	const overallProgress = (nameProgress + descriptionProgress) / 2;
+	const isFormComplete = values.name.trim().length > 0 && values.description.trim().length > 0;
+
 	return (
-		<form onSubmit={handleLocalSubmit} className="w-full max-w-3xl mx-auto">
-			<div className="relative flex flex-col gap-6 py-4 sm:py-6">
-				<div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent-color/15 blur-3xl" />
-				<div className="pointer-events-none absolute -left-14 bottom-0 h-48 w-48 rounded-full bg-chart-4/10 blur-3xl" />
+		<form onSubmit={handleLocalSubmit} className="w-full max-w-4xl mx-auto">
+			<div className="relative">
+				{/* Enhanced Background Elements */}
+				<div className="absolute inset-0 overflow-hidden rounded-3xl">
+					<motion.div
+						initial={{ opacity: 0, scale: 0.8 }}
+						animate={{ opacity: 0.6, scale: 1 }}
+						transition={{ duration: 1, ease: "easeOut" }}
+						className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+					/>
+					<motion.div
+						initial={{ opacity: 0, scale: 0.8 }}
+						animate={{ opacity: 0.4, scale: 1 }}
+						transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+						className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full blur-3xl"
+					/>
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 0.3 }}
+						transition={{ duration: 1, delay: 0.4 }}
+						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-chart-1/10 via-chart-2/10 to-chart-3/10 rounded-full blur-3xl"
+					/>
+				</div>
 
-				<div className="relative flex flex-col gap-6">
-					<div className="text-center flex flex-col gap-3">
-						<div className="inline-flex mx-auto items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent-foreground/90">
-							<Lightbulb size={14} />
-							Submit A Name
-						</div>
-						<h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-							Drop your best cat name idea
-						</h3>
-						<p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-							Add a name and a quick reason. Great suggestions help everyone discover fun new
-							options.
-						</p>
-					</div>
-
-					<div className="grid gap-5">
-						<div className="flex flex-col gap-2">
-							<label htmlFor="suggest-name" className="text-sm font-semibold text-foreground/90">
-								Name suggestion <span className="text-destructive">*</span>
-							</label>
-							<Input
-								id="suggest-name"
-								type="text"
-								value={values.name}
-								onChange={(e) => handleChange("name", e.target.value)}
-								placeholder="e.g. Count Whiskula"
-								className="w-full h-14 px-4 text-base font-semibold bg-foreground/5 border-border focus-visible:ring-accent-color/45"
-								disabled={isSubmitting}
-								maxLength={50}
-							/>
-						</div>
-
-						<div className="flex flex-col gap-2">
-							<div className="flex items-center justify-between gap-3">
-								<label
-									htmlFor="suggest-description"
-									className="text-sm font-semibold text-foreground/90"
-								>
-									Why this name? <span className="text-destructive">*</span>
-								</label>
-								<span className="text-xs text-muted-foreground">
-									Help voters understand the vibe
-								</span>
-							</div>
-							<Textarea
-								id="suggest-description"
-								value={values.description}
-								onChange={(e) => handleChange("description", e.target.value)}
-								placeholder="Share the meaning, story, or personality fit..."
-								rows={4}
-								className="w-full px-4 py-3 font-medium bg-foreground/5 border-border focus-visible:ring-accent-color/45 resize-none"
-								disabled={isSubmitting}
-								maxLength={500}
-								showCount={true}
-							/>
-						</div>
-
-						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-							<p className="text-xs sm:text-sm text-muted-foreground">
-								Your suggestion is added to the shared discovery pool.
-							</p>
-							<Button
-								type="submit"
-								variant="glass"
-								size="xl"
-								disabled={!values.name.trim() || !values.description.trim() || isSubmitting}
-								loading={isSubmitting}
-								className="w-full sm:w-auto sm:min-w-[190px] font-extrabold"
+				{/* Main Content Container */}
+				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-3xl border border-border/20 shadow-2xl p-8 sm:p-12">
+					
+					{/* Animated Header */}
+					<motion.div
+						initial={{ opacity: 0, y: -20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.6, ease: "easeOut" }}
+						className="text-center mb-12"
+					>
+						<motion.div
+							initial={{ scale: 0 }}
+							animate={{ scale: 1 }}
+							transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 25 }}
+							className="inline-flex mx-auto items-center gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-3 mb-6"
+						>
+							<motion.div
+								animate={{ rotate: [0, 10, -10, 0] }}
+								transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
 							>
-								Submit Suggestion
-							</Button>
+								<Lightbulb size={20} className="text-primary" />
+							</motion.div>
+							<span className="text-sm font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+								Submit A Name
+							</span>
+							<motion.div
+								initial={{ opacity: 0, scale: 0 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ delay: 0.5, type: "spring", stiffness: 600, damping: 20 }}
+							>
+								<PartyPopper size={16} className="text-accent" />
+							</motion.div>
+						</motion.div>
+						
+						<motion.h1
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.3, duration: 0.6 }}
+							className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent mb-6"
+						>
+							Drop Your Best Cat Name Idea
+						</motion.h1>
+						
+						<motion.p
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.4, duration: 0.6 }}
+							className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+						>
+							Share your creative cat name with the community. Great suggestions help everyone discover fun new options and make the tournament more exciting!
+						</motion.p>
+					</motion.div>
+
+					{/* Progress Indicator */}
+					<motion.div
+						initial={{ opacity: 0, width: 0 }}
+						animate={{ opacity: 1, width: "100%" }}
+						transition={{ delay: 0.5, duration: 0.8 }}
+						className="mb-8"
+					>
+						<div className="flex items-center justify-between mb-2">
+							<span className="text-sm font-medium text-foreground/70">Form Progress</span>
+							<span className="text-sm font-bold text-primary">{Math.round(overallProgress)}%</span>
 						</div>
-					</div>
+						<div className="h-2 bg-foreground/10 rounded-full overflow-hidden">
+							<motion.div
+								initial={{ width: 0 }}
+								animate={{ width: `${overallProgress}%` }}
+								transition={{ duration: 0.5, ease: "easeOut" }}
+								className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+							/>
+						</div>
+					</motion.div>
+
+					{/* Form Fields */}
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.6, duration: 0.6 }}
+						className="space-y-8"
+					>
+						{/* Name Input */}
+						<div className="space-y-3">
+							<label htmlFor="suggest-name" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+								<span className="w-2 h-2 bg-primary rounded-full" />
+								Name suggestion
+								<span className="text-destructive">*</span>
+								<motion.span
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									className="text-xs text-muted-foreground ml-auto"
+								>
+									{values.name.length}/50
+								</motion.span>
+							</label>
+							<motion.div
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}
+								transition={{ type: "spring", stiffness: 400, damping: 25 }}
+							>
+								<Input
+									id="suggest-name"
+									type="text"
+									value={values.name}
+									onChange={(e) => handleChange("name", e.target.value)}
+									placeholder="e.g. Count Whiskula, Sir Paws-a-lot, Meow-zart"
+									className="w-full h-16 px-6 text-lg font-semibold bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl backdrop-blur-sm transition-all duration-300"
+									disabled={isSubmitting}
+									maxLength={50}
+								/>
+							</motion.div>
+						</div>
+
+						{/* Description Textarea */}
+						<div className="space-y-3">
+							<div className="flex items-center justify-between gap-2">
+								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+									<span className="w-2 h-2 bg-accent rounded-full" />
+									Why this name?
+									<span className="text-destructive">*</span>
+								</label>
+								<motion.span
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									className="text-xs text-muted-foreground"
+								>
+									{values.description.length}/500
+								</motion.span>
+							</div>
+							<motion.div
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}
+								transition={{ type: "spring", stiffness: 400, damping: 25 }}
+							>
+								<Textarea
+									id="suggest-description"
+									value={values.description}
+									onChange={(e) => handleChange("description", e.target.value)}
+									placeholder="Share the meaning, story, or personality fit... What makes this name perfect for a cat? Is it funny, elegant, mysterious, or playful?"
+									rows={5}
+									className="w-full px-6 py-4 text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
+									disabled={isSubmitting}
+									maxLength={500}
+									showCount={false}
+								/>
+							</motion.div>
+							<p className="text-xs text-muted-foreground italic">
+								Help voters understand the vibe and personality behind your suggestion
+							</p>
+						</div>
+
+						{/* Submit Section */}
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.8, duration: 0.6 }}
+							className="pt-6"
+						>
+							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+								<p className="text-sm text-muted-foreground">
+									Your suggestion will be added to the shared discovery pool for everyone to enjoy
+								</p>
+								<motion.div
+									whileHover={{ scale: 1.05, y: -2 }}
+									whileTap={{ scale: 0.95 }}
+									transition={{ type: "spring", stiffness: 400, damping: 25 }}
+								>
+									<Button
+										type="submit"
+										variant="glass"
+										size="xl"
+										disabled={!isFormComplete || isSubmitting}
+										loading={isSubmitting}
+										className="w-full sm:w-auto min-w-[200px] font-extrabold px-8 py-4 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-xl hover:shadow-2xl hover:shadow-primary/30 border-2 border-primary/30"
+									>
+										{isSubmitting ? "Submitting..." : "Submit Suggestion"}
+									</Button>
+								</motion.div>
+							</div>
+						</motion.div>
+					</motion.div>
+
+					{/* Enhanced Status Messages */}
+					<AnimatePresence mode="wait">
+						{globalError && (
+							<motion.div
+								initial={{ opacity: 0, y: -10, scale: 0.95 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, y: -10, scale: 0.95 }}
+								transition={{ duration: 0.3 }}
+								className="mt-6 p-4 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/30 rounded-xl text-destructive-foreground text-sm font-semibold text-center backdrop-blur-sm shadow-lg shadow-destructive/20"
+							>
+								<div className="flex items-center justify-center gap-2">
+									<X size={16} />
+									{globalError}
+								</div>
+							</motion.div>
+						)}
+						
+						{successMessage && (
+							<motion.div
+								initial={{ opacity: 0, y: -10, scale: 0.95 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, y: -10, scale: 0.95 }}
+								transition={{ duration: 0.3 }}
+								className="mt-6 p-4 bg-gradient-to-r from-success/10 to-chart-2/10 border border-success/30 rounded-xl text-success-foreground text-sm font-semibold text-center backdrop-blur-sm shadow-lg shadow-success/20"
+							>
+								<div className="flex items-center justify-center gap-2">
+									<motion.div
+										initial={{ scale: 0, rotate: -180 }}
+										animate={{ scale: 1, rotate: 0 }}
+										transition={{ type: "spring", stiffness: 600, damping: 20 }}
+									>
+										<CheckCircle size={16} />
+									</motion.div>
+									{successMessage}
+								</div>
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
 			</div>
-
-			{globalError && (
-				<div className="mt-4 p-3 bg-destructive/10 border border-destructive/25 rounded-xl text-destructive-foreground text-sm font-medium text-center animate-in fade-in slide-in-from-top-2">
-					{globalError}
-				</div>
-			)}
-			{successMessage && (
-				<div className="mt-4 flex items-center justify-center gap-2 p-3 bg-chart-2/10 border border-chart-2/25 rounded-xl text-chart-2 text-sm font-semibold text-center animate-in fade-in slide-in-from-top-2">
-					<CheckCircle size={16} />
-					{successMessage}
-				</div>
-			)}
 		</form>
 	);
 }
