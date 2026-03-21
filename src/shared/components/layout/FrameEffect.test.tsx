@@ -11,15 +11,10 @@ describe("FrameEffect", () => {
 			</FrameEffect>,
 		);
 
-		expect(
-			screen.getByRole("button", { name: "Start Tournament" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Start Tournament" })).toBeInTheDocument();
 		expect(screen.getByTestId("app-frame")).toHaveStyle({
 			pointerEvents: "none",
 		});
-		expect(screen.getByTestId("app-frame")).toHaveAttribute(
-			"aria-hidden",
-			"true",
-		);
+		expect(screen.getByTestId("app-frame")).toHaveAttribute("aria-hidden", "true");
 	});
 });

@@ -35,7 +35,13 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange, className }: TabNavigationProps) {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { tournament, tournamentActions, user, ui, uiActions } = useAppStore();
+	const {
+		tournament,
+		tournamentActions,
+		user,
+		ui = { isSwipeMode: false },
+		uiActions = { setSwipeMode: () => undefined },
+	} = useAppStore();
 	const { selectedNames } = tournament;
 	const { isLoggedIn, name: userName } = user;
 	const { isSwipeMode } = ui;

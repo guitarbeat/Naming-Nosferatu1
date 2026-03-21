@@ -118,8 +118,6 @@
 	position: fixed;
 	inset: 0;
 	width: 100%;
-	height: 100vh;
-	height: 100dvh;
 	z-index: var(--z-1);
 	opacity: 0;
 	transition: opacity 0.8s ease-in-out;
@@ -130,8 +128,8 @@
 	opacity: var(--pw-fx-magic-opacity);
 }
 
-#magicContainer canvas,
-.magic-container canvas {
+.magic-container canvas,
+#magicContainer canvas {
 	display: block;
 	width: 100%;
 	height: 100%;
@@ -153,8 +151,6 @@
 .app-frame {
 	position: fixed;
 	inset: 0;
-	height: 100vh;
-	height: 100dvh;
 	box-sizing: border-box;
 	border: var(--pw-frame-border-width) solid
 		rgb(var(--pw-frame-color-rgb) / var(--pw-frame-color-alpha));
@@ -174,16 +170,13 @@
 
 @keyframes moire-drift {
 	0% {
-		transform: translate3d(-2%, -1%, 0)
-			scale(calc(var(--pw-fx-moire-scale) - 0.02)) rotate(-0.2deg);
+		transform: translate3d(-2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.02)) rotate(-0.2deg);
 	}
 	50% {
-		transform: translate3d(1%, 2%, 0)
-			scale(calc(var(--pw-fx-moire-scale) + 0.02)) rotate(0.2deg);
+		transform: translate3d(1%, 2%, 0) scale(calc(var(--pw-fx-moire-scale) + 0.02)) rotate(0.2deg);
 	}
 	100% {
-		transform: translate3d(2%, -1%, 0)
-			scale(calc(var(--pw-fx-moire-scale) - 0.01)) rotate(-0.1deg);
+		transform: translate3d(2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.01)) rotate(-0.1deg);
 	}
 }
 
@@ -214,8 +207,7 @@
 
 	.cat-background__soft-blur {
 		opacity: var(--pw-fx-blur-opacity-mobile);
-		filter: blur(var(--pw-fx-blur-radius-mobile))
-			saturate(var(--pw-fx-blur-saturation-mobile));
+		filter: blur(var(--pw-fx-blur-radius-mobile)) saturate(var(--pw-fx-blur-saturation-mobile));
 	}
 
 	.app-frame {

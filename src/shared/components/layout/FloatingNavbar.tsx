@@ -63,6 +63,7 @@ function FloatingNavItem({
 			className={baseClasses}
 			onClick={onClick}
 			aria-label={ariaLabel}
+			aria-current={isCurrent ? "location" : undefined}
 			aria-pressed={isPressed}
 		>
 			{customIcon || <Icon className="floating-navbar__icon" />}
@@ -234,7 +235,7 @@ export function FloatingNavbar() {
 		};
 	}, []);
 
-	if (isHomeRoute) {
+	if (isTournamentRoute) {
 		return null;
 	}
 

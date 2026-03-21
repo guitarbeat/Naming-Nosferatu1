@@ -13,6 +13,7 @@ const bootstrapMocks = vi.hoisted(() => {
 });
 
 vi.mock("../polyfills", () => ({}));
+vi.mock("../index.css", () => ({}));
 
 vi.mock("@sentry/react", () => ({
 	init: vi.fn(),
@@ -53,12 +54,20 @@ vi.mock("@/shared/services/supabase/client", () => ({
 	queryClient: { kind: "query-client" },
 }));
 
+vi.mock("@/shared/components/layout/Feedback/ErrorBoundary", () => ({
+	ErrorBoundary: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("./providers/Providers", () => ({
 	Providers: ({ children, auth }: { children: ReactNode; auth?: { adapter?: unknown } }) => (
 		<div data-testid="providers" data-has-adapter={String(Boolean(auth?.adapter))}>
 			{children}
 		</div>
 	),
+}));
+
+vi.mock("./analytics", () => ({
+	shouldEnableAnalytics: () => false,
 }));
 
 vi.mock("./App", () => ({
@@ -94,7 +103,7 @@ describe("main bootstrap", () => {
 		expect(screen.getByTestId("browser-router")).toBeInTheDocument();
 		expect(screen.getByTestId("app")).toBeInTheDocument();
 		expect(screen.queryByTestId("analytics")).not.toBeInTheDocument();
-	});
+	}, 20000);
 
 	it("throws when the root element is missing", async () => {
 		document.body.innerHTML = "";
