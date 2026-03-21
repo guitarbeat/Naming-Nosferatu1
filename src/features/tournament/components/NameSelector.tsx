@@ -118,19 +118,27 @@ const SelectionBadge = () => (
 );
 
 // Name content component
-const NameContent = ({ nameItem, variant = "grid" }: { nameItem: NameItem; variant?: "grid" | "swipe" }) => {
+const NameContent = ({ nameItem, variant = "grid", showDetails = true }: { nameItem: NameItem; variant?: "grid" | "swipe"; showDetails?: boolean }) => {
 	const isGrid = variant === "grid";
 	const nameClasses = isGrid
 		? "mobile-readable-title font-bold text-foreground text-base sm:text-lg leading-tight drop-shadow-lg"
 		: "font-whimsical text-5xl lg:text-6xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center";
 	
 	const pronunciationClasses = isGrid
-		? "mobile-readable-meta text-warning/90 text-sm sm:text-base leading-tight font-bold italic drop-shadow-md"
-		: "text-warning text-3xl lg:text-4xl font-bold italic opacity-90";
+		? `mobile-readable-meta text-warning/90 text-sm sm:text-base leading-tight font-bold italic drop-shadow-md transition-all duration-300 ${
+			showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+		}`
+		: `text-warning text-3xl lg:text-4xl font-bold italic opacity-90 transition-all duration-300 ${
+			showDetails ? 'opacity-100 scale-100' : 'opacity-80 scale-95'
+		}`;
 	
 	const descriptionClasses = isGrid
-		? "mobile-readable-description text-foreground/85 text-sm sm:text-base leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium"
-		: "text-foreground/90 text-base md:text-lg leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center";
+		? `mobile-readable-description text-foreground/85 text-sm sm:text-base leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium transition-all duration-500 ${
+			showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+		}`
+		: `text-foreground/90 text-base md:text-lg leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center transition-all duration-300 ${
+			showDetails ? 'opacity-100 transform scale-100' : 'opacity-70 transform scale-95'
+		}`;
 
 	return (
 		<>
@@ -245,6 +253,7 @@ const getNameOverlayClasses = (variant: "grid" | "swipe") => {
 export function NameSelector() {
 	const toast = useToast();
 	const [selectedNames, setSelectedNames] = useState<Set<IdType>>(new Set());
+	const [hoveredCard, setHoveredCard] = useState<IdType | null>(null);
 	const isSwipeMode = useAppStore((state) => state.ui.isSwipeMode);
 	const isAdmin = useAppStore((state) => state.user.isAdmin);
 	const userName = useAppStore((state) => state.user.name);
@@ -1035,6 +1044,10 @@ export function NameSelector() {
 														scale: 1.02,
 														transition: { duration: 0.15 },
 													}}
+													whileHover={{
+														scale: index === 0 ? 1.05 : 1,
+														transition: { duration: 0.2 },
+													}}
 													className="w-full max-w-md h-[550px]"
 												>
 													<Card
@@ -1116,7 +1129,7 @@ export function NameSelector() {
 															{/* Name and Info Overlay */}
 															<div className={getNameOverlayClasses("swipe")}>
 																<div className="flex flex-col gap-1.5 max-w-full">
-																	<NameContent nameItem={nameItem} variant="swipe" />
+																	<NameContent nameItem={nameItem} variant="swipe" showDetails={true} />
 																</div>
 
 																{isAdmin && (
