@@ -17,8 +17,11 @@ export class EloRating {
 		return 1 / (1 + 10 ** ((rb - ra) / ELO_RATING.RATING_DIVISOR));
 	}
 	updateRating(r: number, exp: number, act: number, games = 0) {
-		// Double K-factor for new players (< 15 games) for faster convergence
-		const k = games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD ? this.kFactor * 2 : this.kFactor;
+		// Use constant multiplier for new players (< 15 games) for faster convergence
+		const kMultiplier = games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD 
+			? ELO_RATING.NEW_PLAYER_K_MULTIPLIER 
+			: 1;
+		const k = this.kFactor * kMultiplier;
 		const updated = Math.round(r + k * (act - exp));
 		return Math.max(ELO_RATING.MIN_RATING, Math.min(ELO_RATING.MAX_RATING, updated));
 	}

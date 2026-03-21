@@ -82,4 +82,6 @@ export const STORAGE_KEYS = {
 
 export const TIMING = {
 	RIPPLE_ANIMATION_DURATION_MS: 400,
+	VOTE_COOLDOWN_MS: 500,
+	TOURNAMENT_INIT_DELAY_MS: 16, // One frame for requestAnimationFrame
 } as const;

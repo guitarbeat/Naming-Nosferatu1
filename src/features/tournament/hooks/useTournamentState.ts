@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/app/providers/Providers";
+import { TIMING } from "@/shared/lib/constants";
 import {
 	EloRating,
 	generateRandomTeams,
@@ -58,7 +59,7 @@ interface UseTournamentStateResult {
 	subscribeToUserActivity?: (callback: (activity: any) => void) => void;
 }
 
-const VOTE_COOLDOWN = 500;
+const VOTE_COOLDOWN = TIMING.VOTE_COOLDOWN_MS;
 
 function haveSameIds(a: string[], b: string[]): boolean {
 	if (a.length !== b.length) {
@@ -82,11 +83,22 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	const namesKey = useMemo(() => createNamesKey(names), [names]);
 	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
 
-	// WebSocket integration
-	const webSocket = useWebSocket({
-		url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
-		autoConnect: true,
-	});
+	// WebSocket integration with error boundaries
+	const webSocket = useMemo(() => {
+		try {
+			return useWebSocket({
+				url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
+				autoConnect: true,
+			});
+		} catch (error) {
+			console.warn("WebSocket initialization failed, continuing without real-time updates:", error);
+			return {
+				subscribeToTournament: () => () => {},
+				subscribeToMatches: () => () => {},
+				subscribeToUserActivity: () => () => {},
+			};
+		}
+	}, []);
 
 	const defaultPersistentState = useMemo(
 		() => createDefaultPersistentState(userName || "anonymous"),
@@ -123,6 +135,39 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	const initializedRef = useRef(false);
 	const lastNamesKeyRef = useRef("");
 
+	// Cleanup WebSocket metrics on unmount
+	useEffect(() => {
+		return () => {
+			// Clean up any WebSocket connections and metrics
+			if (webSocket && typeof webSocket.cleanup === 'function') {
+				webSocket.cleanup();
+			}
+			
+			// Clear any pending timeouts or intervals
+			const timeouts = (window as any).__tournamentTimeouts || [];
+			const intervals = (window as any).__tournamentIntervals || [];
+			
+			timeouts.forEach((timeoutId: number) => clearTimeout(timeoutId));
+			intervals.forEach((intervalId: number) => clearInterval(intervalId));
+			
+			// Clear the arrays
+			(window as any).__tournamentTimeouts = [];
+			(window as any).__tournamentIntervals = [];
+			
+			// Clean up any event listeners
+			const cleanupEvents = ['beforeunload', 'pagehide', 'visibilitychange'];
+			cleanupEvents.forEach(event => {
+				const handlers = (window as any).__tournamentEventHandlers?.[event] || [];
+				handlers.forEach((handler: EventListener) => {
+					window.removeEventListener(event, handler);
+				});
+			});
+			
+			// Clear event handlers registry
+			(window as any).__tournamentEventHandlers = {};
+		};
+	}, [webSocket]);
+
 	useEffect(() => {
 		ratingsRef.current = ratings;
 	}, [ratings]);
@@ -142,79 +187,72 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			return;
 		}
 
-		const hasValidPersistence =
-			persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
-		const initialRatings = buildInitialRatings(names);
+		// Batch all state updates to prevent race conditions
+		const initializeTournament = () => {
+			const hasValidPersistence =
+				persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
+			const initialRatings = buildInitialRatings(names);
 
-		let teams = persistentState.teams;
-		if (tournamentMode === "2v2" && teams.length < 2) {
-			teams = generateRandomTeams(names.map((name) => ({ id: String(name.id), name: name.name })));
-		}
+			let teams = persistentState.teams;
+			if (tournamentMode === "2v2" && teams.length < 2) {
+				teams = generateRandomTeams(names.map((name) => ({ id: String(name.id), name: name.name })));
+			}
 
-		const participantIds =
-			tournamentMode === "2v2"
-				? teams.map((team) => team.id)
-				: names.map((name) => String(name.id));
-		const shouldResetBracket =
-			!hasValidPersistence ||
-			persistentState.bracketEntrants.length === 0 ||
-			!haveSameIds(
-				persistentState.bracketEntrants.filter((id) => !id.startsWith("__BYE__")),
-				participantIds,
-			);
-		const bracketEntrants = shouldResetBracket
-			? createBracketEntrants(participantIds)
-			: persistentState.bracketEntrants;
+			const participantIds =
+				tournamentMode === "2v2"
+					? teams.map((team) => team.id)
+					: names.map((name) => String(name.id));
+			const shouldResetBracket =
+				!hasValidPersistence ||
+				persistentState.bracketEntrants.length === 0 ||
+				!haveSameIds(
+					persistentState.bracketEntrants.filter((id) => !id.startsWith("__BYE__")),
+					participantIds,
+				);
+			const bracketEntrants = shouldResetBracket
+				? createBracketEntrants(participantIds)
+				: persistentState.bracketEntrants;
 
-		if (hasValidPersistence) {
-			if (persistentState.ratings && Object.keys(persistentState.ratings).length > 0) {
+			// Single state update to prevent race conditions
+			const stateUpdates: Partial<PersistentTournamentState> = {
+				matchHistory: shouldResetBracket ? [] : persistentState.matchHistory,
+				currentRound: shouldResetBracket ? 1 : persistentState.currentRound,
+				currentMatch: shouldResetBracket ? 1 : persistentState.currentMatch,
+				totalMatches: Math.max(0, participantIds.length - 1),
+				teams,
+				bracketEntrants,
+			};
+
+			if (!hasValidPersistence) {
+				Object.assign(stateUpdates, {
+					namesKey,
+					ratings: initialRatings,
+					mode: tournamentMode,
+					teamMatches: [],
+					teamMatchIndex: 0,
+				});
+			} else if (shouldResetBracket || (tournamentMode === "2v2" && teams !== persistentState.teams)) {
+				stateUpdates.ratings = shouldResetBracket ? initialRatings : persistentState.ratings;
+			}
+
+			// Update ratings and persistent state atomically
+			if (hasValidPersistence && persistentState.ratings && Object.keys(persistentState.ratings).length > 0) {
 				setRatings(persistentState.ratings);
 			} else {
 				setRatings(initialRatings);
+				if (!stateUpdates.ratings) {
+					stateUpdates.ratings = initialRatings;
+				}
 			}
 
-			if (shouldResetBracket || (tournamentMode === "2v2" && teams !== persistentState.teams)) {
-				updatePersistentState({
-					matchHistory: shouldResetBracket ? [] : persistentState.matchHistory,
-					currentRound: 1,
-					currentMatch: 1,
-					totalMatches: Math.max(0, participantIds.length - 1),
-					ratings: shouldResetBracket ? initialRatings : persistentState.ratings,
-					teams,
-					bracketEntrants,
-				});
-			}
-		} else {
-			setRatings(initialRatings);
-			updatePersistentState({
-				matchHistory: [],
-				currentRound: 1,
-				currentMatch: 1,
-				totalMatches: Math.max(0, participantIds.length - 1),
-				namesKey,
-				ratings: initialRatings,
-				mode: tournamentMode,
-				teams: tournamentMode === "2v2" ? teams : [],
-				teamMatches: [],
-				teamMatchIndex: 0,
-				bracketEntrants,
-			});
-		}
+			updatePersistentState(stateUpdates);
+			initializedRef.current = true;
+			setRefreshKey((k) => k + 1);
+		};
 
-		initializedRef.current = true;
-		setRefreshKey((k) => k + 1);
-	}, [
-		namesKey,
-		names,
-		updatePersistentState,
-		tournamentMode,
-		persistentState.bracketEntrants,
-		persistentState.matchHistory,
-		persistentState.mode,
-		persistentState.namesKey,
-		persistentState.ratings,
-		persistentState.teams,
-	]);
+		// Use requestAnimationFrame to ensure smooth initialization
+		requestAnimationFrame(initializeTournament);
+	}, [namesKey, names.length, tournamentMode]); // Reduced dependency array
 
 	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
 	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
