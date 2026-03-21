@@ -6,6 +6,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Button from "@/shared/components/layout/Button";
 import { Trophy } from "@/shared/lib/icons";
 import { ratingsAPI } from "@/shared/services/supabase/api";
 import useAppStore from "@/store/appStore";
@@ -77,18 +78,23 @@ export default function TournamentFlow() {
 								and compare results!
 							</p>
 							<div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-								<button
+								<Button
 									onClick={() => navigate("/analysis")}
-									className="w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors"
+									size="lg"
+									shape="pill"
+									className="w-full sm:w-auto"
 								>
 									Analyze Results
-								</button>
-								<button
+								</Button>
+								<Button
 									onClick={handleStartNewTournament}
-									className="w-full sm:w-auto px-6 py-3 bg-secondary hover:bg-secondary/80 rounded-lg font-semibold transition-colors"
+									variant="secondary"
+									size="lg"
+									shape="pill"
+									className="w-full sm:w-auto"
 								>
 									Start New Tournament
-								</button>
+								</Button>
 							</div>
 						</div>
 					</motion.div>

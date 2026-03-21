@@ -237,11 +237,12 @@ export function NameSuggestionInner() {
 								>
 									<Button
 										type="submit"
-										variant="glass"
+										variant="primary"
 										size="xl"
+										shape="pill"
 										disabled={!isFormComplete || isSubmitting}
 										loading={isSubmitting}
-										className="w-full sm:w-auto min-w-[200px] font-extrabold px-8 py-4 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-xl hover:shadow-2xl hover:shadow-primary/30 border-2 border-primary/30"
+										className="w-full sm:w-auto min-w-[200px] font-extrabold"
 									>
 										{isSubmitting ? "Submitting..." : "Submit Suggestion"}
 									</Button>
@@ -421,15 +422,19 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 						>
 							💡 Suggest a Name
 						</h2>
-						<button
+						<Button
 							type="button"
-							className="flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+							variant="ghost"
+							size="icon"
+							iconOnly={true}
+							shape="pill"
+							className="size-8 bg-transparent text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
 							onClick={handleClose}
 							aria-label="Close modal"
 							disabled={isSubmitting}
 						>
 							<X size={24} />
-						</button>
+						</Button>
 					</div>
 
 					<div className="p-6">
@@ -499,7 +504,8 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 								</Button>
 								<Button
 									type="submit"
-									variant="glass"
+									variant="primary"
+									shape="pill"
 									disabled={isSubmitting || !isValid}
 									loading={isSubmitting}
 									className="px-6"

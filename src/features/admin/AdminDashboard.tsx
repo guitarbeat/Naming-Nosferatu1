@@ -347,17 +347,21 @@ export function AdminDashboard() {
 
 			<div className="flex gap-2 mb-6 border-b border-border/10">
 				{ADMIN_TABS.map((tab) => (
-					<button
+					<Button
 						key={tab.id}
 						onClick={() => handleTabChange(tab.id)}
-						className={`px-4 py-2 font-medium transition-colors ${
+						type="button"
+						variant={activeTab === tab.id ? "secondary" : "ghost"}
+						presentation="chip"
+						shape="pill"
+						className={`px-4 py-2 font-medium ${
 							activeTab === tab.id
-								? "text-foreground border-b-2 border-primary"
-								: "text-muted-foreground hover:text-foreground"
+								? "bg-primary/12 text-foreground"
+								: "bg-transparent text-muted-foreground hover:bg-foreground/8 hover:text-foreground"
 						}`}
 					>
 						{tab.label}
-					</button>
+					</Button>
 				))}
 			</div>
 
@@ -392,7 +396,7 @@ export function AdminDashboard() {
 									))}
 								</select>
 
-								<Button onClick={() => void loadAdminData()} variant="ghost" size="small">
+								<Button onClick={() => void loadAdminData()} variant="ghost" size="sm" iconOnly={true}>
 									<Loader2 size={16} />
 								</Button>
 							</div>
@@ -402,19 +406,19 @@ export function AdminDashboard() {
 							<div className="mb-4 py-4 border-y border-border/10">
 								<p className="text-sm text-primary mb-2">{selectedNames.size} names selected</p>
 								<div className="flex gap-2">
-									<Button onClick={() => void handleBulkAction("hide")} size="small">
+									<Button onClick={() => void handleBulkAction("hide")} size="sm">
 										<EyeOff size={14} /> Hide
 									</Button>
-									<Button onClick={() => void handleBulkAction("unhide")} size="small">
+									<Button onClick={() => void handleBulkAction("unhide")} size="sm">
 										<Eye size={14} /> Unhide
 									</Button>
-									<Button onClick={() => void handleBulkAction("lock")} size="small">
+									<Button onClick={() => void handleBulkAction("lock")} size="sm">
 										<Lock size={14} /> Lock
 									</Button>
-									<Button onClick={() => void handleBulkAction("unlock")} size="small">
+									<Button onClick={() => void handleBulkAction("unlock")} size="sm">
 										<Lock size={14} /> Unlock
 									</Button>
-									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="small">
+									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="sm">
 										Clear
 									</Button>
 								</div>
@@ -470,14 +474,16 @@ export function AdminDashboard() {
 													<Button
 														onClick={() => void handleToggleHidden(name.id, hidden)}
 														variant="ghost"
-														size="small"
+														size="sm"
+														iconOnly={true}
 													>
 														{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
 													</Button>
 													<Button
 														onClick={() => void handleToggleLocked(name.id, locked)}
 														variant="ghost"
-														size="small"
+														size="sm"
+														iconOnly={true}
 														aria-label={locked ? "Unlock name" : "Lock name"}
 													>
 														<Lock size={14} />

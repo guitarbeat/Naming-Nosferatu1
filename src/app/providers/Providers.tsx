@@ -33,6 +33,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import Button from "@/shared/components/layout/Button";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Constants
@@ -263,14 +264,18 @@ function ToastContainer({
 							{style.icon}
 						</span>
 						<span className="flex-1">{toast.message}</span>
-						<button
+						<Button
 							onClick={() => onDismiss(toast.id)}
-							className="ml-2 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100"
+							variant="ghost"
+							size="icon"
+							iconOnly={true}
+							shape="pill"
+							className="ml-2 size-7 bg-white/8 text-primary-foreground/80 hover:bg-white/14 hover:text-primary-foreground"
 							aria-label="Dismiss"
 							type="button"
 						>
 							✕
-						</button>
+						</Button>
 					</div>
 				);
 			})}

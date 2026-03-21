@@ -14,10 +14,12 @@ vi.mock("@/app/providers/Providers", () => ({
 
 vi.mock("@/store/appStore", () => ({
 	default: () => ({
-		user: { name: "Test User", isAdmin: false },
+		user: { name: "Test User", isAdmin: false, isLoggedIn: false },
 		userActions: { setAdminStatus: vi.fn() },
-		tournament: { names: [], ratings: [] },
+		tournament: { names: [], ratings: [], selectedNames: [] },
 		tournamentActions: {},
+		ui: { isSwipeMode: false },
+		uiActions: { setSwipeMode: vi.fn() },
 	}),
 	useAppStoreInitialization: vi.fn(),
 }));
@@ -33,8 +35,12 @@ vi.mock("@/shared/components", () => ({
 	AppLayout: ({ children }: { children: React.ReactNode }) => (
 		<div data-testid="app-layout">{children}</div>
 	),
-	Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
-	ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	Button: ({ children, onClick }: any) => (
+		<button onClick={onClick}>{children}</button>
+	),
+	ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 	Loading: ({ text }: { text: string }) => <div>Loading: {text}</div>,
 	Section: ({ children, id }: { children: React.ReactNode; id: string }) => (
 		<section id={id}>{children}</section>
@@ -68,6 +74,16 @@ vi.mock("@/shared/services/errorManager", () => ({
 	},
 }));
 
+vi.mock("@/shared/components/layout/LoadingSequence", () => ({
+	LoadingSequence: ({ title }: { title: string }) => (
+		<div data-testid="loading-sequence">{title}</div>
+	),
+}));
+
+vi.mock("@/shared/components/layout/TabNavigation", () => ({
+	TabNavigation: () => <div data-testid="tab-navigation">Tab Navigation</div>,
+}));
+
 // Mock lazy components using the alias
 vi.mock("@/app/appConfig", () => ({
 	errorContexts: {
@@ -75,9 +91,13 @@ vi.mock("@/app/appConfig", () => ({
 		analysisDashboard: "analysisDashboard",
 	},
 	routeComponents: {
-		TournamentFlow: () => <div data-testid="tournament-flow">Tournament Flow</div>,
+		TournamentFlow: () => (
+			<div data-testid="tournament-flow">Tournament Flow</div>
+		),
 		DashboardLazy: () => <div data-testid="dashboard">Dashboard</div>,
-		AdminDashboardLazy: () => <div data-testid="admin-dashboard">Admin Dashboard</div>,
+		AdminDashboardLazy: () => (
+			<div data-testid="admin-dashboard">Admin Dashboard</div>
+		),
 	},
 }));
 
@@ -97,6 +117,9 @@ describe("App Component", () => {
 			expect(screen.getByTestId("tournament-flow")).toBeInTheDocument();
 		});
 
+		expect(screen.getByTestId("loading-sequence")).toHaveTextContent(
+			"Naming Nosferatu",
+		);
 		expect(document.documentElement.scrollTop).toBe(0);
 		expect(document.body.scrollTop).toBe(0);
 	});

@@ -5,6 +5,7 @@
 
 import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Button from "@/shared/components/layout/Button";
 import { ChevronLeft, ChevronRight, X, ZoomOut } from "@/shared/lib/icons";
 import { LightboxImage } from "./LightboxImage";
 
@@ -324,43 +325,55 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 				aria-labelledby={`lightbox-title-${currentIndex}`}
 				aria-describedby={`lightbox-description-${currentIndex}`}
 			>
-				<button
+				<Button
 					type="button"
 					onClick={onClose}
-					className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-10"
+					variant="ghost"
+					size="icon"
+					iconOnly={true}
+					shape="pill"
+					className="absolute top-4 right-4 z-10 bg-white/10 text-white hover:bg-white/20 hover:text-white"
 					aria-label="Close lightbox and return to gallery"
 					title="Close (Escape)"
 				>
 					<X size={24} />
-				</button>
+				</Button>
 
 				{isZoomed && (
-					<button
+					<Button
 						type="button"
 						onClick={(e) => {
 							e.stopPropagation();
 							handleZoomOut();
 						}}
-						className="absolute top-4 right-16 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-10"
+						variant="ghost"
+						size="icon"
+						iconOnly={true}
+						shape="pill"
+						className="absolute top-4 right-16 z-10 bg-white/10 text-white hover:bg-white/20 hover:text-white"
 						aria-label="Zoom out image"
 						title="Zoom out (-)"
 					>
 						<ZoomOut size={24} />
-					</button>
+					</Button>
 				)}
 
-				<button
+				<Button
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
 						handlePrevious();
 					}}
-					className="absolute left-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+					variant="ghost"
+					size="icon"
+					iconOnly={true}
+					shape="pill"
+					className="absolute left-4 bg-white/10 text-white hover:bg-white/20 hover:text-white"
 					aria-label="View previous image"
 					title="Previous (Left Arrow)"
 				>
 					<ChevronLeft size={24} />
-				</button>
+				</Button>
 
 				<motion.div
 					className="relative max-w-[90vw] max-h-[90vh] cursor-pointer"
@@ -405,18 +418,22 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 					)}
 				</motion.div>
 
-				<button
+				<Button
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
 						handleNext();
 					}}
-					className="absolute right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+					variant="ghost"
+					size="icon"
+					iconOnly={true}
+					shape="pill"
+					className="absolute right-4 bg-white/10 text-white hover:bg-white/20 hover:text-white"
 					aria-label="View next image"
 					title="Next (Right Arrow)"
 				>
 					<ChevronRight size={24} />
-				</button>
+				</Button>
 
 				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
 					<span id={`lightbox-description-${currentIndex}`} className="font-medium">

@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useId, useMemo, useState } from "react";
+import Button from "@/shared/components/layout/Button";
 import { useLocalStorage } from "@/shared/hooks";
 import { Copy, Heart, Shuffle } from "@/shared/lib/icons";
 
@@ -50,39 +51,22 @@ function Spinner() {
 	);
 }
 
-function IconButton({
-	onClick,
-	label,
-	children,
-}: {
-	onClick: () => void;
-	label: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			aria-label={label}
-			className="rounded-lg bg-foreground/5 p-2 text-foreground transition-colors hover:bg-foreground/10"
-		>
-			{children}
-		</button>
-	);
-}
-
 function FavoriteChip({ name, onRemove }: { name: string; onRemove: () => void }) {
 	return (
 		<div className="flex items-center gap-1 rounded-full border border-border bg-foreground/5 py-1 pl-3 pr-1">
 			<span className="text-sm text-foreground/80">{name}</span>
-			<button
+			<Button
 				type="button"
 				onClick={onRemove}
-				className="rounded-full p-1 text-foreground/40 transition-colors hover:bg-foreground/10 hover:text-foreground/80"
+				variant="ghost"
+				size="icon"
+				iconOnly={true}
+				shape="pill"
+				className="size-7 bg-transparent text-foreground/40 hover:bg-foreground/10 hover:text-foreground/80"
 				aria-label={`Remove ${name} from favorites`}
 			>
 				<span className="text-xs">✕</span>
-			</button>
+			</Button>
 		</div>
 	);
 }
@@ -189,9 +173,15 @@ export function RandomGenerator({
 								{generatedName}
 							</h3>
 							<div className="flex gap-2">
-								<IconButton
+								<Button
 									onClick={() => toggleFavorite(generatedName)}
-									label={
+									type="button"
+									variant="ghost"
+									size="icon"
+									iconOnly={true}
+									shape="pill"
+									className="bg-foreground/8 text-foreground hover:bg-foreground/14"
+									aria-label={
 										favorites.has(generatedName) ? "Remove from favorites" : "Add to favorites"
 									}
 								>
@@ -199,13 +189,19 @@ export function RandomGenerator({
 										size={20}
 										className={favorites.has(generatedName) ? "fill-pink-500 text-pink-500" : ""}
 									/>
-								</IconButton>
-								<IconButton
+								</Button>
+								<Button
 									onClick={() => copyToClipboard(generatedName)}
-									label="Copy to clipboard"
+									type="button"
+									variant="ghost"
+									size="icon"
+									iconOnly={true}
+									shape="pill"
+									className="bg-foreground/8 text-foreground hover:bg-foreground/14"
+									aria-label="Copy to clipboard"
 								>
 									<Copy size={20} />
-								</IconButton>
+								</Button>
 							</div>
 						</div>
 					) : (
@@ -217,16 +213,18 @@ export function RandomGenerator({
 				</div>
 
 				{/* Generate Button */}
-				<div className="button-wrap random-generator-button-wrap">
-					<button
+				<div className="random-generator-button-wrap">
+					<Button
 						type="button"
 						onClick={generateName}
 						disabled={isGenerating}
-						className="random-generator-button"
+						variant="glass"
+						size="lg"
+						className="min-w-[12rem]"
+						startIcon={<Shuffle size={18} />}
 					>
-						<span>{isGenerating ? "Generating..." : "Generate Name"}</span>
-					</button>
-					<div className="button-shadow random-generator-button-shadow" aria-hidden="true" />
+						{isGenerating ? "Generating..." : "Generate Name"}
+					</Button>
 				</div>
 			</div>
 

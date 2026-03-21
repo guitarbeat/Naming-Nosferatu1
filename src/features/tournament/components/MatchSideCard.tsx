@@ -8,9 +8,9 @@ import CatImage from "@/shared/components/layout/CatImage";
 import {
 	type HeatLevel,
 	STREAK_THRESHOLDS,
-	getFlameCount,
 	getHeatCardClasses,
-	getHeatGradientClasses,
+	getHeatLabel,
+	getHeatTextClasses,
 } from "../utils/heat";
 
 export interface MatchSideCardProps {
@@ -31,34 +31,6 @@ export interface MatchSideCardProps {
 	animationDelay?: string;
 }
 
-function StreakFlames({
-	count,
-	side,
-	name,
-	streak,
-	className = "text-sm sm:text-base animate-flame",
-}: {
-	count: number;
-	side: string;
-	name: string;
-	streak: number;
-	className?: string;
-}) {
-	return (
-		<div className="flex gap-0.5">
-			{Array.from({ length: count }).map((_, i) => (
-				<span
-					key={`${side}-flame-${name}-${streak}-${i}`}
-					className={className}
-					style={{ animationDelay: `${i * 60}ms` }}
-				>
-					🔥
-				</span>
-			))}
-		</div>
-	);
-}
-
 export function MatchSideCard({
 	side,
 	name,
@@ -77,22 +49,27 @@ export function MatchSideCard({
 	animationDelay,
 }: MatchSideCardProps) {
 	const isRight = side === "right";
-	const textAlign = isRight ? "text-left sm:text-right" : "";
-	const headingWrap = isRight ? "justify-end sm:justify-end" : "";
-	const pronunciationPad = isRight ? "mr-2" : "ml-2";
+	const textAlign = isRight ? "text-left sm:text-right" : "text-left";
+	const headingWrap = isRight
+		? "justify-start sm:justify-end"
+		: "justify-start";
+	const metaAlign = isRight ? "items-start sm:items-end" : "items-start";
 	const memberWrap = isRight ? "justify-start sm:justify-end" : "";
 	const selectionClass = isSelected
-		? "ring-2 ring-emerald-400/80 shadow-[0_0_45px_rgba(16,185,129,0.35)] scale-[1.02]"
+		? "ring-2 ring-emerald-400/70 shadow-[0_0_28px_rgba(16,185,129,0.22)]"
 		: hasSelectionFeedback
-			? "opacity-[0.55] scale-[0.98]"
+			? "opacity-[0.55] saturate-75"
 			: "";
 
-	const showStreak = streak >= STREAK_THRESHOLDS.warm;
+	const showStreak = heatLevel !== null && streak >= STREAK_THRESHOLDS.warm;
+	const streakLabel = heatLevel
+		? `${getHeatLabel(heatLevel)} x${streak}`
+		: null;
 
 	return (
 		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
 			<div
-				className={`relative overflow-hidden rounded-xl group cursor-pointer flex-1 animate-float transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+				className={`relative overflow-hidden rounded-[1.1rem] border border-border/15 group cursor-pointer flex-1 transition-[border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
 					isVoting ? "pointer-events-none" : ""
 				} ${getHeatCardClasses(heatLevel)} ${selectionClass}`}
 				style={animationDelay ? { animationDelay } : undefined}
@@ -103,14 +80,14 @@ export function MatchSideCard({
 				onKeyDown={onKeyDown}
 				onClick={onVote}
 			>
-				<div className="relative w-full h-full flex items-center justify-center bg-foreground/10">
+				<div className="relative w-full h-full flex items-center justify-center bg-foreground/[0.07]">
 					{img ? (
 						<CatImage
 							src={img}
 							alt={name}
 							objectFit="cover"
 							containerClassName="w-full h-full"
-							imageClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+							imageClassName="w-full h-full object-cover"
 						/>
 					) : (
 						<span className="text-foreground/20 text-6xl font-bold select-none">
@@ -118,48 +95,30 @@ export function MatchSideCard({
 						</span>
 					)}
 
-					{heatLevel && (
-						<div className="pointer-events-none absolute inset-0 z-10">
-							<div className={`absolute inset-0 ${getHeatGradientClasses(heatLevel)}`} />
-							<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
-								<StreakFlames
-									count={getFlameCount(streak)}
-									side={side}
-									name={name}
-									streak={streak}
-								/>
+					<div
+						className={`absolute inset-x-0 bottom-0 p-4 sm:p-5 bg-gradient-to-t from-background/92 via-background/56 to-transparent z-20 flex flex-col justify-end pointer-events-none ${textAlign}`}
+					>
+						<div className={`flex flex-col gap-2 ${metaAlign}`}>
+							{showStreak && streakLabel ? (
+								<span
+									data-testid={`streak-chip-${side}`}
+									className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase ${getHeatTextClasses(heatLevel)}`}
+								>
+									{streakLabel}
+								</span>
+							) : null}
+							<div
+								className={`flex items-center gap-2 flex-wrap ${headingWrap}`}
+							>
+								<h3
+									className={`font-whimsical text-[1.85rem] sm:text-3xl text-foreground tracking-wide break-words drop-shadow-sm leading-tight ${isRight ? "text-left sm:text-right" : ""}`}
+								>
+									{name}
+								</h3>
 							</div>
 						</div>
-					)}
-
-					<div
-						className={`absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-20 flex flex-col justify-end pointer-events-none ${textAlign}`}
-					>
-						<div className={`flex items-center gap-2 flex-wrap ${headingWrap}`}>
-							{isRight && showStreak && (
-								<StreakFlames
-									count={Math.min(streak, 6)}
-									side={side}
-									name={name}
-									streak={streak}
-									className="text-lg sm:text-2xl animate-pulse"
-								/>
-							)}
-							<h3 className={`font-whimsical text-2xl sm:text-3xl text-foreground tracking-wide break-words drop-shadow-md leading-tight ${isRight ? "text-left sm:text-right" : ""}`}>
-								{name}
-							</h3>
-							{!isRight && showStreak && (
-								<StreakFlames
-									count={Math.min(streak, 6)}
-									side={side}
-									name={name}
-									streak={streak}
-									className="text-lg sm:text-2xl animate-pulse"
-								/>
-							)}
-						</div>
 						{pronunciation && (
-							<span className={`${pronunciationPad} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}>
+							<span className="mt-1 text-amber-100/85 text-sm sm:text-base font-medium italic">
 								[{pronunciation}]
 							</span>
 						)}
@@ -168,14 +127,16 @@ export function MatchSideCard({
 								{members.map((member) => (
 									<span
 										key={`${side}-member-${member}`}
-										className="rounded-full border border-border/30 bg-background/35 px-2 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide"
+										className="rounded-full border border-border/20 bg-background/45 px-2 py-0.5 text-[10px] sm:text-xs font-medium tracking-wide text-foreground/75"
 									>
 										{member}
 									</span>
 								))}
 							</div>
 						) : description ? (
-							<p className={`text-xs sm:text-sm text-foreground/90 italic line-clamp-2 mt-1 drop-shadow-sm ${textAlign}`}>
+							<p
+								className={`mt-2 text-xs sm:text-sm text-foreground/72 italic line-clamp-2 leading-snug ${textAlign}`}
+							>
 								{description}
 							</p>
 						) : null}

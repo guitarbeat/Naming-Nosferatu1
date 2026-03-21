@@ -1,6 +1,6 @@
-import { Button as HeroButton } from "@heroui/react";
 import { useToast } from "@/app/providers/Providers";
 import { usePersonalResults } from "@/features/analytics/hooks/usePersonalResults";
+import Button from "@/shared/components/layout/Button";
 import { Plus } from "@/shared/lib/icons";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RankingAdjustment } from "./RankingAdjustment";
@@ -73,14 +73,14 @@ export const PersonalResults = ({
 			/>
 
 			<div className="flex flex-wrap gap-3 justify-end">
-				<HeroButton
+				<Button
 					onClick={onStartNew}
-					variant="flat"
-					className="bg-primary/20 hover:bg-primary/30 text-foreground"
-					startContent={<Plus size={18} />}
+					variant="secondary"
+					shape="pill"
+					startIcon={<Plus size={18} />}
 				>
 					New Tournament
-				</HeroButton>
+				</Button>
 			</div>
 		</div>
 	);

@@ -137,6 +137,10 @@
 	height: 100%;
 }
 
+:root[data-loading-sequence="sealed"] .magic-container {
+	opacity: 0 !important;
+}
+
 .app-frame-shell {
 	position: relative;
 }
@@ -170,6 +174,104 @@
 	margin: calc(var(--pw-frame-border-width) * -1);
 	border: inherit;
 	border-radius: var(--pw-frame-border-radius);
+}
+
+.loading-sequence {
+	--pw-loading-accent: color-mix(
+		in srgb,
+		var(--color-hot-pink) 52%,
+		var(--color-neutral-50) 48%
+	);
+
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-loading-sequence);
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.loading-sequence--victory {
+	--pw-loading-accent: color-mix(in srgb, var(--color-success) 52%, var(--color-warning) 48%);
+}
+
+.loading-sequence__mask {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 50%;
+	background: rgb(var(--pw-frame-color-rgb) / 0.98);
+	mix-blend-mode: difference;
+	transition:
+		transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.35s ease;
+	will-change: transform, opacity;
+}
+
+.loading-sequence__mask--top {
+	top: 0;
+	transform-origin: top;
+}
+
+.loading-sequence__mask--bottom {
+	bottom: 0;
+	transform-origin: bottom;
+}
+
+.loading-sequence--opening .loading-sequence__mask--top {
+	transform: scaleY(0);
+}
+
+.loading-sequence--opening .loading-sequence__mask--bottom {
+	transform: scaleY(0);
+}
+
+.loading-sequence__copy {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 1;
+	display: grid;
+	gap: 0.7rem;
+	width: min(34rem, calc(100vw - 2.5rem));
+	transform: translate(-50%, -50%);
+	text-align: center;
+	mix-blend-mode: difference;
+	color: rgb(var(--pw-frame-color-rgb) / 0.94);
+	transition:
+		opacity 0.35s ease,
+		transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.loading-sequence--opening .loading-sequence__copy {
+	opacity: 0;
+	transform: translate(-50%, calc(-50% - 10px)) scale(0.985);
+}
+
+.loading-sequence__eyebrow {
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	color: var(--pw-loading-accent);
+}
+
+.loading-sequence__title {
+	font-family: var(--font-display);
+	font-size: clamp(2.2rem, 8vw, 5.75rem);
+	font-weight: 800;
+	line-height: 0.92;
+	letter-spacing: -0.05em;
+	text-wrap: balance;
+	text-transform: uppercase;
+}
+
+.loading-sequence__subtitle {
+	justify-self: center;
+	max-width: 28rem;
+	font-size: clamp(0.9rem, 2.4vw, 1.08rem);
+	line-height: 1.5;
+	color: rgb(var(--pw-frame-color-rgb) / 0.72);
+	text-wrap: balance;
 }
 
 @keyframes moire-drift {
@@ -225,6 +327,16 @@
 	.app-frame::after {
 		border-radius: 16px;
 	}
+
+	.loading-sequence__copy {
+		width: min(24rem, calc(100vw - 2rem));
+		gap: 0.55rem;
+	}
+
+	.loading-sequence__eyebrow {
+		font-size: 0.64rem;
+		letter-spacing: 0.22em;
+	}
 }
 
 :root[data-theme="light"] .cat-background__moire {
@@ -238,6 +350,21 @@
 @media (prefers-reduced-motion: reduce) {
 	.magic-container {
 		transition: none;
+	}
+
+	.loading-sequence__mask,
+	.loading-sequence__copy {
+		transition-duration: 0.18s;
+	}
+
+	.loading-sequence--opening .loading-sequence__mask {
+		transform: none;
+		opacity: 0;
+	}
+
+	.loading-sequence--opening .loading-sequence__copy {
+		transform: translate(-50%, -50%);
+		opacity: 0;
 	}
 
 	.cat-background__moire,

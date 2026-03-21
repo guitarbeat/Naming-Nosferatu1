@@ -5,6 +5,7 @@
 
 import { useCallback, useMemo } from "react";
 import { FixedSizeList as List } from "react-window";
+import Button from "@/shared/components/layout/Button";
 import CatImage from "@/shared/components/layout/CatImage";
 import { Check, Shuffle, X } from "@/shared/lib/icons";
 import type { NameItem as TournamentNameItem } from "@/shared/types";
@@ -131,9 +132,16 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 			<div className="flex flex-col items-center justify-center h-96 text-center">
 				<p className="text-muted-foreground mb-4">No names found</p>
 				{searchTerm && (
-					<button onClick={handleClearSelection} className="text-primary hover:underline">
+					<Button
+						type="button"
+						onClick={handleClearSelection}
+						variant="ghost"
+						presentation="chip"
+						shape="pill"
+						className="bg-transparent text-primary hover:bg-primary/10 hover:text-primary"
+					>
 						Clear search
-					</button>
+					</Button>
 				)}
 			</div>
 		);
@@ -148,21 +156,29 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 				</span>
 				<div className="flex items-center gap-2">
 					{selectedNames.size > 0 && (
-						<button
+						<Button
 							onClick={handleClearSelection}
-							className="flex items-center gap-1 px-3 py-1 text-sm bg-muted hover:bg-muted/80 rounded-md transition-colors"
+							type="button"
+							variant="ghost"
+							presentation="chip"
+							shape="pill"
+							startIcon={<X size={14} />}
+							className="bg-muted text-foreground hover:bg-muted/80"
 						>
-							<X size={14} />
 							Clear
-						</button>
+						</Button>
 					)}
-					<button
+					<Button
 						onClick={handleRandomSelection}
-						className="flex items-center gap-1 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+						type="button"
+						variant="ghost"
+						presentation="chip"
+						shape="pill"
+						startIcon={<Shuffle size={14} />}
+						className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
 					>
-						<Shuffle size={14} />
 						Random
-					</button>
+					</Button>
 				</div>
 			</div>
 

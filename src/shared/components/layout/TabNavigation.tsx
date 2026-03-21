@@ -32,6 +32,14 @@ interface TabNavigationProps {
 	className?: string;
 }
 
+export function getTabMobileLabel(tabId: Tab, label: string) {
+	if (tabId === "pick") {
+		return label.startsWith("Start (") ? label : "Pick";
+	}
+
+	return label.split(" ")[0] || label;
+}
+
 export function TabNavigation({ activeTab, onTabChange, className }: TabNavigationProps) {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -136,7 +144,9 @@ export function TabNavigation({ activeTab, onTabChange, className }: TabNavigati
 							)}
 						/>
 						<span className="hidden sm:inline font-medium">{tab.label}</span>
-						<span className="sm:hidden font-medium">{tab.label.split(" ")[0]}</span>
+						<span className="sm:hidden font-medium">
+							{getTabMobileLabel(tab.id, tab.label)}
+						</span>
 
 						{/* Active indicator */}
 						{activeTab === tab.id && (

@@ -113,15 +113,29 @@ function hexToNormalizedRgb(value: string): [number, number, number] {
 	];
 }
 
-function getEventPosition(event: MouseEvent | TouchEvent) {
+function getViewportEventPosition(event: MouseEvent | TouchEvent) {
 	if ("changedTouches" in event && event.changedTouches.length > 0) {
 		const touch = event.changedTouches[0];
-		return { x: touch.pageX, y: touch.pageY };
+		if (typeof touch.clientX === "number" && typeof touch.clientY === "number") {
+			return { x: touch.clientX, y: touch.clientY };
+		}
+
+		return {
+			x: touch.pageX - window.scrollX,
+			y: touch.pageY - window.scrollY,
+		};
+	}
+
+	if (typeof event.clientX === "number" && typeof event.clientY === "number") {
+		return {
+			x: event.clientX,
+			y: event.clientY,
+		};
 	}
 
 	return {
-		x: event.pageX,
-		y: event.pageY,
+		x: event.pageX - window.scrollX,
+		y: event.pageY - window.scrollY,
 	};
 }
 
@@ -301,18 +315,26 @@ export function MagicMoire({ theme, onError }: MagicMoireProps) {
 			resizeTimeout = window.setTimeout(resize, RESIZE_DEBOUNCE_MS);
 		};
 
-		const updateMousePosition = (event: MouseEvent | TouchEvent) => {
-			if (!gl || width <= 0 || height <= 0) {
-				return;
-			}
+			const updateMousePosition = (event: MouseEvent | TouchEvent) => {
+				if (!gl || width <= 0 || height <= 0) {
+					return;
+				}
 
-			mouseOver = true;
-			const { x, y } = getEventPosition(event);
+				mouseOver = true;
+				const { x, y } = getViewportEventPosition(event);
+				const rect = gl.canvas.getBoundingClientRect();
+				const normalizedWidth = rect.width || width;
+				const normalizedHeight = rect.height || height;
+				const relativeX = x - rect.left;
+				const relativeY = y - rect.top;
 
-			mouse.set((x / width) * 2 - 1, (1 - y / height) * 2 - 1);
+				mouse.set(
+					(relativeX / normalizedWidth) * 2 - 1,
+					(1 - relativeY / normalizedHeight) * 2 - 1,
+				);
 
-			if (gridRatio >= 1) {
-				mouse.y /= gridRatio;
+				if (gridRatio >= 1) {
+					mouse.y /= gridRatio;
 			} else {
 				mouse.x /= gridRatio;
 			}

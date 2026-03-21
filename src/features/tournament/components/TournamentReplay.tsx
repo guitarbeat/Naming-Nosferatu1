@@ -259,7 +259,7 @@ export function TournamentReplay({
 						<Button
 							onClick={handleExportHistory}
 							variant="ghost"
-							size="small"
+							size="sm"
 							className="text-chart-4 hover:text-chart-4/80"
 						>
 							<Download size={16} className="mr-1" />
@@ -292,28 +292,36 @@ export function TournamentReplay({
 				<div>
 					<label className="block text-sm font-medium text-foreground mb-2">View Mode</label>
 					<div className="flex gap-2">
-						<button
+						<Button
+							type="button"
 							onClick={() => setViewMode("matches")}
-							className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+							variant={viewMode === "matches" ? "secondary" : "ghost"}
+							presentation="chip"
+							shape="pill"
+							startIcon={<Target size={16} />}
+							className={`${
 								viewMode === "matches"
-									? "bg-chart-4 text-white"
-									: "bg-foreground/10 text-foreground hover:bg-foreground/20"
+									? "bg-chart-4 text-white hover:bg-chart-4/85 hover:text-white"
+									: "bg-foreground/10 text-foreground hover:bg-foreground/20 hover:text-foreground"
 							}`}
 						>
-							<Target size={16} className="mr-1" />
 							Matches
-						</button>
-						<button
+						</Button>
+						<Button
+							type="button"
 							onClick={() => setViewMode("bracket")}
-							className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+							variant={viewMode === "bracket" ? "secondary" : "ghost"}
+							presentation="chip"
+							shape="pill"
+							startIcon={<Trophy size={16} />}
+							className={`${
 								viewMode === "bracket"
-									? "bg-chart-4 text-white"
-									: "bg-foreground/10 text-foreground hover:bg-foreground/20"
+									? "bg-chart-4 text-white hover:bg-chart-4/85 hover:text-white"
+									: "bg-foreground/10 text-foreground hover:bg-foreground/20 hover:text-foreground"
 							}`}
 						>
-							<Trophy size={16} className="mr-1" />
 							Bracket
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -364,28 +372,43 @@ export function TournamentReplay({
 					{/* Playback Controls */}
 					{filteredMatches.length > 0 && (
 						<div className="flex items-center justify-center gap-4 p-4 bg-foreground/5 rounded-lg">
-							<button
+							<Button
 								onClick={handlePreviousMatch}
 								disabled={currentMatchIndex === 0}
-								className="p-2 rounded-full bg-foreground/10 text-foreground hover:bg-foreground/20 disabled:opacity-50"
+								type="button"
+								variant="ghost"
+								size="icon"
+								iconOnly={true}
+								shape="pill"
+								className="bg-foreground/10 text-foreground hover:bg-foreground/20"
 							>
 								<SkipBack size={20} />
-							</button>
+							</Button>
 
-							<button
+							<Button
 								onClick={handlePlayPause}
-								className="p-3 rounded-full bg-chart-4 text-white hover:bg-chart-4/80"
+								type="button"
+								variant="secondary"
+								size="icon"
+								iconOnly={true}
+								shape="pill"
+								className="size-11 bg-chart-4 text-white hover:bg-chart-4/80 hover:text-white"
 							>
 								{isPlaying ? <Pause size={20} /> : <Play size={20} />}
-							</button>
+							</Button>
 
-							<button
+							<Button
 								onClick={handleNextMatch}
 								disabled={currentMatchIndex === filteredMatches.length - 1}
-								className="p-2 rounded-full bg-foreground/10 text-foreground hover:bg-foreground/20 disabled:opacity-50"
+								type="button"
+								variant="ghost"
+								size="icon"
+								iconOnly={true}
+								shape="pill"
+								className="bg-foreground/10 text-foreground hover:bg-foreground/20"
 							>
 								<SkipForward size={20} />
-							</button>
+							</Button>
 
 							<div className="flex items-center gap-2">
 								<span className="text-sm text-muted-foreground">Speed:</span>

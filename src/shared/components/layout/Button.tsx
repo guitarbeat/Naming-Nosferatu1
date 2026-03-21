@@ -15,11 +15,12 @@ import "./FancyButton.css";
 const buttonVariants = cva(
 	[
 		"inline-flex items-center justify-center gap-2 whitespace-nowrap",
-		"font-medium tracking-wide",
+		"border border-transparent",
+		"font-semibold tracking-wide",
 		"rounded-[var(--radius-button)]",
-		"transition-all duration-200 ease-in-out",
+		"transition-all duration-200 ease-out",
 		"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-		"disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",
+		"disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
 		"[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
 		"select-none",
 	].join(" "),
@@ -27,89 +28,112 @@ const buttonVariants = cva(
 		variants: {
 			variant: {
 				primary: [
-					"bg-primary text-primary-foreground",
-					"shadow-sm",
-					"hover:brightness-110 hover:shadow-md hover:-translate-y-px",
-					"active:translate-y-0 active:shadow-sm active:brightness-95",
+					"bg-primary text-primary-foreground border-primary/45",
+					"shadow-sm shadow-primary/20",
+					"hover:-translate-y-px hover:bg-primary/92 hover:shadow-md hover:shadow-primary/25",
+					"active:translate-y-0 active:shadow-sm active:bg-primary/88",
 				].join(" "),
 				secondary: [
-					"bg-secondary text-secondary-foreground",
-					"border border-border/40",
+					"bg-secondary/90 text-secondary-foreground border-border/45",
 					"shadow-sm",
-					"hover:bg-secondary/80 hover:border-border/60 hover:shadow-md hover:-translate-y-px",
-					"active:translate-y-0 active:shadow-sm active:bg-secondary/70",
+					"hover:-translate-y-px hover:bg-secondary hover:border-border/70 hover:shadow-md",
+					"active:translate-y-0 active:shadow-sm active:bg-secondary/85",
 				].join(" "),
 				danger: [
-					"bg-destructive text-destructive-foreground",
-					"shadow-sm",
-					"hover:brightness-110 hover:shadow-md hover:-translate-y-px",
-					"active:translate-y-0 active:shadow-sm active:brightness-95",
+					"bg-destructive/92 text-destructive-foreground border-destructive/45",
+					"shadow-sm shadow-destructive/20",
+					"hover:-translate-y-px hover:bg-destructive hover:shadow-md hover:shadow-destructive/25",
+					"active:translate-y-0 active:shadow-sm active:bg-destructive/88",
 				].join(" "),
 				ghost: [
-					"text-foreground/80",
-					"hover:bg-accent/50 hover:text-accent-foreground",
+					"bg-foreground/[0.04] text-foreground/80",
+					"hover:bg-accent/55 hover:text-accent-foreground",
 					"active:bg-accent/70",
 				].join(" "),
 				outline: [
-					"border border-border bg-transparent text-foreground",
+					"border-border/55 bg-background/85 text-foreground",
 					"shadow-sm",
-					"hover:bg-accent/30 hover:border-border/80 hover:text-accent-foreground hover:-translate-y-px",
-					"active:translate-y-0 active:bg-accent/50",
-				].join(" "),
-				link: [
-					"text-primary underline-offset-4",
-					"hover:underline hover:text-primary/80",
-					"active:text-primary/70",
-				].join(" "),
-				gradient: [
-					"rounded-xl bg-gradient-to-r from-primary to-accent",
-					"text-primary-foreground font-bold",
-					"shadow-lg shadow-primary/20",
-					"hover:from-primary/90 hover:to-accent/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-px",
-					"active:scale-[0.98] active:shadow-md",
-					"disabled:active:scale-100",
-				].join(" "),
-				secondaryGradient: [
-					"rounded-xl bg-gradient-to-r from-chart-2 to-chart-3",
-					"text-primary-foreground font-bold",
-					"shadow-lg shadow-chart-2/20",
-					"hover:from-chart-2/90 hover:to-chart-3/90 hover:shadow-xl hover:shadow-chart-2/30 hover:-translate-y-px",
-					"active:scale-[0.98] active:shadow-md",
-					"disabled:active:scale-100",
+					"hover:-translate-y-px hover:bg-accent/30 hover:border-border/80 hover:text-accent-foreground",
+					"active:translate-y-0 active:bg-accent/45",
 				].join(" "),
 				glass: "",
 			},
 			size: {
-				small: "h-8 px-3 py-1.5 text-xs rounded-md",
-				medium: "h-9 px-4 py-2 text-sm",
-				large: "h-11 px-6 py-2.5 text-base",
-				xl: "h-[50px] px-8 py-3 text-base",
-				icon: "h-9 w-9 p-0",
+				sm: "h-8 px-3 text-xs",
+				md: "h-10 px-4 text-sm",
+				lg: "h-11 px-5 text-sm sm:text-base",
+				xl: "h-12 px-6 text-base",
+				icon: "size-10 p-0",
+			},
+			presentation: {
+				default: "",
+				chip: "h-auto min-h-8 px-3 py-1.5 text-xs font-semibold tracking-normal shadow-none",
+			},
+			shape: {
+				default: "",
+				pill: "rounded-full",
 			},
 		},
 		defaultVariants: {
 			variant: "primary",
-			size: "medium",
+			size: "md",
+			presentation: "default",
+			shape: "default",
 		},
 	},
 );
 
-type ButtonVariant =
-	| "primary"
-	| "secondary"
-	| "danger"
-	| "ghost"
-	| "outline"
-	| "link"
-	| "gradient"
-	| "secondaryGradient"
-	| "glass";
-type ButtonSize = "small" | "medium" | "large" | "xl" | "icon";
+const BUTTON_SIZE_ALIASES = {
+	small: "sm",
+	medium: "md",
+	large: "lg",
+	sm: "sm",
+	md: "md",
+	lg: "lg",
+	xl: "xl",
+	icon: "icon",
+} as const;
+
+type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline" | "glass";
+type ButtonSize = keyof typeof BUTTON_SIZE_ALIASES;
+type NormalizedButtonSize = (typeof BUTTON_SIZE_ALIASES)[ButtonSize];
+type ButtonPresentation = "default" | "chip";
+type ButtonShape = "default" | "pill";
+
+const normalizeButtonSize = (size: ButtonSize = "md"): NormalizedButtonSize =>
+	BUTTON_SIZE_ALIASES[size] ?? "md";
+
+const getButtonClassName = ({
+	variant = "primary",
+	size = "md",
+	presentation = "default",
+	shape = "default",
+	iconOnly = false,
+	className,
+}: {
+	variant?: Exclude<ButtonVariant, "glass">;
+	size?: ButtonSize;
+	presentation?: ButtonPresentation;
+	shape?: ButtonShape;
+	iconOnly?: boolean;
+	className?: string;
+}) =>
+	cn(
+		buttonVariants({
+			variant,
+			size: iconOnly ? "icon" : normalizeButtonSize(size),
+			presentation: iconOnly ? "default" : presentation,
+			shape: iconOnly ? "pill" : shape,
+		}),
+		className,
+	);
 
 interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
 	children: React.ReactNode;
 	variant?: ButtonVariant;
 	size?: ButtonSize;
+	presentation?: ButtonPresentation;
+	shape?: ButtonShape;
 	disabled?: boolean;
 	loading?: boolean;
 	type?: "button" | "submit" | "reset";
@@ -123,7 +147,9 @@ interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
 const Button = ({
 	children,
 	variant = "primary",
-	size = "medium",
+	size = "md",
+	presentation = "default",
+	shape = "default",
 	disabled = false,
 	loading = false,
 	type = "button",
@@ -134,16 +160,17 @@ const Button = ({
 	iconOnly = false,
 	...rest
 }: ButtonProps) => {
-	const finalSize = iconOnly ? "icon" : size;
+	const finalSize = iconOnly ? "icon" : normalizeButtonSize(size);
+	const finalShape = iconOnly ? "pill" : shape;
 	const glassSizeClass =
-		finalSize === "small"
-			? "fancy-button--small"
-			: finalSize === "large"
-				? "fancy-button--large"
-				: finalSize === "xl"
-					? "fancy-button--xl"
-					: finalSize === "icon"
-						? "fancy-button--icon"
+		finalSize === "lg"
+			? "fancy-button--large"
+			: finalSize === "xl"
+				? "fancy-button--xl"
+				: finalSize === "icon"
+					? "fancy-button--icon"
+					: finalSize === "sm"
+						? "fancy-button--small"
 						: "fancy-button--medium";
 
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -156,7 +183,7 @@ const Button = ({
 
 	const content = (
 		<>
-			{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+			{loading && <Loader2 className="animate-spin" />}
 			{startIcon && !loading && startIcon}
 			{!iconOnly && children}
 			{iconOnly && !startIcon && !loading && children}
@@ -166,12 +193,23 @@ const Button = ({
 
 	if (variant === "glass") {
 		return (
-			<div className={cn("fancy-button-wrap", className)}>
+			<div
+				className={cn("fancy-button-wrap", className)}
+				data-button-variant={variant}
+				data-button-presentation={presentation}
+				data-button-shape="pill"
+			>
 				<button
 					type={type}
 					disabled={disabled || loading}
-					className={cn("fancy-button", glassSizeClass)}
+					className={cn(
+						"fancy-button",
+						glassSizeClass,
+						presentation === "chip" && "fancy-button--chip",
+						className,
+					)}
 					onClick={handleClick}
+					aria-busy={loading}
 					{...rest}
 				>
 					<span className="fancy-button-content">{content}</span>
@@ -185,15 +223,26 @@ const Button = ({
 		<button
 			type={type}
 			disabled={disabled || loading}
-			className={cn(buttonVariants({ variant, size: finalSize }), className)}
+			className={getButtonClassName({
+				variant,
+				size: finalSize,
+				presentation,
+				shape: finalShape,
+				iconOnly,
+				className,
+			})}
 			onClick={handleClick}
+			data-button-variant={variant}
+			data-button-presentation={presentation}
+			data-button-shape={finalShape}
+			aria-busy={loading}
 			{...rest}
 		>
-			{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-			{startIcon && !loading && <span className="mr-2">{startIcon}</span>}
+			{loading && <Loader2 className="animate-spin" />}
+			{startIcon && !loading && startIcon}
 			{!iconOnly && children}
 			{iconOnly && !startIcon && !loading && children}
-			{endIcon && !loading && <span className="ml-2">{endIcon}</span>}
+			{endIcon && !loading && endIcon}
 		</button>
 	);
 };
@@ -255,7 +304,16 @@ const ScrollToTopButton = ({
 	return (
 		<button
 			type="button"
-			className={`scroll-to-top visible ${className}`.trim()}
+			className={cn(
+				"scroll-to-top visible",
+				getButtonClassName({
+					variant: "secondary",
+					size: "icon",
+					shape: "pill",
+					iconOnly: true,
+				}),
+				className,
+			)}
 			onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
 			aria-label="Scroll to top"
 			tabIndex={0}
@@ -269,3 +327,4 @@ ScrollToTopButton.displayName = "ScrollToTopButton";
 
 export default memo(Button);
 export { ScrollToTopButton };
+export { getButtonClassName, normalizeButtonSize };

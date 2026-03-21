@@ -132,8 +132,9 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 								)}
 								<Button
 									type="submit"
-									variant="glass"
+									variant="primary"
 									size="xl"
+									shape="pill"
 									onClick={handleSave}
 									disabled={!editedName.trim() || isSaving}
 									loading={isSaving}
@@ -147,23 +148,31 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 						<div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
 							<div className="flex items-center gap-3">
 								<h3 className="text-2xl md:text-3xl font-bold text-foreground">{user.name}</h3>
-								<button
+								<Button
 									type="button"
 									onClick={() => setIsEditing(true)}
-									className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+									variant="ghost"
+									size="icon"
+									iconOnly={true}
+									shape="pill"
+									className="size-8 bg-transparent text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
 									aria-label="Edit name"
 								>
 									<Pencil size={16} />
-								</button>
+								</Button>
 							</div>
-							<button
+							<Button
 								type="button"
 								onClick={handleLogout}
-								className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors group"
+								variant="ghost"
+								shape="pill"
+								className="group w-fit bg-transparent text-destructive/70 hover:bg-destructive/10 hover:text-destructive"
+								startIcon={
+									<LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
+								}
 							>
-								<LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
 								Logout
-							</button>
+							</Button>
 						</div>
 					)}
 				</div>
