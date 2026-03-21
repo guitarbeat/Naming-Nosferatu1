@@ -224,11 +224,11 @@ const AdminActionButton = ({
 
 // Card styles utility
 const getCardStyles = (isSelected: boolean, isLocked: boolean) => {
-	const baseClasses = "mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
+	const baseClasses = "mobile-readable-card relative group rounded-2xl sm:rounded-3xl border-2 overflow-hidden cursor-pointer transition-all duration-500 transform-gpu";
 	const selectedClasses = isSelected
-		? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl shadow-primary/20 ring-4 ring-primary/30 scale-[1.02] z-10"
-		: "border-border/20 bg-gradient-to-br from-foreground/5 to-foreground/0 hover:border-border/40 hover:bg-gradient-to-br hover:from-foreground/10 hover:to-foreground/5 hover:shadow-xl hover:shadow-foreground/10";
-	const lockedClasses = isLocked ? "opacity-60 cursor-not-allowed" : "";
+		? "border-primary bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 shadow-2xl shadow-primary/30 ring-4 ring-primary/20 ring-offset-2 ring-offset-background/50 scale-[1.03] z-10"
+		: "border-border/30 bg-gradient-to-br from-foreground/8 via-foreground/5 to-foreground/2 hover:border-border/50 hover:bg-gradient-to-br hover:from-foreground/12 hover:via-foreground/8 hover:to-foreground/4 hover:shadow-2xl hover:shadow-foreground/20 hover:scale-[1.02] hover:-translate-y-1";
+	const lockedClasses = isLocked ? "opacity-50 cursor-not-allowed grayscale-50" : "";
 	
 	return `${baseClasses} ${selectedClasses} ${lockedClasses}`;
 };
@@ -1038,14 +1038,14 @@ export function NameSelector() {
 													className="w-full max-w-md h-[550px]"
 												>
 													<Card
-														className={`relative overflow-hidden group transition-all duration-200 h-full ${
+														className={`relative overflow-hidden group transition-all duration-500 h-full bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm ${
 															selectedNames.has(nameItem.id)
-																? "shadow-[0_0_30px_hsl(var(--success)/0.3)]"
-																: ""
+																? "shadow-[0_0_40px_hsl(var(--success)/0.4)] ring-2 ring-success/30 ring-offset-4 ring-offset-background/20"
+																: "shadow-2xl shadow-foreground/30 border-2 border-border/20"
 														} ${
 															index === 0
-																? "cursor-grab active:cursor-grabbing shadow-2xl active:scale-95"
-																: "pointer-events-none"
+																? "cursor-grab active:cursor-grabbing shadow-2xl active:scale-95 hover:shadow-3xl hover:shadow-foreground/40"
+																: "pointer-events-none opacity-80"
 														}`}
 														variant="filled"
 														padding="none"
@@ -1307,9 +1307,9 @@ export function NameSelector() {
 													}}
 													role="button"
 													tabIndex={0}
-													whileHover={{ scale: 1.03, y: -2 }}
-													whileTap={{ scale: 0.97 }}
-													transition={{ type: "spring", stiffness: 400, damping: 25 }}
+													whileHover={{ scale: 1.04, y: -4, rotate: [-1, 1] }}
+													whileTap={{ scale: 0.96 }}
+													transition={{ type: "spring", stiffness: 300, damping: 20 }}
 													className={getCardStyles(isSelected, isNameLocked(nameItem))}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
@@ -1318,7 +1318,7 @@ export function NameSelector() {
 															alt={nameItem.name}
 															objectFit="cover"
 															containerClassName="w-full h-full"
-															imageClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+															imageClassName="w-full h-full object-cover group-hover:scale-115 transition-transform duration-500 ease-out"
 														/>
 
 														{/* Selection Badge */}

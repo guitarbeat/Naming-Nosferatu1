@@ -23,7 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
 	return (
 		<ErrorBoundary context="Main Application Layout">
-			<div className="app relative min-h-dvh w-full text-foreground">
+			<div className="app relative min-h-dvh w-full text-foreground bg-background">
 				<OfflineIndicator />
 
 				<a
@@ -33,13 +33,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 					Skip to main content
 				</a>
 
-				{/* Background effects layer */}
-				<div className="cat-background fixed inset-0 -z-10" aria-hidden="true">
-					<div className="cat-background__gradient" />
-					<div className="cat-background__moire" />
-					<div className="cat-background__soft-blur" />
-					<div className="cat-background__vignette" />
-				</div>
+				{/* Simplified background */}
+				<div className="fixed inset-0 -z-10 bg-gradient-to-br from-background via-background to-muted/20" aria-hidden="true" />
 
 				<FloatingNavbar />
 

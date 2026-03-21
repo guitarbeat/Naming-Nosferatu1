@@ -7,7 +7,8 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
@@ -16,7 +17,7 @@ import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
-import { SectionHeading } from "@/shared/components/layout/SectionHeading";
+import { TabNavigation } from "@/shared/components/layout/TabNavigation";
 import { useOfflineSync } from "@/shared/hooks";
 import { Lightbulb, Trophy, User } from "@/shared/lib/icons";
 import {
@@ -104,39 +105,45 @@ function App() {
 
 function HomeContent() {
 	const { login } = useAuth();
+	const [activeTab, setActiveTab] = useState<"pick" | "suggest" | "profile">("pick");
+
+	const renderTabContent = () => {
+		switch (activeTab) {
+			case "pick":
+				return (
+					<Suspense fallback={<Loading variant="skeleton" height={400} />}>
+						<TournamentFlow />
+					</Suspense>
+				);
+			case "suggest":
+				return <NameSuggestionInner />;
+			case "profile":
+				return <ProfileInner onLogin={(name) => login({ name })} />;
+			default:
+				return null;
+		}
+	};
 
 	return (
-		<>
-			<Section id="pick" variant="minimal" padding="compact" maxWidth="full">
-				<div className="mx-auto max-w-4xl">
-					<SectionHeading
-						icon={Trophy}
-						title="Pick Names"
-					/>
+		<Section id="home" variant="minimal" padding="comfortable" maxWidth="4xl" centered={true}>
+			<div className="w-full space-y-10">
+				{/* Tab Navigation */}
+				<div className="w-full">
+					<TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 				</div>
-				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
-					<TournamentFlow />
-				</Suspense>
-			</Section>
 
-			<Section id="suggest" variant="minimal" padding="comfortable" maxWidth="lg" centered={true}>
-				<SectionHeading
-					icon={Lightbulb}
-					title="Suggest a Name"
-					subtitle="Got a great cat name? Share it with the community"
-				/>
-				<NameSuggestionInner />
-			</Section>
-
-			<Section id="profile" variant="minimal" padding="comfortable" maxWidth="md" centered={true}>
-				<SectionHeading
-					icon={User}
-					title="Your Profile"
-					subtitle="Track your rankings and tournament history"
-				/>
-				<ProfileInner onLogin={(name) => login({ name })} />
-			</Section>
-		</>
+				{/* Tab Content */}
+				<motion.div
+					key={activeTab}
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.3, ease: "easeOut" }}
+					className="min-h-[500px] w-full"
+				>
+					{renderTabContent()}
+				</motion.div>
+			</div>
+		</Section>
 	);
 }
 
