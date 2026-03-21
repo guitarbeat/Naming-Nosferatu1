@@ -213,7 +213,7 @@ export function RandomGenerator({
 				</div>
 
 				{/* Generate Button */}
-				<div className="random-generator-button-wrap">
+				<div>
 					<Button
 						type="button"
 						onClick={generateName}

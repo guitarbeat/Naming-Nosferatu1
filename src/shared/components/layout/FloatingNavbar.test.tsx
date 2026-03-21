@@ -6,16 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FloatingNavbar } from "./FloatingNavbar";
 
 const setSwipeModeMock = vi.fn();
-const setNamesMock = vi.fn();
 
 const mockStore = {
 	tournament: {
 		selectedNames: [] as string[],
 		names: null as string[] | null,
 		isComplete: false,
-	},
-	tournamentActions: {
-		setNames: setNamesMock,
 	},
 	user: {
 		isLoggedIn: false,
@@ -71,27 +67,6 @@ function createMatchMedia(matches = false) {
 	}));
 }
 
-function mountSections(topById: Record<string, number>) {
-	for (const [id, top] of Object.entries(topById)) {
-		const section = document.createElement("section");
-		section.id = id;
-		Object.defineProperty(section, "getBoundingClientRect", {
-			value: () => ({
-				top,
-				bottom: top + 120,
-				left: 0,
-				right: 200,
-				width: 200,
-				height: 120,
-				x: 0,
-				y: top,
-				toJSON: () => ({}),
-			}),
-		});
-		document.body.append(section);
-	}
-}
-
 describe("FloatingNavbar", () => {
 	beforeEach(() => {
 		mockStore.tournament.selectedNames = [];
@@ -104,7 +79,6 @@ describe("FloatingNavbar", () => {
 		mockStore.ui.isSwipeMode = false;
 
 		setSwipeModeMock.mockReset();
-		setNamesMock.mockReset();
 
 		Object.defineProperty(window, "matchMedia", {
 			writable: true,
@@ -128,16 +102,14 @@ describe("FloatingNavbar", () => {
 		document.body.innerHTML = "";
 	});
 
-	it("renders home navigation items and tracks the active section", () => {
-		mountSections({ pick: 220, suggest: 24, profile: 520 });
-
+	it("renders home navigation items and marks the current hash tab", () => {
 		render(
-			<MemoryRouter initialEntries={["/"]}>
+			<MemoryRouter initialEntries={["/#suggest"]}>
 				<FloatingNavbar />
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByRole("button", { name: "Pick Names" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Pick" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Suggest" })).toHaveAttribute(
 			"aria-current",
 			"location",
@@ -145,8 +117,7 @@ describe("FloatingNavbar", () => {
 		expect(screen.getByRole("button", { name: "Profile" })).toBeInTheDocument();
 	});
 
-	it("promotes the first item to a highlighted start action when enough names are selected", () => {
-		mountSections({ pick: 0, suggest: 200, profile: 400 });
+	it("keeps the picker entry visible and highlighted when a bracket is ready", () => {
 		mockStore.tournament.selectedNames = ["Luna", "Fig", "Miso"];
 
 		render(
@@ -155,17 +126,13 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		const startButton = screen.getByRole("button", { name: "Start (3)" });
+		const pickButton = screen.getByRole("button", { name: "Pick (3)" });
 
-		expect(startButton).toBeInTheDocument();
-		expect(startButton).toHaveClass("floating-navbar__item--accent");
-		expect(screen.queryByRole("button", { name: "Pick Names" })).not.toBeInTheDocument();
+		expect(pickButton).toBeInTheDocument();
+		expect(pickButton).toHaveClass("floating-navbar__item--accent");
 	});
 
 	it("shows analyze as the current destination on the analysis route", () => {
-		mockStore.tournament.isComplete = true;
-		mockStore.tournament.names = ["Luna", "Fig"];
-
 		render(
 			<MemoryRouter initialEntries={["/analysis"]}>
 				<FloatingNavbar />
@@ -179,7 +146,6 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("uses pressed semantics for the layout mode chip without treating it as the current destination", () => {
-		mountSections({ pick: 0, suggest: 200, profile: 400 });
 		mockStore.ui.isSwipeMode = true;
 
 		render(
@@ -198,7 +164,6 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("renders the logged-in avatar when available", () => {
-		mountSections({ pick: 0, suggest: 200, profile: 400 });
 		mockStore.user.isLoggedIn = true;
 		mockStore.user.name = "Avery Admin";
 		mockStore.user.avatarUrl = "https://example.com/avatar.png";
@@ -213,7 +178,6 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("keeps the admin profile icon treatment when no avatar is present", () => {
-		mountSections({ pick: 0, suggest: 200, profile: 24 });
 		mockStore.user.isLoggedIn = true;
 		mockStore.user.name = "Avery Admin";
 		mockStore.user.isAdmin = true;

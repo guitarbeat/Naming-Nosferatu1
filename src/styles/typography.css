@@ -74,12 +74,6 @@ h3 {
 	font-weight: var(--font-weight-bold);
 }
 
-.random-generator-button {
-	font-size: 0.95rem;
-	font-weight: var(--font-weight-extrabold);
-	letter-spacing: 0.01em;
-}
-
 .name-lock-tooltip {
 	font-size: 0.78rem;
 	line-height: 1.45;

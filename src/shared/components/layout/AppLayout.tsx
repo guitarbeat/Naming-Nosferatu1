@@ -13,15 +13,19 @@ import {
 import { AppVisualEffects } from "@/shared/components/layout/AppVisualEffects";
 import { FrameEffect } from "@/shared/components/layout/FrameEffect";
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
+import { cn } from "@/shared/lib/basic";
 import useAppStore from "@/store/appStore";
+import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
 	children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+	const { pathname } = useLocation();
 	const { user, tournament, errors, errorActions, ui } = useAppStore();
 	const { isLoggedIn } = user;
+	const showsFloatingNav = pathname !== "/tournament" && pathname !== "/admin";
 
 	return (
 		<ErrorBoundary context="Main Application Layout">
@@ -42,12 +46,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 				<FrameEffect>
 					<main
 						id="main-content"
-						className="app-main-shell relative flex min-h-dvh w-full flex-col px-4 pb-12 pt-6 sm:px-6 sm:pb-16 md:pt-10"
+						className={cn("app-main-shell", showsFloatingNav && "app-main-shell--nav-safe")}
 						tabIndex={-1}
 					>
 						{/* Error banner */}
 						{Boolean(errors.current) && (
-							<div className="mx-auto mb-4 w-full max-w-4xl">
+							<div className="app-error-banner">
 								<ErrorComponent
 									error={String(errors.current)}
 									onRetry={() => errorActions.clearError()}
@@ -57,9 +61,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 						)}
 
 						{/* Page content */}
-						<div className="flex w-full flex-1 flex-col items-center gap-8 sm:gap-12">
-							{children}
-						</div>
+						<div className="app-page-stack">{children}</div>
 
 						{/* Loading overlay */}
 						{tournament.isLoading && (

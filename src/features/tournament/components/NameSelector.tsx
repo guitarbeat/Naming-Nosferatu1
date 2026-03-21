@@ -212,8 +212,7 @@ const AdminActionButton = ({
 
 	const buttonClasses = [
 		getButtonClassName({
-			variant:
-				isHidden ? (isEnabled ? "secondary" : "danger") : isEnabled ? "ghost" : "secondary",
+			variant: isHidden ? (isEnabled ? "secondary" : "danger") : isEnabled ? "ghost" : "secondary",
 			presentation: "chip",
 		}),
 		"flex-1 justify-center shadow-lg",
@@ -931,7 +930,7 @@ export function NameSelector() {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div className="space-y-6 mobile-nav-safe-bottom">
+			<div className="space-y-6">
 				<div className="overflow-hidden rounded-[2rem] border border-border/50 bg-gradient-to-br from-background/96 via-background/90 to-muted/45 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl">
 					<div className="space-y-6 px-5 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
 						<div className="flex flex-col gap-5 2xl:flex-row 2xl:items-end 2xl:justify-between">

@@ -7,14 +7,7 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import {
-	type ReactNode,
-	Suspense,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useState,
-} from "react";
+import { type ReactNode, Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
@@ -22,15 +15,8 @@ import { NameSuggestionInner } from "@/features/tournament/components/NameSugges
 import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
-import {
-	AppLayout,
-	Button,
-	ErrorBoundary,
-	Loading,
-	Section,
-} from "@/shared/components";
+import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
-import { TabNavigation } from "@/shared/components/layout/TabNavigation";
 import { useOfflineSync } from "@/shared/hooks";
 import {
 	cleanupPerformanceMonitoring,
@@ -83,8 +69,7 @@ function HomeTabPanel({
 function App() {
 	const { user: authUser, isLoading } = useAuth();
 	const isInitialized = !isLoading;
-	const [hasCompletedBootSequence, setHasCompletedBootSequence] =
-		useState(false);
+	const [hasCompletedBootSequence, setHasCompletedBootSequence] = useState(false);
 	const { userActions } = useAppStore();
 	const location = useLocation();
 	const { pathname } = location;
@@ -167,52 +152,34 @@ function App() {
 function HomeContent() {
 	const { login } = useAuth();
 	const location = useLocation();
-	const navigate = useNavigate();
 	const activeTab = getHomeTabFromHash(location.hash);
-
-	const handleTabChange = useCallback(
-		(tab: HomeTab) => {
-			navigate(
-				{
-					pathname: "/",
-					hash: tab === "pick" ? "" : tab,
-				},
-				{ replace: true },
-			);
-		},
-		[navigate],
-	);
 
 	return (
 		<Section
 			id="home"
 			variant="minimal"
-			padding="comfortable"
-			maxWidth="4xl"
-			centered={true}
+			padding="none"
+			maxWidth="full"
+			className="app-home-section"
 		>
-			<div className="w-full space-y-10">
-				{/* Tab Navigation */}
-				<div className="w-full">
-					<TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-				</div>
+			<div className="app-home-panels">
+				<HomeTabPanel id="pick" activeTab={activeTab}>
+					<Suspense fallback={<Loading variant="skeleton" height={400} />}>
+						<TournamentFlow />
+					</Suspense>
+				</HomeTabPanel>
 
-				{/* Tab Content */}
-				<div className="min-h-[500px] w-full">
-					<HomeTabPanel id="pick" activeTab={activeTab}>
-						<Suspense fallback={<Loading variant="skeleton" height={400} />}>
-							<TournamentFlow />
-						</Suspense>
-					</HomeTabPanel>
-
-					<HomeTabPanel id="suggest" activeTab={activeTab}>
+				<HomeTabPanel id="suggest" activeTab={activeTab}>
+					<div className="home-panel-shell">
 						<NameSuggestionInner />
-					</HomeTabPanel>
+					</div>
+				</HomeTabPanel>
 
-					<HomeTabPanel id="profile" activeTab={activeTab}>
+				<HomeTabPanel id="profile" activeTab={activeTab}>
+					<div className="home-panel-shell">
 						<ProfileInner onLogin={(name) => login({ name })} />
-					</HomeTabPanel>
-				</div>
+					</div>
+				</HomeTabPanel>
 			</div>
 		</Section>
 	);
@@ -227,12 +194,7 @@ function TournamentContent() {
 	});
 
 	return (
-		<Section
-			id="tournament"
-			variant="minimal"
-			padding="compact"
-			maxWidth="full"
-		>
+		<Section id="tournament" variant="minimal" padding="compact" maxWidth="full">
 			<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 				{tournament.names && tournament.names.length > 0 ? (
 					<Tournament
@@ -246,8 +208,7 @@ function TournamentContent() {
 							No contenders yet
 						</h2>
 						<p className="text-muted-foreground text-pretty">
-							Choose at least two names in the picker to start your tournament
-							bracket.
+							Choose at least two names in the picker to start your tournament bracket.
 						</p>
 						<div className="flex flex-wrap items-center justify-center gap-3">
 							<Button variant="glass" onClick={() => navigate("/")}>
@@ -272,13 +233,7 @@ function AnalysisContent() {
 	});
 
 	return (
-		<Section
-			id="analysis"
-			variant="minimal"
-			padding="comfortable"
-			maxWidth="2xl"
-			centered={true}
-		>
+		<Section id="analysis" variant="minimal" padding="comfortable" maxWidth="2xl" centered={true}>
 			<h2 className="mb-8 text-center text-3xl font-bold text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent uppercase tracking-tighter sm:mb-12 md:text-5xl">
 				The Victors Emerge
 			</h2>
@@ -302,18 +257,10 @@ function AdminContent() {
 
 	if (!user.isAdmin) {
 		return (
-			<Section
-				id="admin"
-				variant="minimal"
-				padding="comfortable"
-				maxWidth="md"
-				centered={true}
-			>
+			<Section id="admin" variant="minimal" padding="comfortable" maxWidth="md" centered={true}>
 				<div className="flex flex-col items-center gap-4 py-10 text-center">
 					<h2 className="text-3xl font-bold text-destructive">Access Denied</h2>
-					<p className="text-muted-foreground">
-						Admin access required to view this page.
-					</p>
+					<p className="text-muted-foreground">Admin access required to view this page.</p>
 				</div>
 			</Section>
 		);

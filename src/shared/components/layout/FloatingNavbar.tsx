@@ -1,6 +1,6 @@
 /**
  * @module FloatingNavbar
- * @description Simplified navigation for tournament completion flow only
+ * @description Primary bottom navigation and quick actions for the app shell
  */
 
 import { motion } from "framer-motion";
@@ -22,6 +22,18 @@ import { getGlassPreset } from "./GlassPresets";
 import LiquidGlass from "./LiquidGlass";
 
 type NavSection = "pick" | "suggest" | "profile" | "analyze";
+type HomeTab = Exclude<NavSection, "analyze">;
+
+function getHomeTabFromHash(hash: string): HomeTab {
+	switch (hash) {
+		case "#suggest":
+			return "suggest";
+		case "#profile":
+			return "profile";
+		default:
+			return "pick";
+	}
+}
 
 function FloatingNavItem({
 	icon: Icon,
@@ -70,6 +82,7 @@ function FloatingNavItem({
 			className={baseClasses}
 			onClick={onClick}
 			aria-label={ariaLabel}
+			aria-current={isCurrent ? "location" : undefined}
 			aria-pressed={isPressed}
 		>
 			{customIcon || <Icon className="floating-navbar__icon" />}
@@ -81,108 +94,50 @@ function FloatingNavItem({
 export function FloatingNavbar() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { tournament, tournamentActions, user, ui, uiActions } = useAppStore();
+	const { tournament, user, ui, uiActions } = useAppStore();
 
-	const [activeSection, setActiveSection] = useState<NavSection>("pick");
 	const [isNavVisible, setIsNavVisible] = useState(true);
 	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
 	const isHomeRoute = location.pathname === "/";
 	const isTournamentRoute = location.pathname === "/tournament";
 	const isAnalysisRoute = location.pathname === "/analysis";
+	const isAdminRoute = location.pathname === "/admin";
+	const activeHomeTab = getHomeTabFromHash(location.hash);
 
 	const { selectedNames } = tournament;
 	const { isLoggedIn, name: userName, isAdmin, avatarUrl } = user;
 	const { isSwipeMode } = ui;
 
 	const selectedCount = selectedNames?.length || 0;
-	const isTournamentActive = Boolean(tournament.names);
 	const profileLabel = isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Profile";
-	const primaryItemCount = Number(!isTournamentActive || isTournamentRoute) + 1 + 2;
-	const navGlassId = cn("navbar", isHomeRoute ? "home" : "page");
+	const primaryItemCount = 4;
+	const navGlassId = isHomeRoute
+		? `navbar-home-${activeHomeTab}`
+		: isAnalysisRoute
+			? "navbar-analysis"
+			: "navbar-page";
 
-	const handleStartTournament = () => {
-		if (selectedNames && selectedNames.length >= 2) {
-			tournamentActions.startTournament(selectedNames);
-			navigate("/tournament");
-		}
-	};
-
-	const scrollToSection = (key: NavSection) => {
-		const targetId = key === "analyze" ? "analysis" : key;
-		const element = document.getElementById(targetId);
-		if (element) {
-			element.scrollIntoView({ behavior: "smooth", block: "start" });
-		}
-	};
-
-	const navigateHome = (hash?: "suggest" | "profile") => {
-		navigate({
-			pathname: "/",
-			hash: hash ?? "",
-		});
+	const navigateHome = (tab: HomeTab = "pick", replace = false) => {
+		navigate(
+			{
+				pathname: "/",
+				hash: tab === "pick" ? "" : tab,
+			},
+			{ replace },
+		);
 	};
 
 	const handleNavClick = (key: NavSection) => {
 		if (key === "analyze") {
-			if (isAnalysisRoute) {
-				scrollToSection(key);
-				return;
+			if (!isAnalysisRoute) {
+				navigate("/analysis");
 			}
-			navigate("/analysis");
 			return;
 		}
 
-		if (!isHomeRoute) {
-			navigateHome(key === "pick" ? undefined : key);
-			return;
-		}
-
-		scrollToSection(key);
+		navigateHome(key, isHomeRoute);
 	};
-
-	useEffect(() => {
-		if (!isHomeRoute) {
-			return;
-		}
-
-		let rafId: number | null = null;
-		const sections: NavSection[] = ["pick", "suggest", "profile"];
-
-		const handleScroll = () => {
-			if (rafId) {
-				return;
-			}
-			rafId = requestAnimationFrame(() => {
-				rafId = null;
-				let current: NavSection = "pick";
-				let minDistance = Number.POSITIVE_INFINITY;
-
-				for (const section of sections) {
-					const element = document.getElementById(section);
-					if (!element) {
-						continue;
-					}
-					const rect = element.getBoundingClientRect();
-					const distance = Math.abs(rect.top);
-					if (distance < minDistance && rect.top < window.innerHeight * 0.7) {
-						minDistance = distance;
-						current = section;
-					}
-				}
-				setActiveSection(current);
-			});
-		};
-
-		window.addEventListener("scroll", handleScroll, { passive: true });
-		handleScroll();
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-			if (rafId) {
-				cancelAnimationFrame(rafId);
-			}
-		};
-	}, [isHomeRoute]);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -241,7 +196,7 @@ export function FloatingNavbar() {
 		};
 	}, []);
 
-	if (isHomeRoute) {
+	if (isTournamentRoute || isAdminRoute) {
 		return null;
 	}
 
@@ -267,29 +222,13 @@ export function FloatingNavbar() {
 						className="floating-navbar__primary"
 						style={{ gridTemplateColumns: `repeat(${primaryItemCount}, minmax(0, 1fr))` }}
 					>
-						{(!isTournamentActive || isTournamentRoute) && (
-							<FloatingNavItem
-								icon={selectedCount >= 2 && !isTournamentRoute ? Trophy : CheckCircle}
-								label={
-									isTournamentRoute
-										? "Home"
-										: selectedCount >= 2
-											? `Start (${selectedCount})`
-											: "Pick Names"
-								}
-								isCurrent={isHomeRoute && activeSection === "pick"}
-								isAccent={selectedCount >= 2 && !isTournamentRoute}
-								onClick={() => {
-									if (isTournamentRoute) {
-										navigate("/");
-									} else if (selectedCount >= 2) {
-										handleStartTournament();
-									} else {
-										navigateHome();
-									}
-								}}
-							/>
-						)}
+						<FloatingNavItem
+							icon={selectedCount >= 2 ? Trophy : CheckCircle}
+							label={selectedCount >= 2 ? `Pick (${selectedCount})` : "Pick"}
+							isCurrent={isHomeRoute && activeHomeTab === "pick"}
+							isAccent={selectedCount >= 2}
+							onClick={() => handleNavClick("pick")}
+						/>
 
 						<FloatingNavItem
 							icon={BarChart3}
@@ -301,14 +240,14 @@ export function FloatingNavbar() {
 						<FloatingNavItem
 							icon={Lightbulb}
 							label="Suggest"
-							isCurrent={isHomeRoute && activeSection === "suggest"}
+							isCurrent={isHomeRoute && activeHomeTab === "suggest"}
 							onClick={() => handleNavClick("suggest")}
 						/>
 
 						<FloatingNavItem
 							icon={User}
 							label={profileLabel}
-							isCurrent={isHomeRoute && activeSection === "profile"}
+							isCurrent={isHomeRoute && activeHomeTab === "profile"}
 							onClick={() => handleNavClick("profile")}
 							customIcon={
 								isLoggedIn && avatarUrl ? (

@@ -121,9 +121,12 @@
 	height: 100vh;
 	height: 100dvh;
 	z-index: var(--z-1);
-	opacity: 0;
 	transition: opacity 0.8s ease-in-out;
 	pointer-events: none;
+}
+
+.magic-container {
+	opacity: 0;
 }
 
 .magic-container--visible {
@@ -138,7 +141,7 @@
 }
 
 :root[data-loading-sequence="sealed"] .magic-container {
-	opacity: 0 !important;
+	opacity: 0;
 }
 
 .app-frame-shell {

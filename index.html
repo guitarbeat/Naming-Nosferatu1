@@ -163,15 +163,52 @@
     #deployment-error-display .deployment-error__button {
       flex: 1;
       min-width: 120px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       padding: 0.75rem 1.5rem;
       color: #fff;
-      background: #2563eb;
-      border: none;
-      border-radius: 6px;
+      background: linear-gradient(135deg, #2563eb, #0f766e);
+      border: 1px solid rgba(37, 99, 235, 0.32);
+      border-radius: 999px;
       font-size: 1rem;
       font-weight: 600;
       line-height: 1.2;
       cursor: pointer;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.18);
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    #deployment-error-display .deployment-error__button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(15, 118, 110, 0.22);
+    }
+
+    #deployment-error-display .deployment-error__button--secondary {
+      color: #111827;
+      background: rgba(107, 114, 128, 0.14);
+      border-color: rgba(107, 114, 128, 0.22);
+      box-shadow: none;
+    }
+
+    #deployment-error-display .deployment-error__button--danger {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      border-color: rgba(220, 38, 38, 0.32);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.18);
+    }
+
+    #deployment-error-display .deployment-error__button--success {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      border-color: rgba(22, 163, 74, 0.32);
+      box-shadow: 0 10px 30px rgba(22, 163, 74, 0.18);
+    }
+
+    #deployment-error-display .deployment-error__button--compact {
+      flex: 0 0 auto;
+      min-width: auto;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.75rem;
     }
   </style>
 </head>
