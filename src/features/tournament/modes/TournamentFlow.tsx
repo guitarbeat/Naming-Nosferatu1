@@ -31,7 +31,7 @@ export default function TournamentFlow() {
 
 	useEffect(() => {
 		if (tournament.isComplete && Object.keys(tournament.ratings).length > 0) {
-			const userId = user.name || "anonymous";
+			const userName = user.name || "anonymous";
 
 			const ratingsWithStats = Object.entries(tournament.ratings).reduce(
 				(acc, [nameId, rating]) => {
@@ -46,7 +46,7 @@ export default function TournamentFlow() {
 			);
 
 			ratingsAPI
-				.saveRatings(userId, ratingsWithStats)
+				.saveRatings(userName, ratingsWithStats)
 				.then((result) => {
 					if (!result) {
 						return;
