@@ -31,6 +31,7 @@ import {
 	CheckCircle,
 	ChevronDown,
 	ChevronRight,
+	Crown,
 	Eye,
 	EyeOff,
 	Heart,
@@ -156,6 +157,111 @@ const NameContent = ({ nameItem, variant = "grid", showDetails = true }: { nameI
 				</p>
 			)}
 		</>
+	);
+};
+
+// Locked Names Display Component
+const LockedNamesDisplay = ({ 
+	selectedNames, 
+	names, 
+	catImageById,
+	onRemoveName 
+}: { 
+	selectedNames: Set<IdType>; 
+	names: NameItem[]; 
+	catImageById: Map<IdType, string>;
+	onRemoveName?: (nameId: IdType) => void;
+}) => {
+	const selectedNameItems = names.filter(name => selectedNames.has(name.id));
+	
+	if (selectedNameItems.length === 0) {
+		return null;
+	}
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -20 }}
+			transition={{ duration: 0.4, ease: "easeOut" }}
+			className="w-full max-w-4xl mx-auto"
+		>
+			<div className="text-center mb-6">
+				<h3 className="text-xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+					<Lock className="w-5 h-5 text-success" />
+					Locked In Tournament Names
+					<Crown className="w-5 h-5 text-warning" />
+				</h3>
+				<p className="text-sm text-muted-foreground">
+					These names will compete in your tournament bracket
+				</p>
+			</div>
+
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+				{selectedNameItems.map((nameItem, index) => {
+					const catImage = catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+					return (
+						<motion.div
+							key={nameItem.id}
+							initial={{ opacity: 0, scale: 0.9 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ 
+								duration: 0.3, 
+								delay: index * 0.1,
+								ease: "easeOut" 
+							}}
+							className="relative group"
+						>
+							<Card className="relative overflow-hidden border-2 border-success/50 bg-gradient-to-br from-success/10 via-success/5 to-success/0 backdrop-blur-sm shadow-lg shadow-success/20">
+								<div className="aspect-[4/3] relative">
+									<CatImage
+										src={catImage}
+										alt={nameItem.name}
+										objectFit="cover"
+										className="w-full h-full"
+									/>
+									
+									{/* Success overlay */}
+									<div className="absolute inset-0 bg-success/20 opacity-50" />
+									
+									{/* Locked badge */}
+									<div className="absolute top-2 right-2">
+										<div className="bg-success text-success-foreground rounded-full p-1.5 shadow-lg">
+											<Lock className="w-3 h-3" />
+										</div>
+									</div>
+
+									{/* Remove button (if provided) */}
+									{onRemoveName && (
+										<button
+											onClick={() => onRemoveName(nameItem.id)}
+											className="absolute top-2 left-2 bg-destructive/90 hover:bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+											aria-label={`Remove ${nameItem.name} from tournament`}
+										>
+											<X className="w-3 h-3" />
+										</button>
+									)}
+
+									{/* Name overlay */}
+									<div className="absolute inset-0 flex flex-col justify-end p-3 bg-gradient-to-t from-background/90 via-background/60 to-transparent">
+										<div className="text-center">
+											<h4 className="font-bold text-foreground text-sm mb-1 drop-shadow-lg">
+												{nameItem.name}
+											</h4>
+											{nameItem.pronunciation && (
+												<p className="text-success/90 text-xs italic drop-shadow-md">
+													[{nameItem.pronunciation}]
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+							</Card>
+						</motion.div>
+					);
+				})}
+			</div>
+		</motion.div>
 	);
 };
 
@@ -1292,13 +1398,6 @@ export function NameSelector() {
 									</Button>
 									<div className="text-center mt-2">
 										<span className="text-xs text-muted-foreground font-medium">Select</span>
-									</div>
-								</motion.div>
-							</div>
-						)}
-					</>
-				) : (
-					<div className="space-y-8">
 						{(() => {
 							const activeNames = getActiveNames(names);
 							return (
@@ -1501,7 +1600,21 @@ export function NameSelector() {
 												</div>
 											</div>
 
-											<div className="grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 gap-3">
+											<motion.div
+												className="grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 gap-3"
+												initial="hidden"
+												animate="visible"
+												variants={{
+													hidden: { opacity: 0 },
+													visible: {
+														opacity: 1,
+														transition: {
+															staggerChildren: 0.05,
+															delayChildren: 0.1,
+														},
+													},
+												}}
+											>
 												{renderItems.map((nameItem) => {
 													const isSelected = selectedNames.has(nameItem.id);
 													const catImage =
@@ -1612,7 +1725,7 @@ export function NameSelector() {
 														</div>
 													);
 												})}
-											</div>
+											</motion.div>
 											{hiddenFiltered.length === 0 && (
 												<div className="mt-4 rounded-xl border border-border/10 bg-foreground/5 px-4 py-6 text-center text-sm text-foreground/70">
 													No hidden names match this filter.
@@ -1635,9 +1748,7 @@ export function NameSelector() {
 								</div>
 							);
 						})()}
-					</div>
-				)}
-			</div>
+				</div>
 
 			{lightboxOpen && (
 				<Lightbox
@@ -1678,6 +1789,6 @@ export function NameSelector() {
 				onCancel={cancelAdminAction}
 				onConfirm={confirmAdminAction}
 			/>
-		</div>
+		</motion.div>
 	);
 }

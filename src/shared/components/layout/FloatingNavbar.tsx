@@ -12,8 +12,6 @@ import useAppStore from "@/store/appStore";
 import { getGlassPreset } from "./GlassPresets";
 import LiquidGlass from "./LiquidGlass";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSwipeMode } from "@/contexts/SwipeModeContext";
 
 type NavSection = "pick" | "suggest" | "profile" | "analyze";
 
@@ -69,10 +67,7 @@ function FloatingNavItem({
 export function FloatingNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tournament, tournamentActions } = useAppStore();
-  const { selectedNames } = tournament;
-  const { isLoggedIn, userName, isAdmin, avatarUrl } = useAuth();
-  const { isSwipeMode, setSwipeMode } = useSwipeMode();
+  const { tournament, tournamentActions, user, userActions, ui, uiActions } = useAppStore();
 
   const [activeSection, setActiveSection] = useState<NavSection>("pick");
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -81,6 +76,10 @@ export function FloatingNavbar() {
   const isHomeRoute = location.pathname === "/";
   const isTournamentRoute = location.pathname === "/tournament";
   const isAnalysisRoute = location.pathname === "/analysis";
+
+  const { selectedNames } = tournament;
+  const { isLoggedIn, userName, isAdmin, avatarUrl } = user;
+  const { isSwipeMode } = ui;
 
   const selectedCount = selectedNames?.length || 0;
   const isTournamentActive = Boolean(tournament.names);
@@ -300,7 +299,7 @@ export function FloatingNavbar() {
 							variant="utility"
 							isPressed={isSwipeMode}
 							ariaLabel={isSwipeMode ? "Swipe mode active" : "Grid mode active"}
-							onClick={() => setSwipeMode(!isSwipeMode)}
+							onClick={() => uiActions.setSwipeMode(!isSwipeMode)}
 						/>
 					</div>
 				</nav>
