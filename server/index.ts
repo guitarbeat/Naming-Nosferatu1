@@ -51,6 +51,14 @@ const apiLimiter = rateLimit({
 	message: { error: "Too many requests, please try again later." },
 });
 
+const pageLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 300,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: "Too many requests, please try again later.",
+});
+
 // Apply rate limiting to all API routes
 app.use("/api", apiLimiter);
 
@@ -72,7 +80,7 @@ app.use(
 	}),
 );
 
-app.get("/{*path}", (_req, res) => {
+app.get("/{*path}", pageLimiter, (_req, res) => {
 	res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
 	res.sendFile(path.join(distPath, "index.html"));
 });
