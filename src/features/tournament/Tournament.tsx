@@ -599,7 +599,6 @@ function TournamentContent({
 							pronunciation={matchData.rightPronunciation}
 							onKeyDown={(e) => handleKeyDown(e, "right")}
 							onVote={() => handleVoteForSide("right")}
-							animationDelay="2s"
 						/>
 					</motion.div>
 				</AnimatePresence>

@@ -28,7 +28,6 @@ export interface MatchSideCardProps {
 	pronunciation?: string;
 	onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
 	onVote: () => void;
-	animationDelay?: string;
 }
 
 export function MatchSideCard({
@@ -46,7 +45,6 @@ export function MatchSideCard({
 	pronunciation,
 	onKeyDown,
 	onVote,
-	animationDelay,
 }: MatchSideCardProps) {
 	const isRight = side === "right";
 	const textAlign = isRight ? "text-left sm:text-right" : "text-left";
@@ -72,7 +70,6 @@ export function MatchSideCard({
 				className={`relative overflow-hidden rounded-[1.1rem] border border-border/15 group cursor-pointer flex-1 transition-[border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
 					isVoting ? "pointer-events-none" : ""
 				} ${getHeatCardClasses(heatLevel)} ${selectionClass}`}
-				style={animationDelay ? { animationDelay } : undefined}
 				role="button"
 				tabIndex={isVoting ? -1 : 0}
 				aria-label={`Vote for ${isTeam ? "team" : "name"} ${name}`}

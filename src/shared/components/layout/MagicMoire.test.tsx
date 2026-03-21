@@ -6,6 +6,22 @@ import { MagicMoire } from "./MagicMoire";
 
 let mockCanvas: HTMLCanvasElement;
 
+type RippleEffectMock = {
+	gpgpu: { read: { texture: Record<string, never> } };
+	update: ReturnType<typeof vi.fn>;
+	addDrop: ReturnType<typeof vi.fn>;
+};
+
+let rippleEffectMock: RippleEffectMock;
+
+function createRippleEffectMock(): RippleEffectMock {
+	return {
+		gpgpu: { read: { texture: {} } },
+		update: vi.fn(),
+		addDrop: vi.fn(),
+	};
+}
+
 vi.mock("ogl", () => ({
 	Renderer: class {
 		gl = {
@@ -84,18 +100,76 @@ vi.mock("ogl", () => ({
 
 vi.mock("./RippleEffect", () => ({
 	default: class {
-		gpgpu = { read: { texture: {} } };
-		update = vi.fn();
-		addDrop = vi.fn();
+		gpgpu;
+		update;
+		addDrop;
+		constructor() {
+			rippleEffectMock = createRippleEffectMock();
+			this.gpgpu = rippleEffectMock.gpgpu;
+			this.update = rippleEffectMock.update;
+			this.addDrop = rippleEffectMock.addDrop;
+		}
 	},
 }));
 
 describe("MagicMoire", () => {
 	let rafQueue: FrameRequestCallback[] = [];
 
+	const flushAnimationFrameQueue = () => {
+		const scheduledFrames = [...rafQueue];
+		rafQueue = [];
+
+		for (const callback of scheduledFrames) {
+			callback(16);
+		}
+	};
+
+	const getBodyListener = (eventName: string) => {
+		const addEventListenerMock =
+			document.body.addEventListener as unknown as ReturnType<typeof vi.fn>;
+		const call = addEventListenerMock.mock.calls.find(
+			([registeredEventName]) => registeredEventName === eventName,
+		);
+		expect(call).toBeDefined();
+		return call?.[1] as EventListener;
+	};
+
+	const expectLatestActiveDrop = (expectedX: number, expectedY: number) => {
+		expect(rippleEffectMock.addDrop).toHaveBeenCalled();
+		const lastCall = rippleEffectMock.addDrop.mock.calls.at(-1);
+		expect(lastCall).toBeDefined();
+		expect(lastCall?.[0]).toBeCloseTo(expectedX);
+		expect(lastCall?.[1]).toBeCloseTo(expectedY);
+		expect(lastCall?.[2]).toBe(0.04);
+		expect(lastCall?.[3]).toBe(0.03);
+	};
+
 	beforeEach(() => {
 		mockCanvas = document.createElement("canvas");
 		rafQueue = [];
+		rippleEffectMock = createRippleEffectMock();
+		delete (window as Window & { ontouchstart?: unknown }).ontouchstart;
+		Object.defineProperty(window, "innerWidth", {
+			value: 400,
+			configurable: true,
+			writable: true,
+		});
+		Object.defineProperty(window, "innerHeight", {
+			value: 300,
+			configurable: true,
+			writable: true,
+		});
+		vi.spyOn(mockCanvas, "getBoundingClientRect").mockReturnValue({
+			x: 80,
+			y: 40,
+			left: 80,
+			top: 40,
+			width: 400,
+			height: 300,
+			right: 480,
+			bottom: 340,
+			toJSON: () => ({}),
+		} as DOMRect);
 
 		vi.stubGlobal(
 			"requestAnimationFrame",
@@ -133,15 +207,13 @@ describe("MagicMoire", () => {
 			{ passive: true },
 		);
 		expect(
-			(
-				document.body.addEventListener as ReturnType<typeof vi.fn>
-			).mock.calls.some(([eventName]) =>
-				["mousemove", "touchstart"].includes(String(eventName)),
+			(document.body.addEventListener as ReturnType<typeof vi.fn>).mock.calls.some(
+				([eventName]) => eventName === "mousemove",
 			),
 		).toBe(true);
 
 		act(() => {
-			rafQueue.at(-1)?.(0);
+			flushAnimationFrameQueue();
 		});
 
 		expect(screen.getByTestId("magic-container")).toHaveClass(
@@ -161,10 +233,55 @@ describe("MagicMoire", () => {
 		expect(
 			(
 				document.body.removeEventListener as ReturnType<typeof vi.fn>
-			).mock.calls.some(([eventName]) =>
-				["mousemove", "touchstart"].includes(String(eventName)),
-			),
+			).mock.calls.some(([eventName]) => eventName === "mousemove"),
 		).toBe(true);
 		expect(mockCanvas.parentNode).toBeNull();
+	});
+
+	it("uses mouse client coordinates relative to the canvas bounds", () => {
+		render(<MagicMoire theme="dark" />);
+		rippleEffectMock.addDrop.mockClear();
+
+		const handleMouseMove = getBodyListener("mousemove");
+
+		act(() => {
+			handleMouseMove({
+				clientX: 180,
+				clientY: 100,
+				pageX: 980,
+				pageY: 900,
+			} as unknown as Event);
+			flushAnimationFrameQueue();
+		});
+
+		expectLatestActiveDrop(-0.5, 0.45);
+	});
+
+	it("uses touch client coordinates relative to the canvas bounds", () => {
+		Object.defineProperty(window, "ontouchstart", {
+			value: null,
+			configurable: true,
+		});
+
+		render(<MagicMoire theme="dark" />);
+		rippleEffectMock.addDrop.mockClear();
+
+		const handleTouchMove = getBodyListener("touchmove");
+
+		act(() => {
+			handleTouchMove({
+				changedTouches: [
+					{
+						clientX: 260,
+						clientY: 130,
+						pageX: 860,
+						pageY: 930,
+					},
+				],
+			} as unknown as Event);
+			flushAnimationFrameQueue();
+		});
+
+		expectLatestActiveDrop(-0.1, 0.3);
 	});
 });

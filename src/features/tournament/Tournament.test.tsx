@@ -210,6 +210,29 @@ describe("Tournament completion reveal", () => {
 		).toBeInTheDocument();
 	});
 
+	it("keeps the collapsed utility controls functional", () => {
+		render(
+			<MemoryRouter>
+				<Tournament
+					names={[
+						{ id: "1", name: "Luna" },
+						{ id: "2", name: "Miso" },
+					]}
+					onComplete={vi.fn()}
+				/>
+			</MemoryRouter>,
+		);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Show tournament utilities" }),
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Show cat pictures" }));
+		fireEvent.click(screen.getByRole("button", { name: "Play music" }));
+
+		expect(mockStore.uiActions.setCatPictures).toHaveBeenCalledWith(true);
+		expect(audioManagerMock.toggleBackgroundMusic).toHaveBeenCalledTimes(1);
+	});
+
 	it("uses the calmer status banner for vote feedback", () => {
 		const handleVoteWithAnimation = vi.fn();
 		tournamentState = createTournamentState({
