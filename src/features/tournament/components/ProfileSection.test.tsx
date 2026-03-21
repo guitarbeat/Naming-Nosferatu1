@@ -25,8 +25,24 @@ vi.mock("@/shared/components/layout", () => {
 		Button: ({
 			children,
 			loading: _loading,
+			iconOnly: _iconOnly,
+			startIcon: _startIcon,
+			endIcon: _endIcon,
+			presentation: _presentation,
+			shape: _shape,
+			size: _size,
+			variant: _variant,
 			...props
-		}: React.ComponentProps<"button"> & { loading?: boolean }) => (
+		}: React.ComponentProps<"button"> & {
+			endIcon?: React.ReactNode;
+			iconOnly?: boolean;
+			loading?: boolean;
+			presentation?: string;
+			shape?: string;
+			size?: string;
+			startIcon?: React.ReactNode;
+			variant?: string;
+		}) => (
 			<button type="button" {...props}>
 				{children}
 			</button>

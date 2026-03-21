@@ -84,6 +84,15 @@ export interface RatingData {
 	losses: number;
 }
 
+export type MutationSyncStatus = "committed" | "queued" | "failed";
+
+export interface SyncMutationResult<T = unknown> {
+	success: boolean;
+	status: MutationSyncStatus;
+	data?: T;
+	error?: string;
+}
+
 /**
  * Flexible rating input — accepts either a full RatingData object or a
  * bare number (interpreted as rating with 0 wins/losses).

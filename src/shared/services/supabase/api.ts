@@ -47,6 +47,17 @@ interface PendingRequest<T> {
 }
 
 const trendingNamesRequests = new Map<string, PendingRequest<NameItem[]>>();
+const IMAGE_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+
+function getBlobValidationMetadata(file: File | Blob) {
+	const candidate = file as Partial<Pick<Blob, "size" | "type">>;
+
+	return {
+		size: typeof candidate.size === "number" ? candidate.size : null,
+		type: typeof candidate.type === "string" ? candidate.type : null,
+	};
+}
 
 function mapNameRow(item: ApiNameRow): NameItem {
 	// Use automated field mapping for snake_case to camelCase conversion
@@ -128,17 +139,9 @@ export const imagesAPI = {
 				};
 			}
 
-			const fileName =
-				typeof (file as File).name === "string" && (file as File).name.length > 0
-					? (file as File).name
-					: "upload.jpg";
-			const fileType = file.type || "image/jpeg";
-			const fileSize = typeof file.size === "number" ? file.size : 0;
-			const fileExt = fileName.split(".").pop() || "jpg";
-			const maxSize = 5 * 1024 * 1024; // 5MB
-			const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-
-			if (fileSize > maxSize) {
+			// Validate file
+			const { size, type } = getBlobValidationMetadata(file);
+			if (size !== null && size > IMAGE_UPLOAD_MAX_BYTES) {
 				return {
 					path: null,
 					error: "File size exceeds 5MB limit",
@@ -146,7 +149,7 @@ export const imagesAPI = {
 				};
 			}
 
-			if (!allowedTypes.includes(fileType)) {
+			if (type !== null && !ALLOWED_IMAGE_TYPES.has(type)) {
 				return {
 					path: null,
 					error: "Only JPEG, PNG, GIF, and WebP images are allowed",
@@ -155,6 +158,12 @@ export const imagesAPI = {
 			}
 
 			// Generate unique filename
+			const sourceFileName =
+				file instanceof File && typeof file.name === "string" && file.name.length > 0
+					? file.name
+					: "upload.jpg";
+			const fileExt = sourceFileName.split(".").pop() || "jpg";
+			const contentType = type || (file instanceof File ? file.type : "") || "image/jpeg";
 			const timestamp = Date.now();
 			const randomId = Math.random().toString(36).substring(2, 8);
 			const uploadFileName = `${userName}_${timestamp}_${randomId}.${fileExt}`;
@@ -163,7 +172,7 @@ export const imagesAPI = {
 			const { error } = await client.storage.from("cat-images").upload(uploadFileName, file, {
 				cacheControl: "3600",
 				upsert: false,
-				contentType: fileType,
+				contentType,
 			});
 
 			if (error) {

@@ -60,6 +60,8 @@ interface UseTournamentStateResult {
 }
 
 const VOTE_COOLDOWN = TIMING.VOTE_COOLDOWN_MS;
+const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080";
+const noop = () => undefined;
 
 function haveSameIds(a: string[], b: string[]): boolean {
 	if (a.length !== b.length) {
@@ -82,9 +84,13 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
 	const namesKey = useMemo(() => createNamesKey(names), [names]);
 	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
-
-	const webSocket = useWebSocket({
-		url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
+	const {
+		disconnect: disconnectWebSocket,
+		subscribeToMatches,
+		subscribeToTournament,
+		subscribeToUserActivity,
+	} = useWebSocket({
+		url: WEBSOCKET_URL,
 		autoConnect: true,
 	});
 
@@ -126,6 +132,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	// Cleanup WebSocket metrics on unmount
 	useEffect(() => {
 		return () => {
+			disconnectWebSocket();
 			// Clear any pending timeouts or intervals
 			const timeouts = (window as any).__tournamentTimeouts || [];
 			const intervals = (window as any).__tournamentIntervals || [];
@@ -153,7 +160,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			// Clear event handlers registry
 			(window as any).__tournamentEventHandlers = {};
 		};
-	}, []);
+	}, [disconnectWebSocket]);
 
 	useEffect(() => {
 		ratingsRef.current = ratings;
@@ -174,8 +181,14 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			return;
 		}
 
+		let cancelled = false;
+
 		// Batch all state updates to prevent race conditions
 		const initializeTournament = () => {
+			if (cancelled) {
+				return;
+			}
+
 			const hasValidPersistence =
 				persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
 			const initialRatings = buildInitialRatings(names);
@@ -250,6 +263,7 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		const frameId = requestAnimationFrame(initializeTournament);
 
 		return () => {
+			cancelled = true;
 			cancelAnimationFrame(frameId);
 		};
 	}, [names, namesKey, persistentState, tournamentMode, updatePersistentState]);
@@ -408,8 +422,8 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 		isVoting,
 		handleVoteWithAnimation,
 		matchHistory: persistentState.matchHistory,
-		subscribeToTournamentUpdates: webSocket.subscribeToTournament,
-		subscribeToMatchResults: webSocket.subscribeToMatches,
-		subscribeToUserActivity: webSocket.subscribeToUserActivity,
+		subscribeToTournamentUpdates: subscribeToTournament ?? noop,
+		subscribeToMatchResults: subscribeToMatches ?? noop,
+		subscribeToUserActivity: subscribeToUserActivity ?? noop,
 	};
 }

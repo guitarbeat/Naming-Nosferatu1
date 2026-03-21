@@ -160,6 +160,12 @@ interface FormattedError {
 
 interface ErrorServiceReporter {
 	captureException?: (error: Error, options?: unknown) => void;
+	addBreadcrumb?: (breadcrumb: {
+		category?: string;
+		message?: string;
+		level?: "fatal" | "error" | "warning" | "info" | "debug";
+		data?: Record<string, unknown>;
+	}) => void;
 }
 
 let configuredErrorService: ErrorServiceReporter | null = null;
@@ -448,6 +454,21 @@ function sendToErrorService(logData: ErrorServiceLogData): void {
 	}
 }
 
+function addBreadcrumb(
+	category: string,
+	message: string,
+	data: Record<string, unknown> = {},
+	level: "fatal" | "error" | "warning" | "info" | "debug" = "info",
+): void {
+	const errorService = getConfiguredErrorService();
+	errorService?.addBreadcrumb?.({
+		category,
+		message,
+		level,
+		data,
+	});
+}
+
 function logError(
 	formattedError: FormattedError,
 	context: string,
@@ -586,6 +607,7 @@ export class ErrorManager {
 	static setErrorService(errorService: ErrorServiceReporter | null): void {
 		configuredErrorService = errorService;
 	}
+	static addBreadcrumb = addBreadcrumb;
 
 	static setupGlobalErrorHandling(): () => void {
 		const g = getGlobalScope() as typeof globalThis;
