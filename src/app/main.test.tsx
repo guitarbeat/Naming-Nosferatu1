@@ -28,6 +28,12 @@ vi.mock("@/shared/services/errorManager", () => ({
 	},
 }));
 
+vi.mock("@/shared/components/layout/Feedback/ErrorBoundary", () => ({
+	ErrorBoundary: ({ children }: { children: ReactNode }) => (
+		<div data-testid="error-boundary">{children}</div>
+	),
+}));
+
 vi.mock("react-dom/client", () => ({
 	createRoot: bootstrapMocks.createRootMock,
 	default: {

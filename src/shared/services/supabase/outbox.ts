@@ -31,7 +31,11 @@ const DB_VERSION = 1;
 const STORE_NAME = "mutation_outbox";
 
 function isIndexedDbAvailable(): boolean {
-	return typeof indexedDB !== "undefined";
+	if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
+		return false;
+	}
+
+	return typeof indexedDB !== "undefined" && typeof indexedDB.open === "function";
 }
 
 function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
@@ -126,7 +130,9 @@ export async function listRatingsMutations(): Promise<RatingsOutboxEntry[]> {
 		return await withStore("readonly", async (store) => {
 			const request = store.getAll();
 			const entries = await promisifyRequest(request);
-			return (entries as RatingsOutboxEntry[]).sort((left, right) => left.createdAt - right.createdAt);
+			return (entries as RatingsOutboxEntry[]).sort(
+				(left, right) => left.createdAt - right.createdAt,
+			);
 		});
 	} catch (error) {
 		ErrorManager.handleError(error, "Outbox List", { isRetryable: false });
@@ -156,7 +162,10 @@ export async function removeRatingsMutation(id: string): Promise<void> {
 	});
 }
 
-export async function getRatingsOutboxSnapshot(): Promise<{ count: number; oldestAgeMs: number | null }> {
+export async function getRatingsOutboxSnapshot(): Promise<{
+	count: number;
+	oldestAgeMs: number | null;
+}> {
 	const entries = await listRatingsMutations();
 	if (entries.length === 0) {
 		return { count: 0, oldestAgeMs: null };

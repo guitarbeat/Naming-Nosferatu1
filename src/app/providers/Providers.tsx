@@ -206,6 +206,10 @@ export function useToast(): ToastContextValue {
 	return ctx;
 }
 
+export function useOptionalToast(): ToastContextValue | null {
+	return useContext(ToastContext);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Toast Container (self-contained UI)
 // ═══════════════════════════════════════════════════════════════════════════════

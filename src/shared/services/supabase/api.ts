@@ -4,10 +4,10 @@ import { ErrorManager } from "@/shared/services/errorManager";
 import type { NameItem, SyncMutationResult } from "@/shared/types";
 import { getFallbackNames } from "../../../../shared/fallbackNames";
 import {
-	type PersistedRatingRecord,
 	enqueueRatingsMutation,
 	flushRatingsMutations,
 	getRatingsOutboxSnapshot,
+	type PersistedRatingRecord,
 } from "./outbox";
 import { resolveSupabaseClient } from "./runtime";
 
@@ -121,7 +121,10 @@ async function getClient() {
 	return client;
 }
 
-async function getAuthContext(): Promise<{ client: Awaited<ReturnType<typeof resolveSupabaseClient>>; user: User | null }> {
+async function getAuthContext(): Promise<{
+	client: Awaited<ReturnType<typeof resolveSupabaseClient>>;
+	user: User | null;
+}> {
 	const client = await getClient();
 	const {
 		data: { user },
@@ -150,10 +153,12 @@ async function requireAuthenticatedContext(): Promise<{
 
 async function callRpc<T>(name: string, args?: Record<string, unknown>): Promise<T> {
 	const client = await getClient();
-	const { data, error } = await (client.rpc as unknown as (
-		rpcName: string,
-		rpcArgs?: Record<string, unknown>,
-	) => Promise<{ data: T; error: RpcErrorLike | null }>)(name, args);
+	const { data, error } = await (
+		client.rpc as unknown as (
+			rpcName: string,
+			rpcArgs?: Record<string, unknown>,
+		) => Promise<{ data: T; error: RpcErrorLike | null }>
+	)(name, args);
 
 	if (error) {
 		throw new Error(error.message || `Supabase RPC "${name}" failed.`);
@@ -234,11 +239,12 @@ export const imagesAPI = {
 	},
 
 	upload: async (file: File | Blob, userName: string) => {
+		const reportedFileType = (file as Blob).type || "blob";
+
 		try {
 			await requireAuthenticatedContext();
 			const client = await getClient();
-
-			// Validate file
+			const fileLike = file as Blob & { name?: string };
 			const { size, type } = getBlobValidationMetadata(file);
 			if (size !== null && size > IMAGE_UPLOAD_MAX_BYTES) {
 				return {
@@ -256,13 +262,12 @@ export const imagesAPI = {
 				};
 			}
 
-			// Generate unique filename
 			const sourceFileName =
-				file instanceof File && typeof file.name === "string" && file.name.length > 0
-					? file.name
+				typeof fileLike.name === "string" && fileLike.name.length > 0
+					? fileLike.name
 					: "upload.jpg";
-			const fileExt = sourceFileName.split(".").pop() || "jpg";
-			const contentType = type || (file instanceof File ? file.type : "") || "image/jpeg";
+			const fileExt = sourceFileName.includes(".") ? sourceFileName.split(".").pop() || "jpg" : "jpg";
+			const contentType = type || "image/jpeg";
 			const timestamp = Date.now();
 			const randomId = Math.random().toString(36).substring(2, 8);
 			const uploadFileName = `${userName}_${timestamp}_${randomId}.${fileExt}`;
@@ -288,7 +293,7 @@ export const imagesAPI = {
 			};
 		} catch (error) {
 			ErrorManager.handleError(error, "Images Upload", {
-				fileType: file instanceof File ? file.type : "blob",
+				fileType: reportedFileType,
 			});
 			return {
 				path: null,
@@ -488,7 +493,12 @@ function validateRatingsData(
 			return { isValid: false, error: `Invalid rating value for ${nameId}` };
 		}
 
-		if (!Number.isFinite(data.wins) || data.wins < 0 || !Number.isFinite(data.losses) || data.losses < 0) {
+		if (
+			!Number.isFinite(data.wins) ||
+			data.wins < 0 ||
+			!Number.isFinite(data.losses) ||
+			data.losses < 0
+		) {
 			return { isValid: false, error: `Invalid win/loss counts for ${nameId}` };
 		}
 	}
@@ -601,6 +611,16 @@ export const ratingsAPI = {
 
 	replayQueuedRatings: async (): Promise<MutationResult<{ remaining: number }>> => {
 		try {
+			const beforeReplay = await getRatingsOutboxSnapshot();
+			if (beforeReplay.count === 0) {
+				return {
+					success: true,
+					status: "committed",
+					data: { remaining: 0 },
+					count: 0,
+				};
+			}
+
 			await replayQueuedRatings();
 			const snapshot = await getRatingsOutboxSnapshot();
 			return {

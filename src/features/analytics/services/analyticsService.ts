@@ -144,13 +144,15 @@ export const leaderboardAPI = {
 				return [];
 			}
 
-			const { data, error } = await (client.rpc as unknown as (
-				rpcName: string,
-				args?: Record<string, unknown>,
-			) => Promise<{ data: Array<Record<string, unknown>> | null; error: { message?: string } | null }>)(
-				"get_leaderboard_stats",
-				{ limit_count: limit || 50 },
-			);
+			const { data, error } = await (
+				client.rpc as unknown as (
+					rpcName: string,
+					args?: Record<string, unknown>,
+				) => Promise<{
+					data: Array<Record<string, unknown>> | null;
+					error: { message?: string } | null;
+				}>
+			)("get_leaderboard_stats", { limit_count: limit || 50 });
 
 			if (error || !data) {
 				return [];
@@ -225,7 +227,10 @@ export const statsAPI = {
 
 	getUserRatedNames: async (_userName: string): Promise<UserRatedName[]> => {
 		try {
-			const [names, ratings] = await Promise.all([coreAPI.getTrendingNames(false), getCurrentUserRatings()]);
+			const [names, ratings] = await Promise.all([
+				coreAPI.getTrendingNames(false),
+				getCurrentUserRatings(),
+			]);
 
 			const ratingMap = new Map<string, UserRatingRow>();
 			for (const rating of ratings) {

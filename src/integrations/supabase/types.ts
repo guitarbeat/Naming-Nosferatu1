@@ -524,6 +524,23 @@ export type Database = {
 					name_id: string;
 				}[];
 			};
+			get_leaderboard_stats: {
+				Args: { limit_count?: number };
+				Returns: {
+					avg_rating: number;
+					created_at: string;
+					description: string | null;
+					losses: number;
+					name: string;
+					name_id: string;
+					total_ratings: number;
+					wins: number;
+				}[];
+			};
+			get_site_stats: {
+				Args: never;
+				Returns: Json;
+			};
 			get_user_flo_data_admin: {
 				Args: { target_user_id: string };
 				Returns: {
@@ -547,17 +564,37 @@ export type Database = {
 					username: string;
 				}[];
 			};
-			get_user_stats: {
-				Args: { p_user_name: string };
+			get_user_ratings_raw: {
+				Args: never;
 				Returns: {
-					avg_rating: number;
-					hidden_count: number;
-					total_losses: number;
-					total_ratings: number;
-					total_wins: number;
-					win_rate: number;
+					losses: number;
+					name_id: string;
+					rating: number;
+					wins: number;
 				}[];
 			};
+			get_user_stats:
+				| {
+						Args: { p_user_name: string };
+						Returns: {
+							avg_rating: number;
+							hidden_count: number;
+							total_losses: number;
+							total_ratings: number;
+							total_wins: number;
+							win_rate: number;
+						}[];
+				  }
+				| {
+						Args: never;
+						Returns: {
+							total_losses: number;
+							total_ratings: number;
+							total_selections: number;
+							total_wins: number;
+							win_rate: number;
+						}[];
+				  };
 			get_users_with_flo_data: {
 				Args: never;
 				Returns: {
@@ -589,6 +626,10 @@ export type Database = {
 				Returns: undefined;
 			};
 			refresh_materialized_views: { Args: never; Returns: undefined };
+			save_user_ratings: {
+				Args: { p_ratings: Json };
+				Returns: number;
+			};
 			set_user_context: {
 				Args: { user_name_param: string };
 				Returns: undefined;

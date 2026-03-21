@@ -1,9 +1,6 @@
 /**
  * @module supabaseAuthAdapter
  * @description Supabase authentication adapter for the naming tournament app.
- *
- * This adapter uses Supabase Auth exclusively for authentication, replacing the JWT-based system.
- * It handles user authentication, registration, and role management through Supabase.
  */
 
 import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
@@ -16,53 +13,103 @@ import {
 } from "@/shared/lib/storage";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 
+function getStoredDisplayName(): string | null {
+	if (!isStorageAvailable()) {
+		return null;
+	}
+
+	return getStorageString(STORAGE_KEYS.USER)?.trim() || null;
+}
+
+function getStoredUserId(): string | null {
+	if (!isStorageAvailable()) {
+		return null;
+	}
+
+	return getStorageString(STORAGE_KEYS.USER_ID)?.trim() || null;
+}
+
+function storeProfile(user: { id?: string | null; userName?: string | null }): void {
+	if (!isStorageAvailable()) {
+		return;
+	}
+
+	if (user.userName) {
+		setStorageString(STORAGE_KEYS.USER, user.userName);
+	}
+
+	if (user.id) {
+		setStorageString(STORAGE_KEYS.USER_ID, user.id);
+	}
+}
+
+function clearStoredProfile(): void {
+	if (!isStorageAvailable()) {
+		return;
+	}
+
+	removeStorageItem(STORAGE_KEYS.USER);
+	removeStorageItem(STORAGE_KEYS.USER_ID);
+}
+
+async function buildSessionUser(): Promise<AuthUser | null> {
+	const client = await resolveSupabaseClient();
+	if (!client) {
+		return null;
+	}
+
+	const {
+		data: { user },
+		error,
+	} = await client.auth.getUser();
+
+	if (error || !user) {
+		return null;
+	}
+
+	const storedDisplayName = getStoredDisplayName();
+	const displayName = storedDisplayName || user.user_metadata?.user_name || user.email || "Unknown";
+
+	const { data: roleRows } = await client
+		.from("cat_user_roles")
+		.select("role")
+		.eq("user_id", user.id)
+		.eq("role", "admin")
+		.limit(1);
+
+	const isAdmin = (roleRows ?? []).length > 0;
+	storeProfile({ id: user.id, userName: displayName });
+
+	return {
+		id: user.id,
+		name: displayName,
+		userName: displayName,
+		email: user.email,
+		isAdmin,
+		role: isAdmin ? "admin" : "user",
+	};
+}
+
 export const supabaseAuthAdapter: AuthAdapter = {
-	/**
-	 * Get current user from Supabase auth or localStorage fallback
-	 */
 	async getCurrentUser(): Promise<AuthUser | null> {
-		if (!isStorageAvailable()) {
-			return null;
-		}
-
-		// Try to get current user from Supabase first
 		try {
-			const client = await resolveSupabaseClient();
-			if (!client) {
-				// Fallback to localStorage for demo mode
-				const userName = getStorageString(STORAGE_KEYS.USER);
-				const userId = getStorageString(STORAGE_KEYS.USER_ID);
-
-				if (!userName) {
-					return null;
-				}
-
-				return {
-					id: userId || userName,
-					name: userName,
-					email: undefined,
-					isAdmin: false, // Default to false for demo mode
-					role: "user",
-				};
+			const sessionUser = await buildSessionUser();
+			if (sessionUser) {
+				return sessionUser;
 			}
 
-			const {
-				data: { user },
-			} = await client.auth.getUser();
-
-			if (!user) {
+			const userName = getStoredDisplayName();
+			if (!userName) {
 				return null;
 			}
 
-			// Check if user has admin role
-			const isAdmin = await this.checkAdminStatus(user.id);
-
 			return {
-				id: user.id,
-				name: user.user_metadata?.user_name || user.email || "Unknown",
-				email: user.email,
-				isAdmin,
-				role: isAdmin ? "admin" : "user",
+				id: getStoredUserId() || `local:${userName}`,
+				name: userName,
+				userName,
+				email: undefined,
+				isAdmin: false,
+				role: "user",
 			};
 		} catch (error) {
 			console.error("Error getting current user:", error);
@@ -70,57 +117,50 @@ export const supabaseAuthAdapter: AuthAdapter = {
 		}
 	},
 
-	/**
-	 * Login with Supabase Auth
-	 */
 	async login(credentials: LoginCredentials): Promise<boolean> {
-		const { name } = credentials;
-		if (!name?.trim()) {
-			return false;
-		}
+		const trimmedName = credentials.name?.trim();
 
 		try {
 			const client = await resolveSupabaseClient();
-			if (!client) {
-				// Fallback to localStorage for demo mode
-				setStorageString(STORAGE_KEYS.USER, name.trim());
+
+			if (credentials.email && credentials.password && client) {
+				const { data, error } = await client.auth.signInWithPassword({
+					email: credentials.email,
+					password: credentials.password,
+				});
+
+				if (error || !data.user) {
+					console.error("Supabase login failed:", error);
+					return false;
+				}
+
+				storeProfile({
+					id: data.user.id,
+					userName: trimmedName || data.user.user_metadata?.user_name || data.user.email,
+				});
+
 				return true;
 			}
 
-			// Sign in with Supabase
-			const { data, error } = await client.auth.signInWithPassword({
-				email: `${name.trim()}@demo.local`, // Use email format for username
-				password: "demo-password", // Demo password
-			});
-
-			if (error) {
-				console.error("Supabase login failed:", error);
-				return false;
+			if (trimmedName) {
+				storeProfile({
+					id: getStoredUserId(),
+					userName: trimmedName,
+				});
+				return true;
 			}
 
-			// Store user info in localStorage for compatibility
-			if (data.user) {
-				setStorageString(STORAGE_KEYS.USER, data.user.user_metadata?.user_name || name.trim());
-				setStorageString(STORAGE_KEYS.USER_ID, data.user.id);
-			}
-
-			return true;
+			return false;
 		} catch (error) {
 			console.error("Login error:", error);
 			return false;
 		}
 	},
 
-	/**
-	 * Register new user with Supabase Auth
-	 */
 	async register(): Promise<void> {
-		throw new Error("Registration not implemented. Please use Supabase Auth directly.");
+		throw new Error("Registration is not implemented in this client.");
 	},
 
-	/**
-	 * Logout - clear Supabase session and localStorage
-	 */
 	async logout(): Promise<void> {
 		try {
 			const client = await resolveSupabaseClient();
@@ -128,19 +168,12 @@ export const supabaseAuthAdapter: AuthAdapter = {
 				await client.auth.signOut();
 			}
 
-			// Clear localStorage
-			if (isStorageAvailable()) {
-				removeStorageItem(STORAGE_KEYS.USER);
-				removeStorageItem(STORAGE_KEYS.USER_ID);
-			}
+			clearStoredProfile();
 		} catch (error) {
 			console.error("Logout error:", error);
 		}
 	},
 
-	/**
-	 * Check if a user is admin based on Supabase roles
-	 */
 	async checkAdminStatus(userId: string): Promise<boolean> {
 		try {
 			const client = await resolveSupabaseClient();
@@ -149,17 +182,17 @@ export const supabaseAuthAdapter: AuthAdapter = {
 			}
 
 			const { data, error } = await client
-				.from("user_roles")
+				.from("cat_user_roles")
 				.select("role")
 				.eq("user_id", userId)
 				.eq("role", "admin")
-				.single();
+				.limit(1);
 
-			if (error || !data) {
+			if (error) {
 				return false;
 			}
 
-			return true;
+			return (data ?? []).length > 0;
 		} catch (error) {
 			console.error("Error checking admin status:", error);
 			return false;

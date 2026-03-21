@@ -9,8 +9,13 @@ const ROOT = process.cwd();
 const COPY_ARTIFACT_PATTERN =
 	/ [2-9]\.(ts|tsx|js|jsx|mjs|cjs|py|md|txt|json|yml|yaml|sql|css|html|diff)$/;
 const SKIP_DIRS = new Set([".git", "node_modules", "dist", "build", "coverage"]);
-const AVAILABLE_CHECKS = ["case-collisions", "copy-artifacts", "env", "arch", "cycles"];
+const AVAILABLE_CHECKS = ["case-collisions", "copy-artifacts", "env", "arch", "cycles", "frontend-api"];
 const DEFAULT_CHECKS = new Set(AVAILABLE_CHECKS);
+const FRONTEND_API_PATTERNS = [
+	/@\/shared\/services\/apiClient/u,
+	/from\s+["']\.\/apiClient["']/u,
+	/["'`]\/api\//u,
+];
 
 function collectFiles(rootDir) {
 	const files = [];
@@ -178,6 +183,38 @@ export function runCircularCheck(projectRoot = ROOT) {
 	return runSubprocessCheck(process.execPath, [tsxCli, checkPath], "circular dependency check", projectRoot);
 }
 
+export function runFrontendApiGuard(projectRoot = ROOT) {
+	const sourceFiles = collectFiles(path.join(projectRoot, "src")).filter((filePath) => {
+		const normalized = filePath.replace(/\\/g, "/");
+		if (normalized.endsWith(".test.ts") || normalized.endsWith(".test.tsx")) {
+			return false;
+		}
+		if (normalized.endsWith(".bench.ts") || normalized.endsWith(".bench.tsx")) {
+			return false;
+		}
+		return !normalized.endsWith("src/shared/services/apiClient.ts");
+	});
+
+	const violations = [];
+	for (const filePath of sourceFiles) {
+		const content = fs.readFileSync(filePath, "utf8");
+		if (FRONTEND_API_PATTERNS.some((pattern) => pattern.test(content))) {
+			violations.push(path.relative(projectRoot, filePath).replace(/\\/g, "/"));
+		}
+	}
+
+	if (violations.length > 0) {
+		console.error("Frontend runtime /api usage is not allowed:");
+		for (const filePath of violations) {
+			console.error(filePath);
+		}
+		return false;
+	}
+
+	console.log("No frontend runtime /api usage found.");
+	return true;
+}
+
 export function runMaintenanceChecks(requestedChecks = DEFAULT_CHECKS, projectRoot = ROOT) {
 	let passed = true;
 
@@ -195,6 +232,9 @@ export function runMaintenanceChecks(requestedChecks = DEFAULT_CHECKS, projectRo
 	}
 	if (requestedChecks.has("cycles")) {
 		passed = runCircularCheck(projectRoot) && passed;
+	}
+	if (requestedChecks.has("frontend-api")) {
+		passed = runFrontendApiGuard(projectRoot) && passed;
 	}
 
 	return passed;
@@ -238,6 +278,7 @@ function printUsage() {
 	console.log("  --env");
 	console.log("  --arch");
 	console.log("  --cycles");
+	console.log("  --frontend-api");
 	console.log("If no flags are passed, all checks run.");
 }
 

@@ -202,7 +202,7 @@ export function AdminDashboard() {
 				console.error("Failed to toggle locked status:", error);
 			}
 		},
-		[actorName, loadAdminData],
+		[loadAdminData],
 	);
 
 	const handleBulkAction = useCallback(

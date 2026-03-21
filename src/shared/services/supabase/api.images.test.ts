@@ -8,9 +8,14 @@ vi.mock("./runtime", () => ({
 
 describe("imagesAPI", () => {
 	const mockedResolveSupabaseClient = vi.mocked(resolveSupabaseClient);
+	const mockAuthGetUser = vi.fn();
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockAuthGetUser.mockResolvedValue({
+			data: { user: { id: "user-1", email: "admin@example.com", user_metadata: {} } },
+			error: null,
+		});
 	});
 
 	describe("imagesAPI.list", () => {
@@ -18,7 +23,7 @@ describe("imagesAPI", () => {
 			const mockData = [{ name: "cat1.jpg" }, { name: "cat2.png" }];
 			const mockList = vi.fn().mockResolvedValue({ data: mockData, error: null });
 			const mockFrom = vi.fn().mockReturnValue({ list: mockList });
-			const mockClient = { storage: { from: mockFrom } };
+			const mockClient = { auth: { getUser: mockAuthGetUser }, storage: { from: mockFrom } };
 
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
@@ -38,7 +43,7 @@ describe("imagesAPI", () => {
 			const mockError = { message: "Bucket not found" };
 			const mockList = vi.fn().mockResolvedValue({ data: null, error: mockError });
 			const mockFrom = vi.fn().mockReturnValue({ list: mockList });
-			const mockClient = { storage: { from: mockFrom } };
+			const mockClient = { auth: { getUser: mockAuthGetUser }, storage: { from: mockFrom } };
 
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
@@ -60,7 +65,7 @@ describe("imagesAPI", () => {
 				upload: mockUpload,
 				getPublicUrl: mockGetPublicUrl,
 			});
-			const mockClient = { storage: { from: mockFrom } };
+			const mockClient = { auth: { getUser: mockAuthGetUser }, storage: { from: mockFrom } };
 
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
@@ -104,14 +109,14 @@ describe("imagesAPI", () => {
 			mockedResolveSupabaseClient.mockResolvedValue(null);
 			const result = await imagesAPI.upload(mockFile, userName);
 			expect(result.success).toBe(false);
-			expect(result.error).toBe("Storage client not available");
+			expect(result.error).toBe("Supabase is not configured for this environment.");
 		});
 
 		it("should return error when upload fails", async () => {
 			const mockError = { message: "Network error" };
 			const mockUpload = vi.fn().mockResolvedValue({ data: null, error: mockError });
 			const mockFrom = vi.fn().mockReturnValue({ upload: mockUpload });
-			const mockClient = { storage: { from: mockFrom } };
+			const mockClient = { auth: { getUser: mockAuthGetUser }, storage: { from: mockFrom } };
 
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 

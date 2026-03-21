@@ -135,7 +135,7 @@ The architecture boundary and circular dependency checks are enforced by:
 
 - Frontend and server tests live beside the code as `*.test.ts` or `*.test.tsx`.
 - Canonical Vitest config is `config/vitest.config.ts`.
-- Common focused run pattern: `pnpm test -- path/to/file.test.tsx`
+- Common focused run pattern: `pnpm exec vitest --run --config config/vitest.config.ts path/to/file.test.tsx`
 
 ## Git and PR workflows
 

@@ -6,7 +6,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/app/providers/Providers";
+import { useOptionalToast } from "@/app/providers/Providers";
 import Button from "@/shared/components/layout/Button";
 import { Trophy } from "@/shared/lib/icons";
 import { ratingsAPI } from "@/shared/services/supabase/api";
@@ -14,10 +14,15 @@ import useAppStore from "@/store/appStore";
 import { NameSelector } from "../components/NameSelector";
 import { useTournamentHandlers } from "../hooks";
 
+const noopToast = {
+	showInfo: (_message: string) => undefined,
+	showError: (_message: string) => undefined,
+};
+
 export default function TournamentFlow() {
 	const { user, tournament, tournamentActions } = useAppStore();
 	const navigate = useNavigate();
-	const toast = useToast();
+	const toast = useOptionalToast() ?? noopToast;
 
 	const { handleStartNewTournament } = useTournamentHandlers({
 		userName: user.name,

@@ -51,6 +51,7 @@ describe("useNameSuggestion", () => {
 		// Setup mock success response
 		mockedCoreAPI.addName.mockResolvedValue({
 			success: true,
+			status: "committed",
 			data: { id: "123", name: "Test Cat" },
 		});
 
@@ -73,7 +74,11 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion());
 
 		// Setup mock error response
-		mockedCoreAPI.addName.mockResolvedValue({ success: false, error: "Duplicate name" });
+		mockedCoreAPI.addName.mockResolvedValue({
+			success: false,
+			status: "failed",
+			error: "Duplicate name",
+		});
 
 		act(() => {
 			result.current.handleChange("name", "Duplicate Cat");
