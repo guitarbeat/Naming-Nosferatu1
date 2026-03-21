@@ -11,7 +11,7 @@ import {
 	removeStorageItem,
 	writeStorageJson,
 } from "@/shared/lib/storage";
-import { coreAPI } from "@/shared/services/supabase/client";
+import { coreAPI, ratingsAPI } from "@/shared/services/supabase/client";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Internal Utilities
@@ -224,7 +224,17 @@ export function useBrowserState() {
  * useOfflineSync(); // no-op by default; attach sync logic via useOnlineStatus
  */
 export function useOfflineSync(): void {
-	useOnlineStatus();
+	const replayQueuedMutations = useCallback(() => {
+		void ratingsAPI.replayQueuedRatings();
+	}, []);
+
+	useOnlineStatus({
+		onReconnect: replayQueuedMutations,
+	});
+
+	useEffect(() => {
+		replayQueuedMutations();
+	}, [replayQueuedMutations]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

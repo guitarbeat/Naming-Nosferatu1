@@ -1,5 +1,6 @@
 import { isNameHidden } from "@/shared/lib/basic";
-import { api } from "@/shared/services/apiClient";
+import { coreAPI, statsAPI as supabaseStatsAPI } from "@/shared/services/supabase/api";
+import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 import type { IdType, NameItem } from "@/shared/types";
 
 export interface LeaderboardItem {
@@ -36,7 +37,7 @@ export interface UserStats {
 export interface EngagementMetrics {
 	totalTournaments: number;
 	completedTournaments: number;
-	averageTournamentTime: number; // in minutes
+	averageTournamentTime: number;
 	totalMatches: number;
 	peakActiveUsers: number;
 	dailyActiveUsers: number;
@@ -44,10 +45,10 @@ export interface EngagementMetrics {
 	monthlyActiveUsers: number;
 	mostActiveHour: string;
 	mostActiveDay: string;
-	userRetentionRate: number; // percentage of users who return after 7 days
-	averageSessionDuration: number; // in minutes
+	userRetentionRate: number;
+	averageSessionDuration: number;
 	totalPageViews: number;
-	bounceRate: number; // percentage of single-page sessions
+	bounceRate: number;
 	[key: string]: unknown;
 }
 
@@ -58,7 +59,7 @@ export interface DetailedUserStats extends UserStats {
 	averageTournamentTime?: number;
 	favoriteNames?: string[];
 	preferredCategories?: string[];
-	engagementScore?: number; // 0-100 based on activity level
+	engagementScore?: number;
 	[key: string]: unknown;
 }
 
@@ -94,13 +95,68 @@ function mapLeaderboardRow(row: Record<string, unknown>): LeaderboardItem {
 	};
 }
 
+async function getAuthenticatedClient() {
+	const client = await resolveSupabaseClient();
+	if (!client) {
+		return null;
+	}
+
+	const {
+		data: { user },
+		error,
+	} = await client.auth.getUser();
+
+	if (error || !user) {
+		return null;
+	}
+
+	return { client, user };
+}
+
+async function getCurrentUserRatings(): Promise<UserRatingRow[]> {
+	const auth = await getAuthenticatedClient();
+	if (!auth) {
+		return [];
+	}
+
+	const { data, error } = await auth.client
+		.from("cat_name_ratings")
+		.select("name_id, rating, wins, losses")
+		.eq("user_id", auth.user.id);
+
+	if (error) {
+		return [];
+	}
+
+	return (data ?? []).map((row) => ({
+		nameId: row.name_id,
+		rating: toNumber(row.rating, 1500),
+		wins: toNumber(row.wins),
+		losses: toNumber(row.losses),
+	}));
+}
+
 export const leaderboardAPI = {
 	getLeaderboard: async (limit: number | null = 50): Promise<LeaderboardItem[]> => {
 		try {
-			const rows = await api.get<Array<Record<string, unknown>>>(
-				`/analytics/leaderboard?limit=${limit || 50}`,
+			const client = await resolveSupabaseClient();
+			if (!client) {
+				return [];
+			}
+
+			const { data, error } = await (client.rpc as unknown as (
+				rpcName: string,
+				args?: Record<string, unknown>,
+			) => Promise<{ data: Array<Record<string, unknown>> | null; error: { message?: string } | null }>)(
+				"get_leaderboard_stats",
+				{ limit_count: limit || 50 },
 			);
-			return (rows ?? []).map(mapLeaderboardRow);
+
+			if (error || !data) {
+				return [];
+			}
+
+			return data.map(mapLeaderboardRow);
 		} catch {
 			return [];
 		}
@@ -109,94 +165,70 @@ export const leaderboardAPI = {
 
 export const statsAPI = {
 	getSiteStats: async (): Promise<SiteStats | null> => {
-		try {
-			const stats = await api.get<Partial<SiteStats>>("/analytics/site-stats");
-			if (!stats) {
-				return null;
-			}
-			return {
-				totalNames: toNumber(stats.totalNames),
-				activeNames: toNumber(stats.activeNames),
-				hiddenNames: toNumber(stats.hiddenNames),
-				totalUsers: toNumber(stats.totalUsers),
-				totalRatings: toNumber(stats.totalRatings),
-				totalSelections: toNumber(stats.totalSelections),
-				avgRating: toNumber(stats.avgRating),
-			};
-		} catch {
+		const stats = await supabaseStatsAPI.getSiteStats();
+		if (!stats) {
 			return null;
 		}
+
+		return {
+			totalNames: toNumber(stats.totalNames),
+			activeNames: toNumber(stats.activeNames),
+			hiddenNames: toNumber(stats.hiddenNames),
+			totalUsers: toNumber(stats.totalUsers),
+			totalRatings: toNumber(stats.totalRatings),
+			totalSelections: toNumber(stats.totalSelections),
+			avgRating: toNumber(stats.avgRating),
+		};
 	},
 
 	getEngagementMetrics: async (
-		timeframe: "day" | "week" | "month" | "year",
+		_timeframe: "day" | "week" | "month" | "year",
 	): Promise<EngagementMetrics | null> => {
-		try {
-			const metrics = await api.get<Partial<EngagementMetrics>>(
-				`/analytics/engagement?timeframe=${timeframe}`,
-			);
-			if (!metrics) {
-				return null;
-			}
-			return {
-				totalTournaments: toNumber(metrics.totalTournaments),
-				completedTournaments: toNumber(metrics.completedTournaments),
-				averageTournamentTime: toNumber(metrics.averageTournamentTime),
-				totalMatches: toNumber(metrics.totalMatches),
-				peakActiveUsers: toNumber(metrics.peakActiveUsers),
-				dailyActiveUsers: toNumber(metrics.dailyActiveUsers),
-				weeklyActiveUsers: toNumber(metrics.weeklyActiveUsers),
-				monthlyActiveUsers: toNumber(metrics.monthlyActiveUsers),
-				mostActiveHour: String(metrics.mostActiveHour),
-				mostActiveDay: String(metrics.mostActiveDay),
-				userRetentionRate: toNumber(metrics.userRetentionRate),
-				averageSessionDuration: toNumber(metrics.averageSessionDuration),
-				totalPageViews: toNumber(metrics.totalPageViews),
-				bounceRate: toNumber(metrics.bounceRate),
-			};
-		} catch {
-			return null;
-		}
+		return null;
 	},
 
-	getDetailedUserStats: async (userName: string): Promise<DetailedUserStats | null> => {
-		try {
-			const stats = await api.get<Partial<DetailedUserStats>>(
-				`/analytics/user-stats?userName=${encodeURIComponent(userName)}`,
-			);
-			if (!stats) {
-				return null;
-			}
-			return {
-				totalRatings: toNumber(stats.totalRatings),
-				totalSelections: toNumber(stats.totalSelections),
-				totalWins: toNumber(stats.totalWins),
-				totalLosses: toNumber(stats.totalLosses),
-				winRate: toNumber(stats.winRate),
-				lastActiveAt: String(stats.lastActiveAt),
-				totalTournaments: toNumber(stats.totalTournaments),
-				completedTournaments: toNumber(stats.completedTournaments),
-				averageTournamentTime: toNumber(stats.averageTournamentTime),
-				favoriteNames: stats.favoriteNames ? String(stats.favoriteNames).split(",") : [],
-				preferredCategories: stats.preferredCategories
-					? String(stats.preferredCategories).split(",")
-					: [],
-				engagementScore: toNumber(stats.engagementScore),
-			};
-		} catch {
+	getDetailedUserStats: async (_userName: string): Promise<DetailedUserStats | null> => {
+		const auth = await getAuthenticatedClient();
+		if (!auth) {
 			return null;
 		}
+
+		const [ratings, selections] = await Promise.all([
+			getCurrentUserRatings(),
+			auth.client
+				.from("cat_tournament_selections")
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", auth.user.id),
+		]);
+
+		const totalWins = ratings.reduce((sum, rating) => sum + toNumber(rating.wins), 0);
+		const totalLosses = ratings.reduce((sum, rating) => sum + toNumber(rating.losses), 0);
+		const totalRatings = ratings.length;
+		const totalSelections = selections.count ?? 0;
+		const totalGames = totalWins + totalLosses;
+
+		return {
+			totalRatings,
+			totalSelections,
+			totalWins,
+			totalLosses,
+			winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 1000) / 10 : 0,
+			lastActiveAt: undefined,
+			totalTournaments: totalSelections,
+			completedTournaments: totalSelections,
+			averageTournamentTime: 0,
+			favoriteNames: [],
+			preferredCategories: [],
+			engagementScore: totalRatings > 0 ? Math.min(100, totalRatings * 5) : 0,
+		};
 	},
 
-	getUserRatedNames: async (userName: string): Promise<UserRatedName[]> => {
+	getUserRatedNames: async (_userName: string): Promise<UserRatedName[]> => {
 		try {
-			const [names, ratings] = await Promise.all([
-				api.get<NameItem[]>("/names?includeHidden=false"),
-				api.get<UserRatingRow[]>(`/analytics/ratings-raw?userName=${encodeURIComponent(userName)}`),
-			]);
+			const [names, ratings] = await Promise.all([coreAPI.getTrendingNames(false), getCurrentUserRatings()]);
 
 			const ratingMap = new Map<string, UserRatingRow>();
-			for (const rating of ratings ?? []) {
+			for (const rating of ratings) {
 				ratingMap.set(String(rating.nameId), rating);
 			}
 
@@ -216,23 +248,30 @@ export const statsAPI = {
 		}
 	},
 
-	getUserStats: async (userName: string): Promise<UserStats | null> => {
-		try {
-			const stats = await api.get<Partial<UserStats>>(
-				`/analytics/user-stats?userName=${encodeURIComponent(userName)}`,
-			);
-			if (!stats) {
-				return null;
-			}
-			return {
-				totalRatings: toNumber(stats.totalRatings),
-				totalSelections: toNumber(stats.totalSelections),
-				totalWins: toNumber(stats.totalWins),
-				totalLosses: toNumber(stats.totalLosses),
-				winRate: toNumber(stats.winRate),
-			};
-		} catch {
+	getUserStats: async (_userName: string): Promise<UserStats | null> => {
+		const auth = await getAuthenticatedClient();
+		if (!auth) {
 			return null;
 		}
+
+		const [ratings, selections] = await Promise.all([
+			getCurrentUserRatings(),
+			auth.client
+				.from("cat_tournament_selections")
+				.select("id", { count: "exact", head: true })
+				.eq("user_id", auth.user.id),
+		]);
+
+		const totalWins = ratings.reduce((sum, rating) => sum + toNumber(rating.wins), 0);
+		const totalLosses = ratings.reduce((sum, rating) => sum + toNumber(rating.losses), 0);
+		const totalGames = totalWins + totalLosses;
+
+		return {
+			totalRatings: ratings.length,
+			totalSelections: selections.count ?? 0,
+			totalWins,
+			totalLosses,
+			winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 1000) / 10 : 0,
+		};
 	},
 };

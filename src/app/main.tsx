@@ -12,7 +12,6 @@ import { queryClient } from "@/shared/services/supabase/client";
 import App from "./App";
 import { shouldEnableAnalytics } from "./analytics";
 import { Providers } from "./providers/Providers";
-import "../tailwind.css";
 import "../index.scss";
 
 // Initialize Sentry in production

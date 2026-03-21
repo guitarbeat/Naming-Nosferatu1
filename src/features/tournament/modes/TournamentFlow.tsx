@@ -6,6 +6,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/app/providers/Providers";
 import Button from "@/shared/components/layout/Button";
 import { Trophy } from "@/shared/lib/icons";
 import { ratingsAPI } from "@/shared/services/supabase/api";
@@ -16,6 +17,7 @@ import { useTournamentHandlers } from "../hooks";
 export default function TournamentFlow() {
 	const { user, tournament, tournamentActions } = useAppStore();
 	const navigate = useNavigate();
+	const toast = useToast();
 
 	const { handleStartNewTournament } = useTournamentHandlers({
 		userName: user.name,
@@ -41,16 +43,29 @@ export default function TournamentFlow() {
 			ratingsAPI
 				.saveRatings(userId, ratingsWithStats)
 				.then((result) => {
-					if (result?.success) {
-						console.log(`Successfully saved ${result.count} ratings to database`);
+					if (!result) {
+						return;
 					}
+
+					if (result.status === "committed") {
+						console.log(`Successfully saved ${result.count ?? 0} ratings to Supabase`);
+						return;
+					}
+
+					if (result.status === "queued") {
+						toast.showInfo(
+							"Your ratings were queued locally and will sync when the connection is restored.",
+						);
+						return;
+					}
+
+					toast.showError(result.error || "Could not save ratings. Sign in again to sync results.");
 				})
 				.catch((_error) => {
-					// Error is already logged by ratingsAPI with context
-					console.warn("Tournament ratings save failed, but fallback may have been used");
+					toast.showError("Could not save ratings. Sign in again to sync results.");
 				});
 		}
-	}, [tournament.isComplete, tournament.ratings, user.name]);
+	}, [toast, tournament.isComplete, tournament.ratings, user.name]);
 
 	return (
 		<div className="w-full flex flex-col gap-2">

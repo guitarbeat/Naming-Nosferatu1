@@ -16,10 +16,14 @@ import {
 	isNameLocked,
 	matchesNameSearchTerm,
 } from "@/shared/lib/basic";
-import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
-import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/shared/services/supabase/api";
-import { withSupabase } from "@/shared/services/supabase/runtime";
+import {
+	adminNamesAPI,
+	coreAPI,
+	hiddenNamesAPI,
+	imagesAPI,
+	statsAPI,
+} from "@/shared/services/supabase/api";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 
@@ -186,27 +190,10 @@ export function AdminDashboard() {
 		async (nameId: string | number, isLocked: boolean, options: ToggleOptions = {}) => {
 			try {
 				const idStr = String(nameId);
-				await withSupabase(async (client) => {
-					await client.rpc("set_user_context", { user_name_param: actorName });
-
-					const canonicalArgs = {
-						p_name_id: idStr,
-						p_locked_in: !isLocked,
-					};
-
-					let result = await client.rpc("toggle_name_locked_in", canonicalArgs);
-					if (result.error && isRpcSignatureError(result.error.message || "")) {
-						result = await client.rpc("toggle_name_locked_in", {
-							...canonicalArgs,
-							p_user_name: actorName,
-						});
-					}
-
-					if (result.error) {
-						throw new Error(result.error.message || "Failed to toggle locked status");
-					}
-					return result.data;
-				}, null);
+				const result = await adminNamesAPI.toggleLockedIn(idStr, !isLocked);
+				if (!result.success) {
+					throw new Error(result.error || "Failed to toggle locked status");
+				}
 
 				if (!options.skipRefresh) {
 					await loadAdminData();

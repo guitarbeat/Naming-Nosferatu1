@@ -52,6 +52,7 @@ type UserRole = keyof typeof ROLE_HIERARCHY;
 export interface AuthUser {
 	id: string;
 	name: string;
+	userName?: string;
 	email?: string;
 	isAdmin: boolean;
 	role?: UserRole;

@@ -26,7 +26,6 @@ import {
 	matchesNameSearchTerm,
 } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
-import { isRpcSignatureError } from "@/shared/lib/errors";
 import {
 	Check,
 	CheckCircle,
@@ -40,10 +39,12 @@ import {
 	X,
 	ZoomIn,
 } from "@/shared/lib/icons";
-import { api } from "@/shared/services/apiClient";
-import { coreAPI, hiddenNamesAPI, isUsingFallbackData } from "@/shared/services/supabase/api";
-import { resolveSupabaseClient } from "@/shared/services/supabase/client";
-import { withSupabase } from "@/shared/services/supabase/runtime";
+import {
+	adminNamesAPI,
+	coreAPI,
+	hiddenNamesAPI,
+	isUsingFallbackData,
+} from "@/shared/services/supabase/api";
 import type { IdType, NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 
@@ -344,24 +345,7 @@ export function NameSelector() {
 					}
 				}
 
-				const fetchedNames = await coreAPI.getTrendingNames(true); // Include hidden names for everyone
-				if (fetchedNames.length === 0) {
-					try {
-						await api.get<unknown[]>("/names?includeHidden=true");
-					} catch (probeError) {
-						const hasSupabaseFallback =
-							Boolean(import.meta.env.VITE_SUPABASE_URL) &&
-							Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-						if (!hasSupabaseFallback) {
-							throw new Error(
-								"Could not load cards from backend. `/api/names` is unreachable and Supabase fallback is not configured.",
-							);
-						}
-
-						console.warn("Backend probe failed but Supabase fallback is configured:", probeError);
-					}
-				}
+				const fetchedNames = await coreAPI.getTrendingNames(true);
 				setNames(fetchedNames);
 				setCachedData(fetchedNames, true);
 				setRetryCount(0); // Reset retry count on success
@@ -607,18 +591,6 @@ export function NameSelector() {
 			});
 
 			try {
-				// Ensure user context is set
-				await withSupabase(async (_client) => {
-					try {
-						const client = await resolveSupabaseClient();
-						if (client) {
-							await client.rpc("set_user_context", { user_name_param: userName.trim() });
-						}
-					} catch {
-						/* ignore */
-					}
-				}, null);
-
 				if (isCurrentlyHidden) {
 					const result = await hiddenNamesAPI.unhideName(userName, nameId);
 					if (!result.success) {
@@ -662,39 +634,14 @@ export function NameSelector() {
 			});
 
 			try {
-				const result = await withSupabase(async (client) => {
-					try {
-						await client.rpc("set_user_context", { user_name_param: userName.trim() });
-					} catch {
-						/* ignore */
-					}
+				const result = await adminNamesAPI.toggleLockedIn(nameId, !isCurrentlyLocked);
 
-					const canonicalArgs = {
-						p_name_id: String(nameId),
-						p_locked_in: !isCurrentlyLocked,
-					};
-					let rpcResult = await client.rpc("toggle_name_locked_in", canonicalArgs);
-
-					if (rpcResult.error && isRpcSignatureError(rpcResult.error.message || "")) {
-						rpcResult = await client.rpc("toggle_name_locked_in", {
-							...canonicalArgs,
-							p_user_name: userName.trim(),
-						});
-					}
-
-					if (rpcResult.error) {
-						throw new Error(rpcResult.error.message || "Failed to toggle locked status");
-					}
-					if (rpcResult.data !== true) {
-						throw new Error("Failed to toggle locked status");
-					}
-					return rpcResult.data;
-				}, null);
-
-				if (result) {
+				if (result.success) {
 					const fetchedNames = await coreAPI.getTrendingNames(true);
 					setNames(fetchedNames);
 					toast.showSuccess(isCurrentlyLocked ? "Name unlocked." : "Name locked in.");
+				} else {
+					throw new Error(result.error || "Failed to toggle locked status");
 				}
 			} catch (error) {
 				console.error("Failed to toggle locked status:", error);

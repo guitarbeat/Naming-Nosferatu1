@@ -1,3 +1,9 @@
+@import "tailwindcss";
+@config "../config/tailwind.config.js";
+@source "./**/*.{js,jsx,ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
 /* Consolidated global SCSS. Keep section order intact; the cascade depends on it. */
 
 /* ==========================================================================
