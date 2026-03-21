@@ -1,5 +1,5 @@
 /**
- * @file layout.css
+ * @file layout.scss
  * @description Layout primitives, app layout, responsive utilities, and accessibility.
  * Note: Tailwind utility classes (z-10, z-20, etc.) are NOT duplicated here.
  */
@@ -65,9 +65,10 @@
 
 .home-panel-shell {
 	width: 100%;
-	max-width: min(68rem, 100%);
+	max-width: min(74rem, 100%);
 	margin: 0 auto;
-	padding-top: clamp(0.25rem, 1.2vw, 0.75rem);
+	padding-top: clamp(0.5rem, 1.6vw, 1rem);
+	padding-bottom: clamp(0.75rem, 2vw, 1.5rem);
 }
 
 /* Global loading overlay */
@@ -216,7 +217,17 @@
 
 @media (min-width: 769px) {
 	.app-main-shell--nav-safe {
-		padding-bottom: calc(var(--mobile-nav-height) + 1.5rem);
+		padding-bottom: calc(var(--mobile-nav-height) + 1.9rem);
+	}
+}
+
+@media (min-width: 769px) and (max-height: 860px) {
+	.app-main-shell {
+		padding-top: 0.9rem;
+	}
+
+	.app-main-shell--nav-safe {
+		padding-bottom: calc(var(--mobile-nav-height) + 1.35rem);
 	}
 }
 

@@ -7,7 +7,7 @@ import { cva } from "class-variance-authority";
 import React, { memo } from "react";
 import { cn } from "@/shared/lib/basic";
 import { Loader2 } from "@/shared/lib/icons";
-import "./FancyButton.css";
+import "./FancyButton.scss";
 
 /**
  * Unified button variants - single source of truth

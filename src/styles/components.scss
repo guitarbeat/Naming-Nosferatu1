@@ -1,5 +1,5 @@
 /**
- * @file components.css
+ * @file components.scss
  * @description Core UI component styles (nav, scroll-to-top, random generator, locked name tooltip)
  */
 
@@ -10,15 +10,15 @@
 .floating-navbar-frame {
 	position: fixed;
 	left: 50%;
-	bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+	bottom: max(0.75rem, calc(env(safe-area-inset-bottom) + 0.55rem));
 	z-index: 100;
-	width: min(95vw, 58rem);
+	width: min(92vw, 53rem);
 	transform: translateX(-50%);
 }
 
 .floating-navbar-shell.liquid-glass {
 	overflow: hidden;
-	border-radius: 1.8rem;
+	border-radius: 1.65rem;
 	border: 1px solid var(--nav-shell-border);
 	background: var(--nav-shell-bg);
 	box-shadow: var(--nav-shell-shadow);
@@ -49,8 +49,8 @@
 .floating-navbar {
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-2);
+	gap: 0.5rem;
+	padding: 0.5rem;
 }
 
 .floating-navbar__primary {
@@ -58,7 +58,7 @@
 	min-width: 0;
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 0.375rem;
+	gap: 0.3rem;
 }
 
 .floating-navbar__utility {
@@ -70,15 +70,15 @@
 .floating-navbar__item {
 	position: relative;
 	display: inline-flex;
-	min-height: 3.25rem;
+	min-height: 3rem;
 	min-width: 0;
 	align-items: center;
 	justify-content: center;
-	gap: 0.625rem;
-	border-radius: 1.15rem;
+	gap: 0.55rem;
+	border-radius: 1.05rem;
 	border: 1px solid transparent;
 	background: transparent;
-	padding: 0.8rem 0.95rem;
+	padding: 0.74rem 0.88rem;
 	color: var(--nav-text-muted);
 	transition:
 		transform var(--duration-base) var(--ease-in-out-smooth),
@@ -113,8 +113,8 @@
 }
 
 .floating-navbar__item--utility {
-	min-width: 4.75rem;
-	padding-inline: 0.85rem;
+	min-width: 4.35rem;
+	padding-inline: 0.78rem;
 	border-color: var(--nav-utility-border);
 	background: var(--nav-utility-bg);
 	box-shadow: var(--nav-utility-shadow);
@@ -149,8 +149,8 @@
 }
 
 .floating-navbar__icon > svg {
-	width: 1.2rem;
-	height: 1.2rem;
+	width: 1.1rem;
+	height: 1.1rem;
 }
 
 .floating-navbar__label {
@@ -160,69 +160,94 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-family: var(--font-ui);
-	font-size: clamp(0.72rem, 1.75vw, 0.93rem);
+	font-size: clamp(0.7rem, 1.5vw, 0.88rem);
 	font-weight: var(--font-weight-semibold);
 	letter-spacing: 0.01em;
 }
 
 .floating-navbar__label--utility {
-	font-size: 0.72rem;
+	font-size: 0.68rem;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 
 .floating-navbar__avatar {
-	width: 1.4rem;
-	height: 1.4rem;
+	width: 1.3rem;
+	height: 1.3rem;
 	border-radius: 9999px;
 	border: 1px solid var(--nav-pill-border);
 	object-fit: cover;
 	box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
 }
 
-@media (width <= 640px) {
-	.floating-navbar {
-		gap: 0.375rem;
-		padding: 0.375rem;
+@media (min-width: 769px) and (max-height: 860px) {
+	.floating-navbar-frame {
+		width: min(88vw, 48rem);
 	}
 
-	.floating-navbar__primary {
-		gap: 0.25rem;
+	.floating-navbar {
+		gap: 0.4rem;
+		padding: 0.4rem;
 	}
 
 	.floating-navbar__item {
-		min-height: 3rem;
-		gap: 0.45rem;
-		padding: 0.72rem 0.7rem;
-		border-radius: 1rem;
+		min-height: 2.85rem;
+		padding: 0.66rem 0.76rem;
 	}
 
 	.floating-navbar__item--utility {
-		min-width: 4.1rem;
+		min-width: 4rem;
 		padding-inline: 0.72rem;
 	}
 
+	.floating-navbar__label {
+		font-size: 0.78rem;
+	}
+}
+
+@media (width <= 640px) {
+	.floating-navbar {
+		gap: 0.3rem;
+		padding: 0.3rem;
+	}
+
+	.floating-navbar__primary {
+		gap: 0.2rem;
+	}
+
+	.floating-navbar__item {
+		min-height: 2.85rem;
+		gap: 0.38rem;
+		padding: 0.64rem 0.58rem;
+		border-radius: 0.95rem;
+	}
+
+	.floating-navbar__item--utility {
+		min-width: 3.8rem;
+		padding-inline: 0.64rem;
+	}
+
 	.floating-navbar__icon > svg {
-		width: 1.1rem;
-		height: 1.1rem;
+		width: 1rem;
+		height: 1rem;
 	}
 
 	.floating-navbar__label {
-		font-size: 0.72rem;
+		font-size: 0.67rem;
 	}
 }
 
 @media (width <= 420px) {
 	.floating-navbar-frame {
-		width: min(calc(100vw - 1rem), 32rem);
+		width: min(calc(100vw - 0.75rem), 32rem);
 	}
 
 	.floating-navbar__label {
-		font-size: 0.69rem;
+		font-size: 0.64rem;
 	}
 
 	.floating-navbar__label--utility {
-		font-size: 0.66rem;
+		font-size: 0.62rem;
 	}
 }
 

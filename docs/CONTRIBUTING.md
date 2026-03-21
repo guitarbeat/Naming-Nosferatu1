@@ -250,7 +250,7 @@ Recommended daily cadence:
 - Prefer lazy loading for heavy components (`Dashboard`, `Tournament`)
 
 #### Styling Guidelines
-- Use Tailwind CSS exclusively with design tokens from `src/styles/tokens.css`
+- Use Tailwind CSS exclusively with design tokens from `src/styles/tokens.scss`
 - Follow the established glass surface design system
 - Use semantic spacing tokens (--space-1 through --space-24)
 - Maintain accessibility standards (focus management, keyboard navigation)
@@ -277,7 +277,7 @@ src/
 ├── services/           # API and Supabase runtime/api wrappers
 ├── shared/             # Shared components, hooks, utils, types
 ├── store/              # Zustand app store
-├── styles/             # CSS layers/tokens/effects
+├── styles/             # SCSS layers/tokens/effects
 └── types/              # App-level types
 ```
 

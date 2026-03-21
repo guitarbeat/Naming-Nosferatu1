@@ -144,11 +144,11 @@ const NameContent = ({
 }) => {
 	const isGrid = variant === "grid";
 	const nameClasses = isGrid
-		? "mobile-readable-title block w-full text-left text-lg sm:text-xl font-semibold leading-tight text-foreground drop-shadow-sm"
+		? "mobile-readable-title block w-full text-left text-lg sm:text-[1.35rem] font-semibold leading-tight text-foreground drop-shadow-md"
 		: "font-whimsical text-5xl lg:text-6xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center";
 
 	const pronunciationClasses = isGrid
-		? `mobile-readable-meta block text-left text-[11px] sm:text-sm leading-tight font-semibold italic text-warning/95 transition-all duration-300 ${
+		? `mobile-readable-meta block text-left text-[11px] sm:text-sm leading-tight font-semibold italic text-warning/95 drop-shadow-sm transition-all duration-300 ${
 				showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
 			}`
 		: `text-warning text-3xl lg:text-4xl font-bold italic opacity-90 transition-all duration-300 ${
@@ -156,7 +156,7 @@ const NameContent = ({
 			}`;
 
 	const descriptionClasses = isGrid
-		? `mobile-readable-description mt-1 max-w-[24ch] text-left text-sm sm:text-[15px] leading-snug line-clamp-2 text-foreground/82 transition-all duration-500 ${
+		? `mobile-readable-description mt-1 max-w-[24ch] text-left text-sm sm:text-[15px] leading-snug line-clamp-2 text-foreground/84 drop-shadow-sm transition-all duration-500 ${
 				showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
 			}`
 		: `text-foreground/90 text-base md:text-lg leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center transition-all duration-300 ${
@@ -272,7 +272,7 @@ const getCardStyles = (isSelected: boolean, isLocked: boolean) => {
 const getNameOverlayClasses = (variant: "grid" | "swipe") => {
 	const baseClasses = "absolute flex flex-col pointer-events-none";
 	const gridClasses =
-		"inset-x-0 bottom-0 justify-end items-start p-4 sm:p-5 text-left bg-gradient-to-t from-background/94 via-background/48 to-transparent";
+		"inset-x-0 bottom-0 justify-end items-start p-3 sm:p-4 text-left bg-gradient-to-t from-background/96 via-background/38 to-transparent";
 	const swipeClasses =
 		"inset-0 justify-end items-center p-8 text-center bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
 
@@ -1436,7 +1436,7 @@ export function NameSelector() {
 							const activeNames = getActiveNames(names);
 							return (
 								activeNames.length > 0 && (
-									<div className="grid grid-cols-2 min-[520px]:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+									<div className="grid grid-cols-2 gap-4 pb-6 min-[520px]:grid-cols-3 sm:gap-5 sm:pb-8 md:grid-cols-4 xl:gap-6">
 										{activeNames.map((nameItem) => {
 											const isSelected = selectedNames.has(nameItem.id);
 											const catImage =
@@ -1458,13 +1458,13 @@ export function NameSelector() {
 													transition={{ type: "spring", stiffness: 300, damping: 20 }}
 													className={getCardStyles(isSelected, isNameLocked(nameItem))}
 												>
-													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
+													<div className="w-full relative aspect-[5/4] group/img sm:aspect-[4/3] xl:aspect-[3/2]">
 														<CatImage
 															src={catImage}
 															alt={nameItem.name}
 															objectFit="cover"
 															containerClassName="w-full h-full"
-															imageClassName="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+															imageClassName="h-full w-full object-cover brightness-[0.8] saturate-[1.05] transition-transform duration-700 ease-out group-hover:scale-105 group-hover:brightness-[0.9]"
 														/>
 
 														{/* Selection Badge */}
@@ -1472,7 +1472,7 @@ export function NameSelector() {
 
 														{/* Enhanced Name Overlay */}
 														<div className={getNameOverlayClasses("grid")}>
-															<div className="flex flex-col gap-1.5 max-w-full">
+															<div className="flex max-w-full flex-col gap-1.5 rounded-[1.35rem] border border-white/10 bg-background/78 px-3.5 py-3 shadow-xl shadow-black/15 backdrop-blur-md sm:px-4 sm:py-3.5">
 																<NameContent nameItem={nameItem} variant="grid" />
 															</div>
 														</div>

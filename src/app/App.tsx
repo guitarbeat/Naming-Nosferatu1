@@ -164,9 +164,11 @@ function HomeContent() {
 		>
 			<div className="app-home-panels">
 				<HomeTabPanel id="pick" activeTab={activeTab}>
-					<Suspense fallback={<Loading variant="skeleton" height={400} />}>
-						<TournamentFlow />
-					</Suspense>
+					<div className="home-panel-shell">
+						<Suspense fallback={<Loading variant="skeleton" height={400} />}>
+							<TournamentFlow />
+						</Suspense>
+					</div>
 				</HomeTabPanel>
 
 				<HomeTabPanel id="suggest" activeTab={activeTab}>

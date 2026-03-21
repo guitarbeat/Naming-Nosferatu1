@@ -1,0 +1,19 @@
+/* ── Import order matters ──
+   1. Design tokens (all CSS custom properties)
+   2. Reset (normalize + scrollbars + focus)
+   3. Typography utilities
+   4. Layout primitives & responsive
+   5. Component styles (modular)
+   6. Motion & animation system
+   7. Glass morphism effects
+*/
+
+@import "./tokens.scss";
+@import "./reset.scss";
+@import "./typography.scss";
+@import "./layout.scss";
+@import "./indicators.scss";
+@import "./background.scss";
+@import "./components.scss";
+@import "./motion.scss";
+@import "./liquid-glass.scss";

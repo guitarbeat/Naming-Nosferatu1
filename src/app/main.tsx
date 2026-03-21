@@ -6,6 +6,7 @@ try {
 } catch (error) {
 	console.warn("Sentry not available, continuing without error tracking:", error);
 }
+
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import React from "react";
@@ -17,7 +18,8 @@ import { queryClient } from "@/shared/services/supabase/client";
 import App from "./App";
 import { shouldEnableAnalytics } from "./analytics";
 import { Providers } from "./providers/Providers";
-import "../index.css";
+import "../tailwind.css";
+import "../index.scss";
 
 // Initialize Sentry in production
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && Sentry) {
