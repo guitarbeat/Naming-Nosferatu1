@@ -6,11 +6,11 @@
 import type { KeyboardEvent } from "react";
 import CatImage from "@/shared/components/layout/CatImage";
 import {
-	type HeatLevel,
-	STREAK_THRESHOLDS,
 	getHeatCardClasses,
 	getHeatLabel,
 	getHeatTextClasses,
+	type HeatLevel,
+	STREAK_THRESHOLDS,
 } from "../utils/heat";
 
 export interface MatchSideCardProps {
@@ -48,9 +48,7 @@ export function MatchSideCard({
 }: MatchSideCardProps) {
 	const isRight = side === "right";
 	const textAlign = isRight ? "text-left sm:text-right" : "text-left";
-	const headingWrap = isRight
-		? "justify-start sm:justify-end"
-		: "justify-start";
+	const headingWrap = isRight ? "justify-start sm:justify-end" : "justify-start";
 	const metaAlign = isRight ? "items-start sm:items-end" : "items-start";
 	const memberWrap = isRight ? "justify-start sm:justify-end" : "";
 	const selectionClass = isSelected
@@ -60,9 +58,7 @@ export function MatchSideCard({
 			: "";
 
 	const showStreak = heatLevel !== null && streak >= STREAK_THRESHOLDS.warm;
-	const streakLabel = heatLevel
-		? `${getHeatLabel(heatLevel)} x${streak}`
-		: null;
+	const streakLabel = heatLevel ? `${getHeatLabel(heatLevel)} x${streak}` : null;
 
 	return (
 		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
@@ -104,9 +100,7 @@ export function MatchSideCard({
 									{streakLabel}
 								</span>
 							) : null}
-							<div
-								className={`flex items-center gap-2 flex-wrap ${headingWrap}`}
-							>
+							<div className={`flex items-center gap-2 flex-wrap ${headingWrap}`}>
 								<h3
 									className={`font-whimsical text-[1.85rem] sm:text-3xl text-foreground tracking-wide break-words drop-shadow-sm leading-tight ${isRight ? "text-left sm:text-right" : ""}`}
 								>

@@ -7,10 +7,7 @@ const REDUCED_MOTION_REVEAL_DELAY_MS = 120;
 const REDUCED_MOTION_TOTAL_DURATION_MS = 360;
 
 function prefersReducedMotion(): boolean {
-	if (
-		typeof window === "undefined" ||
-		typeof window.matchMedia !== "function"
-	) {
+	if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
 		return false;
 	}
 
@@ -49,12 +46,8 @@ export function LoadingSequence({
 		const root = document.documentElement;
 		const previousOverflow = document.body.style.overflow;
 		const reduceMotion = prefersReducedMotion();
-		const resolvedRevealDelay = reduceMotion
-			? REDUCED_MOTION_REVEAL_DELAY_MS
-			: revealDelayMs;
-		const resolvedTotalDuration = reduceMotion
-			? REDUCED_MOTION_TOTAL_DURATION_MS
-			: totalDurationMs;
+		const resolvedRevealDelay = reduceMotion ? REDUCED_MOTION_REVEAL_DELAY_MS : revealDelayMs;
+		const resolvedTotalDuration = reduceMotion ? REDUCED_MOTION_TOTAL_DURATION_MS : totalDurationMs;
 
 		root.dataset.loadingSequence = "sealed";
 		document.body.style.overflow = "hidden";
@@ -83,8 +76,7 @@ export function LoadingSequence({
 		return null;
 	}
 
-	const resolvedEyebrow =
-		eyebrow ?? (tone === "victory" ? "Final Tally" : "Wake The Bracket");
+	const resolvedEyebrow = eyebrow ?? (tone === "victory" ? "Final Tally" : "Wake The Bracket");
 
 	return (
 		<div
@@ -105,9 +97,7 @@ export function LoadingSequence({
 			<div className="loading-sequence__copy">
 				<p className="loading-sequence__eyebrow">{resolvedEyebrow}</p>
 				<h2 className="loading-sequence__title">{title}</h2>
-				{subtitle ? (
-					<p className="loading-sequence__subtitle">{subtitle}</p>
-				) : null}
+				{subtitle ? <p className="loading-sequence__subtitle">{subtitle}</p> : null}
 			</div>
 		</div>
 	);

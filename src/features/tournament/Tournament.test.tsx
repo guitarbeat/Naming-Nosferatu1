@@ -68,9 +68,7 @@ function createTournamentState(overrides: Record<string, unknown> = {}) {
 vi.mock("framer-motion", () => ({
 	AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
 	motion: {
-		div: ({ children, ...props }: Record<string, unknown>) => (
-			<div {...props}>{children}</div>
-		),
+		div: ({ children, ...props }: Record<string, unknown>) => <div {...props}>{children}</div>,
 	},
 	useReducedMotion: () => false,
 }));
@@ -167,10 +165,7 @@ describe("Tournament completion reveal", () => {
 		);
 
 		expect(screen.getByTestId("tournament-complete")).toBeInTheDocument();
-		expect(screen.getByTestId("loading-sequence")).toHaveAttribute(
-			"data-tone",
-			"victory",
-		);
+		expect(screen.getByTestId("loading-sequence")).toHaveAttribute("data-tone", "victory");
 	});
 
 	it("keeps utility controls hidden until the utility toggle is opened", () => {
@@ -186,28 +181,16 @@ describe("Tournament completion reveal", () => {
 			</MemoryRouter>,
 		);
 
-		expect(
-			screen.queryByTestId("tournament-utilities"),
-		).not.toBeInTheDocument();
+		expect(screen.queryByTestId("tournament-utilities")).not.toBeInTheDocument();
 		expect(screen.queryByText("Bracket Path")).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole("button", { name: "Mute sound" }),
-		).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Mute sound" })).not.toBeInTheDocument();
 
-		fireEvent.click(
-			screen.getByRole("button", { name: "Show tournament utilities" }),
-		);
+		fireEvent.click(screen.getByRole("button", { name: "Show tournament utilities" }));
 
 		expect(screen.getByTestId("tournament-utilities")).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Mute sound" }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Play music" }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Show cat pictures" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Mute sound" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Play music" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Show cat pictures" })).toBeInTheDocument();
 	});
 
 	it("keeps the collapsed utility controls functional", () => {
@@ -223,9 +206,7 @@ describe("Tournament completion reveal", () => {
 			</MemoryRouter>,
 		);
 
-		fireEvent.click(
-			screen.getByRole("button", { name: "Show tournament utilities" }),
-		);
+		fireEvent.click(screen.getByRole("button", { name: "Show tournament utilities" }));
 		fireEvent.click(screen.getByRole("button", { name: "Show cat pictures" }));
 		fireEvent.click(screen.getByRole("button", { name: "Play music" }));
 
@@ -252,9 +233,7 @@ describe("Tournament completion reveal", () => {
 		);
 
 		act(() => {
-			fireEvent.click(
-				screen.getByRole("button", { name: "Vote for name Luna" }),
-			);
+			fireEvent.click(screen.getByRole("button", { name: "Vote for name Luna" }));
 		});
 
 		expect(handleVoteWithAnimation).toHaveBeenCalledWith("1", "2");

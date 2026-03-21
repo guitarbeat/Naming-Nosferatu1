@@ -297,12 +297,7 @@ ${error?.stack || "No stack trace available"}
 
 				{/* Action Buttons */}
 				<div className="flex flex-wrap gap-3 justify-center">
-					<Button
-						onClick={resetError}
-						type="button"
-						variant="primary"
-						shape="pill"
-					>
+					<Button onClick={resetError} type="button" variant="primary" shape="pill">
 						Try Again
 					</Button>
 					<Button

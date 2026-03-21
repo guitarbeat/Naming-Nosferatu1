@@ -39,11 +39,7 @@ import { getHeatLevel } from "./utils/heat";
 import { extractMatchData, getMatchSideId } from "./utils/matchHelpers";
 import { useTimedState } from "./utils/useTimedState";
 
-function TournamentContent({
-	onComplete,
-	names = [],
-	onVote,
-}: TournamentProps) {
+function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	const navigate = useNavigate();
 	const userName = useAppStore((state) => state.user.name);
 	const tournamentActions = useAppStore((state) => state.tournamentActions);
@@ -71,9 +67,7 @@ function TournamentContent({
 		matchHistory,
 	} = tournament;
 
-	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(
-		null,
-	);
+	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(null);
 	const [isUtilityPanelOpen, setIsUtilityPanelOpen] = useState(false);
 	const voteAnnouncement = useTimedState<string | null>(null);
 	const roundAnnouncement = useTimedState<number | null>(null);
@@ -84,15 +78,21 @@ function TournamentContent({
 	// Calculate winning streaks
 	const calculateWinStreak = useCallback(
 		(contestantId: string | number | null | undefined) => {
-			if (!contestantId || matchHistory.length === 0) return 0;
+			if (!contestantId || matchHistory.length === 0) {
+				return 0;
+			}
 			const targetId = String(contestantId);
 			let streak = 0;
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
-				if (!record) continue;
+				if (!record) {
+					continue;
+				}
 				const leftId = getMatchSideId(record.match, "left");
 				const rightId = getMatchSideId(record.match, "right");
-				if (leftId !== targetId && rightId !== targetId) continue;
+				if (leftId !== targetId && rightId !== targetId) {
+					continue;
+				}
 				if (record.winner === targetId) {
 					streak++;
 				} else {
@@ -105,29 +105,22 @@ function TournamentContent({
 	);
 
 	const leftStreak = useMemo(
-		() =>
-			currentMatch
-				? calculateWinStreak(getMatchSideId(currentMatch, "left"))
-				: 0,
+		() => (currentMatch ? calculateWinStreak(getMatchSideId(currentMatch, "left")) : 0),
 		[currentMatch, calculateWinStreak],
 	);
 	const rightStreak = useMemo(
-		() =>
-			currentMatch
-				? calculateWinStreak(getMatchSideId(currentMatch, "right"))
-				: 0,
+		() => (currentMatch ? calculateWinStreak(getMatchSideId(currentMatch, "right")) : 0),
 		[currentMatch, calculateWinStreak],
 	);
 	const leftHeatLevel = useMemo(() => getHeatLevel(leftStreak), [leftStreak]);
-	const rightHeatLevel = useMemo(
-		() => getHeatLevel(rightStreak),
-		[rightStreak],
-	);
+	const rightHeatLevel = useMemo(() => getHeatLevel(rightStreak), [rightStreak]);
 
 	// Vote adapter for external onVote callback
 	const handleVoteAdapter = useCallback(
 		(winnerId: string, _loserId: string) => {
-			if (!onVote || !currentMatch) return;
+			if (!onVote || !currentMatch) {
+				return;
+			}
 			const sideData = (side: "left" | "right") => {
 				const p = currentMatch[side];
 				const id = typeof p === "object" ? String(p.id) : String(p);
@@ -163,10 +156,7 @@ function TournamentContent({
 		if (isComplete && onComplete) {
 			audioManager.playLevelUpSound();
 			setTimeout(() => audioManager.playWowSound(), 500);
-			const results: Record<
-				string,
-				{ rating: number; wins: number; losses: number }
-			> = {};
+			const results: Record<string, { rating: number; wins: number; losses: number }> = {};
 			for (const [id, rating] of Object.entries(ratings)) {
 				results[idToName.get(id) ?? id] = { rating, wins: 0, losses: 0 };
 			}
@@ -215,29 +205,21 @@ function TournamentContent({
 		}
 		if (roundNumber > previousRoundRef.current) {
 			audioManager.playSurpriseSound();
-			roundAnnouncement.setTimed(
-				roundNumber,
-				prefersReducedMotion ? 350 : 1200,
-			);
+			roundAnnouncement.setTimed(roundNumber, prefersReducedMotion ? 350 : 1200);
 		}
 		previousRoundRef.current = roundNumber;
-	}, [
-		roundNumber,
-		isComplete,
-		audioManager,
-		roundAnnouncement,
-		prefersReducedMotion,
-	]);
+	}, [roundNumber, isComplete, audioManager, roundAnnouncement, prefersReducedMotion]);
 
 	const handleVoteForSide = useCallback(
 		(side: "left" | "right") => {
-			if (isVoting || !matchData) return;
+			if (isVoting || !matchData) {
+				return;
+			}
 			audioManager.primeAudioExperience();
 
 			const winnerId = side === "left" ? matchData.leftId : matchData.rightId;
 			const loserId = side === "left" ? matchData.rightId : matchData.leftId;
-			const winnerName =
-				side === "left" ? matchData.leftName : matchData.rightName;
+			const winnerName = side === "left" ? matchData.leftName : matchData.rightName;
 			const expectedStreak = (side === "left" ? leftStreak : rightStreak) + 1;
 			const heatLevel = getHeatLevel(expectedStreak);
 
@@ -249,7 +231,9 @@ function TournamentContent({
 			setSelectedSide(side);
 			voteAnnouncement.setTimed(winnerName, prefersReducedMotion ? 250 : 900);
 			handleVoteWithAnimation(winnerId, loserId);
-			if (onVote) handleVoteAdapter(winnerId, loserId);
+			if (onVote) {
+				handleVoteAdapter(winnerId, loserId);
+			}
 		},
 		[
 			isVoting,
@@ -276,24 +260,15 @@ function TournamentContent({
 	);
 
 	const leftImg =
-		showCatPictures && matchData
-			? getRandomCatImage(matchData.leftId, CAT_IMAGES)
-			: null;
+		showCatPictures && matchData ? getRandomCatImage(matchData.leftId, CAT_IMAGES) : null;
 	const rightImg =
-		showCatPictures && matchData
-			? getRandomCatImage(matchData.rightId, CAT_IMAGES)
-			: null;
+		showCatPictures && matchData ? getRandomCatImage(matchData.rightId, CAT_IMAGES) : null;
 	const hasSelectionFeedback = selectedSide !== null;
 	const currentMatchKey = matchData
 		? `${roundNumber}-${currentMatchNumber}-${matchData.leftId}-${matchData.rightId}`
 		: `${roundNumber}-${currentMatchNumber}`;
 	const progressPercent = totalMatches
-		? Math.round(
-				Math.max(
-					0,
-					Math.min(100, progress || (currentMatchNumber / totalMatches) * 100),
-				),
-			)
+		? Math.round(Math.max(0, Math.min(100, progress || (currentMatchNumber / totalMatches) * 100)))
 		: 0;
 
 	const quitTournament = useCallback(() => {
@@ -444,9 +419,7 @@ function TournamentContent({
 								shape="pill"
 								className="border border-border/15 bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.08] hover:text-foreground"
 								aria-label={
-									isUtilityPanelOpen
-										? "Hide tournament utilities"
-										: "Show tournament utilities"
+									isUtilityPanelOpen ? "Hide tournament utilities" : "Show tournament utilities"
 								}
 								aria-expanded={isUtilityPanelOpen}
 							>
@@ -474,10 +447,7 @@ function TournamentContent({
 					</div>
 
 					{isUtilityPanelOpen && (
-						<div
-							className="mt-3 flex justify-end"
-							data-testid="tournament-utilities"
-						>
+						<div className="mt-3 flex justify-end" data-testid="tournament-utilities">
 							<div className="flex max-w-full flex-wrap justify-end gap-2 rounded-[1rem] border border-border/12 bg-foreground/[0.03] p-2">
 								{utilityControls.map(({ action, icon: Icon, label }) => (
 									<Button
@@ -502,8 +472,7 @@ function TournamentContent({
 
 			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
 				<div className="sr-only" aria-live="polite">
-					{roundAnnouncement.value !== null &&
-						`Round ${roundAnnouncement.value} begins.`}
+					{roundAnnouncement.value !== null && `Round ${roundAnnouncement.value} begins.`}
 					{voteAnnouncement.value && `${voteAnnouncement.value} advances.`}
 				</div>
 
@@ -511,21 +480,9 @@ function TournamentContent({
 					{activeStatus && (
 						<motion.div
 							key={activeStatus.key}
-							initial={
-								prefersReducedMotion
-									? { opacity: 0 }
-									: { opacity: 0, y: -8, scale: 0.98 }
-							}
-							animate={
-								prefersReducedMotion
-									? { opacity: 1 }
-									: { opacity: 1, y: 0, scale: 1 }
-							}
-							exit={
-								prefersReducedMotion
-									? { opacity: 0 }
-									: { opacity: 0, y: -8, scale: 0.99 }
-							}
+							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.98 }}
+							animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.99 }}
 							transition={{ duration: prefersReducedMotion ? 0.01 : 0.22 }}
 							className="pointer-events-none absolute top-2 left-1/2 z-20 w-[calc(100%-1rem)] max-w-md -translate-x-1/2 px-2"
 						>
@@ -533,9 +490,7 @@ function TournamentContent({
 								className={`rounded-[1.1rem] border px-4 py-3 backdrop-blur-xl ${activeStatus.toneClass}`}
 							>
 								<div className="flex items-start gap-3">
-									{StatusIcon ? (
-										<StatusIcon className="mt-0.5 size-4 shrink-0" />
-									) : null}
+									{StatusIcon ? <StatusIcon className="mt-0.5 size-4 shrink-0" /> : null}
 									<div className="min-w-0">
 										<p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
 											{activeStatus.eyebrow}
@@ -556,19 +511,13 @@ function TournamentContent({
 					<motion.div
 						key={currentMatchKey}
 						initial={
-							prefersReducedMotion
-								? { opacity: 0 }
-								: { opacity: 0, y: 14, filter: "blur(6px)" }
+							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 14, filter: "blur(6px)" }
 						}
 						animate={
-							prefersReducedMotion
-								? { opacity: 1 }
-								: { opacity: 1, y: 0, filter: "blur(0px)" }
+							prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }
 						}
 						exit={
-							prefersReducedMotion
-								? { opacity: 0 }
-								: { opacity: 0, y: -12, filter: "blur(6px)" }
+							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(6px)" }
 						}
 						transition={{ duration: prefersReducedMotion ? 0.01 : 0.32 }}
 						className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-stretch gap-4 sm:grid sm:h-full sm:min-h-0 sm:grid-cols-[1fr_auto_1fr] sm:gap-4"
@@ -593,9 +542,7 @@ function TournamentContent({
 						{/* VS Indicator */}
 						<div className="flex flex-row sm:flex-col items-center justify-center gap-3 py-1 w-full sm:w-20">
 							<div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border border-border/20 bg-foreground/[0.04] backdrop-blur-md flex-shrink-0">
-								<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">
-									VS
-								</span>
+								<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">VS</span>
 							</div>
 						</div>
 

@@ -460,11 +460,7 @@ export function Dashboard({
 							<EyeOff className="text-chart-4" size={24} />
 							<h3 className="text-xl font-semibold text-chart-4">Admin: Hidden Names</h3>
 						</div>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setShowHiddenNames(!showHiddenNames)}
-						>
+						<Button variant="ghost" size="sm" onClick={() => setShowHiddenNames(!showHiddenNames)}>
 							{showHiddenNames ? "Hide List" : "Show List"}
 						</Button>
 					</div>

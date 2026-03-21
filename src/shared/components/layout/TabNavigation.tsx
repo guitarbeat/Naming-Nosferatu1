@@ -160,9 +160,7 @@ export function TabNavigation({ activeTab, onTabChange, className }: TabNavigati
 							)}
 						/>
 						<span className="hidden sm:inline font-medium">{tab.label}</span>
-						<span className="sm:hidden font-medium">
-							{getTabMobileLabel(tab.id, tab.label)}
-						</span>
+						<span className="sm:hidden font-medium">{getTabMobileLabel(tab.id, tab.label)}</span>
 
 						{/* Active indicator */}
 						{activeTab === tab.id && (

@@ -396,7 +396,12 @@ export function AdminDashboard() {
 									))}
 								</select>
 
-								<Button onClick={() => void loadAdminData()} variant="ghost" size="sm" iconOnly={true}>
+								<Button
+									onClick={() => void loadAdminData()}
+									variant="ghost"
+									size="sm"
+									iconOnly={true}
+								>
 									<Loader2 size={16} />
 								</Button>
 							</div>
