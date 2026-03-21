@@ -292,7 +292,7 @@ src/
 
 ## �🧪 Testing Strategy
 
-This project uses **Vitest** for testing, with **React Testing Library** for frontend components and **Supertest** for backend routes.
+This project uses **Vitest** for testing, with **React Testing Library** for frontend components.
 
 ### Test Commands
 
@@ -306,8 +306,7 @@ Frontend tests are located alongside components (e.g., `src/app/App.test.tsx`).
 
 - **Tools**: React Testing Library, Vitest
 - **Mocking**:
-  - `@/shared/services/supabase/client`: Mocked to prevent network calls
-  - `@/shared/services/supabase/runtime`: Mocked to simulate Supabase availability and RPC responses
+  - `@/shared/services/supabase`: Mocked to prevent network calls and simulate Supabase availability
   - Complex providers/hooks (`useAuth`, `useAppStore`) mocked to isolate component logic
 
 ### Coverage

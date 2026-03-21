@@ -7,15 +7,14 @@ If this file conflicts with older notes in `README.md` or `docs/CONTRIBUTING.md`
 ## Stack and layout
 
 - Frontend: React 19 + TypeScript + Vite in `src/`
-- Backend: Express + Drizzle in `server/`
-- Cross-runtime schema/data: `shared/`
+- Shared frontend services and data helpers: `src/shared/` and `shared/`
 - Database migrations/functions: `supabase/`
 - Tool config: `config/`
 
 Important directory split:
 
 - `src/shared/` is frontend shared UI/hooks/lib/services/types.
-- `shared/` is root-level shared runtime/schema code used by the server and app.
+- `shared/` is root-level shared data/runtime code used outside the feature folders.
 
 Primary feature areas:
 
@@ -38,13 +37,11 @@ Canonical TS path aliases come from `config/tsconfig.json`:
 - pnpm: `10.27.0`
 - Install deps with `pnpm install`
 
-Environment file:
+Environment variables:
 
-- Start from `config/.env.example`
-- `JWT_SECRET` is required for `pnpm dev` and `pnpm run dev:server`
-- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are required for Supabase-backed frontend work
-- `SUPABASE_DATABASE_URL` or `DATABASE_URL` is required for DB-backed API work and `pnpm run db:push`
-- If no DB URL is set, the server can still run in mock mode for some routes
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`) enable Supabase-backed frontend work
+- `VITE_SENTRY_DSN` enables production Sentry reporting
+- There is currently no tracked `config/.env.example`, so inspect code paths before assuming a sample env file exists
 
 ## Commands
 
@@ -52,9 +49,8 @@ Environment file:
 
 | Command | What it does |
 | --- | --- |
-| `pnpm dev` | Starts full-stack dev: `tsx server/index.ts` on `3001` and Vite on `5000` using `config/vite.config.ts` |
-| `pnpm run dev:server` | Starts only the Express server on `3001` |
-| `pnpm run dev:client` | Starts only Vite on `5000`; this currently resolves the root `vite.config.ts`, not `config/vite.config.ts` |
+| `pnpm dev` | Starts the Vite dev server using `config/vite.config.ts` |
+| `pnpm run dev:client` | Alias of `pnpm dev`; also uses `config/vite.config.ts` |
 | `pnpm run build` | Production build with `config/vite.config.ts` |
 | `pnpm run build:dev` | Development-mode build with `config/vite.config.ts` |
 | `pnpm run preview` | Preview the built app with `config/vite.config.ts` |
@@ -64,13 +60,13 @@ Environment file:
 | Command | What it does |
 | --- | --- |
 | `pnpm run lint` | Runs maintenance checks, Biome checks, and TypeScript checks |
-| `pnpm run lint:full` | `biome check --config-path config/biome.json src server` |
+| `pnpm run lint:full` | `biome check --config-path config/biome.json src shared` |
 | `pnpm run lint:types` | `tsc --project config/tsconfig.json --noEmit` |
-| `pnpm run lint:fix` | Biome autofix for `src` and `server` |
-| `pnpm run format` | Biome format for `src` and `server` |
+| `pnpm run lint:fix` | Biome autofix for `src` and `shared` |
+| `pnpm run format` | Biome format for `src` and `shared` |
 | `pnpm run fix` | Alias for `pnpm run lint:fix` |
 | `pnpm run check` | Full repo gate: `lint` plus `check:deps` |
-| `pnpm run check:deps` | Runs Knip with a placeholder `DATABASE_URL`; safe without a live DB |
+| `pnpm run check:deps` | Runs Knip using `config/knip.json` |
 | `pnpm run check:deps:fix` | Runs Knip autofix |
 | `pnpm run clean` | Removes `build`, `dist`, and Vite cache artifacts |
 
@@ -81,7 +77,6 @@ Environment file:
 | `pnpm test` | Runs Vitest once with `config/vitest.config.ts` |
 | `pnpm run test:watch` | Runs Vitest in watch mode |
 | `pnpm run test:coverage` | Runs coverage with V8 reporter |
-| `pnpm run db:push` | Runs `drizzle-kit push`; requires a real DB connection string |
 
 ### Maintenance subchecks
 
@@ -105,7 +100,7 @@ Do not use `pnpm run check:maintenance -- --arch`; this script expects the flag 
 
 Default change loop:
 
-1. Use `pnpm dev` for full-stack work unless you explicitly only need isolated frontend behavior.
+1. Use `pnpm dev` for local frontend work.
 2. Make the smallest focused change possible in the relevant layer.
 3. Run targeted tests when practical, then run `pnpm run lint`.
 4. Before handoff or PR, run `pnpm run build`.
@@ -113,9 +108,8 @@ Default change loop:
 
 When to use which dev flow:
 
-- Prefer `pnpm dev` when you need API proxying, the custom Vite dev config, or backend behavior.
-- Use `pnpm run dev:server` for route/auth/DB work.
-- Use `pnpm run dev:client` only when frontend-only work is enough and the root Vite config difference is acceptable.
+- `pnpm dev` and `pnpm run dev:client` are equivalent today.
+- Prefer the shared Supabase barrel at `src/shared/services/supabase/index.ts` instead of importing `api.ts` and `runtime.ts` separately unless you are editing those internals.
 
 ## Architecture rules
 
@@ -123,7 +117,6 @@ When to use which dev flow:
 - `src/shared/` and `src/services/` must not import from `@/features/*`.
 - Keep feature-specific code inside its feature folder.
 - Keep shared UI primitives under `src/shared/components/layout/`.
-- Keep server-only logic in `server/`.
 - Keep cross-runtime schema and shared data in root `shared/`.
 
 The architecture boundary and circular dependency checks are enforced by:
@@ -133,7 +126,7 @@ The architecture boundary and circular dependency checks are enforced by:
 
 ## Testing notes
 
-- Frontend and server tests live beside the code as `*.test.ts` or `*.test.tsx`.
+- Frontend tests live beside the code as `*.test.ts` or `*.test.tsx`.
 - Canonical Vitest config is `config/vitest.config.ts`.
 - Common focused run pattern: `pnpm exec vitest --run --config config/vitest.config.ts path/to/file.test.tsx`
 
@@ -175,7 +168,7 @@ Prefer the config files in `config/` for tooling work:
 
 Exception:
 
-- `pnpm run dev:client` currently uses the root `vite.config.ts`, so do not assume it matches `pnpm dev` behavior exactly.
+- `vite.config.ts` at the repo root is a compatibility wrapper. Treat `config/vite.config.ts` as the single source of truth.
 
 ## Documentation upkeep
 

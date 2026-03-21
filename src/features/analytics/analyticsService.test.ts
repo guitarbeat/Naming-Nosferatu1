@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { leaderboardAPI } from "@/features/analytics/services/analyticsService";
-import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
+import { coreAPI, resolveSupabaseClient } from "@/shared/services/supabase";
 
-vi.mock("@/shared/services/supabase/runtime", () => ({
+vi.mock("@/shared/services/supabase", () => ({
+	coreAPI: {
+		getTrendingNames: vi.fn(),
+	},
 	resolveSupabaseClient: vi.fn(),
 }));
 
@@ -72,6 +75,13 @@ describe("leaderboardAPI", () => {
 		vi.mocked(resolveSupabaseClient).mockResolvedValue({
 			rpc: mockRpc,
 		} as never);
+		vi.mocked(coreAPI.getTrendingNames).mockResolvedValue([
+			{
+				id: "fallback-1",
+				name: "Fallback Cat",
+				avg_rating: 1500,
+			},
+		] as never);
 
 		const result = await leaderboardAPI.getLeaderboard(50);
 

@@ -224,7 +224,7 @@ Shared runtime services are located in `src/shared/services/`, while feature-loc
 | Service | Purpose |
 |---------|---------|
 | `shared/services/errorManager.ts` | Centralized error handling with retry logic |
-| `shared/services/supabase/client.ts` | Re-exports runtime/api modules |
+| `shared/services/supabase/index.ts` | Canonical app-level Supabase barrel |
 | `shared/services/supabase/runtime.ts` | Supabase runtime and wrappers (`withSupabase`) |
 | `shared/services/supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `statsAPI`, `ratingsAPI`) |
 | `features/analytics/services/analyticsService.ts` | Analytics endpoint wrappers used by dashboard flows |
@@ -234,6 +234,7 @@ All Supabase calls use `withSupabase()` for consistent error handling and offlin
 
 The Supabase integration is split across:
 - `supabase/client.ts` for the generated client entrypoint
+- `src/shared/services/supabase/index.ts` for the app-facing import surface
 - `src/shared/services/supabase/runtime.ts` for execution wrappers and runtime behavior
 - `src/shared/services/supabase/api.ts` for domain-specific operations
 

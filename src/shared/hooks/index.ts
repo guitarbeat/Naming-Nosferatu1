@@ -11,7 +11,7 @@ import {
 	removeStorageItem,
 	writeStorageJson,
 } from "@/shared/lib/storage";
-import { coreAPI, ratingsAPI } from "@/shared/services/supabase/client";
+import { coreAPI, ratingsAPI } from "@/shared/services/supabase";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Internal Utilities

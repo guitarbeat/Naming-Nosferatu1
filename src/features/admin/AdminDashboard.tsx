@@ -32,7 +32,7 @@ import {
 	hiddenNamesAPI,
 	imagesAPI,
 	statsAPI,
-} from "@/shared/services/supabase/api";
+} from "@/shared/services/supabase";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 

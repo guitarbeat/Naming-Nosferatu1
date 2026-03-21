@@ -21,7 +21,7 @@ import {
 	Trophy,
 	Users,
 } from "@/shared/lib/icons";
-import { coreAPI, hiddenNamesAPI } from "@/shared/services/supabase/api";
+import { coreAPI, hiddenNamesAPI } from "@/shared/services/supabase";
 import type { NameItem, RatingData } from "@/shared/types";
 import { RandomGenerator } from "../tournament/components/RandomGenerator";
 import { PersonalResults } from "./PersonalResults";

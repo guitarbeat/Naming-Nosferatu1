@@ -9,44 +9,6 @@ import { consoleForwardPlugin } from "../scripts/vite-console-forward-plugin";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function getManualChunk(id: string): string | undefined {
-        if (!id.includes("node_modules")) {
-                return undefined;
-        }
-
-        if (
-                id.includes("/react/") ||
-                id.includes("/react-dom/") ||
-                id.includes("/scheduler/") ||
-                id.includes("/react-router/")
-        ) {
-                return "vendor-react";
-        }
-
-        if (id.includes("/@tanstack/") || id.includes("/@supabase/")) {
-                return "vendor-data";
-        }
-
-        if (id.includes("/framer-motion/") || id.includes("/@hello-pangea/dnd/")) {
-                return "vendor-motion";
-        }
-
-        if (
-                id.includes("/@heroui/") ||
-                id.includes("/@react-aria/") ||
-                id.includes("/@react-stately/") ||
-                id.includes("/@internationalized/")
-        ) {
-                return "vendor-ui";
-        }
-
-        if (id.includes("/lucide-react/")) {
-                return "vendor-icons";
-        }
-
-        return "vendor-misc";
-}
-
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
         server: {
@@ -79,13 +41,6 @@ export default defineConfig(({ command }) => ({
                         "@/features": path.resolve(__dirname, "..", "src/features"),
                         "@/shared": path.resolve(__dirname, "..", "src/shared"),
                         "@/services": path.resolve(__dirname, "..", "src/services"),
-                },
-        },
-        build: {
-                rollupOptions: {
-                        output: {
-                                manualChunks: getManualChunk,
-                        },
                 },
         },
 }));

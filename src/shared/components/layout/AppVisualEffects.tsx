@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useBrowserState } from "@/shared/hooks";
 import { MagicMoire, supportsWebGL } from "./MagicMoire";
 
@@ -11,6 +11,9 @@ type MoireMode = "pending" | "webgl" | "css";
 export function AppVisualEffects({ theme }: AppVisualEffectsProps) {
 	const { prefersReducedMotion, isSlowConnection } = useBrowserState();
 	const [moireMode, setMoireMode] = useState<MoireMode>("pending");
+	const handleMoireError = useCallback(() => {
+		setMoireMode("css");
+	}, []);
 
 	useEffect(() => {
 		if (prefersReducedMotion || isSlowConnection) {
@@ -29,14 +32,7 @@ export function AppVisualEffects({ theme }: AppVisualEffectsProps) {
 				<div className="cat-background__soft-blur" />
 				<div className="cat-background__vignette" />
 			</div>
-			{moireMode === "webgl" ? (
-				<MagicMoire
-					theme={theme}
-					onError={() => {
-						setMoireMode("css");
-					}}
-				/>
-			) : null}
+			{moireMode === "webgl" ? <MagicMoire theme={theme} onError={handleMoireError} /> : null}
 		</div>
 	);
 }

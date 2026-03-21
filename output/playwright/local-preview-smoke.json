@@ -1,0 +1,29 @@
+{
+  "consoleMessages": [
+    "[error] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "[error] WebSocket error: Event",
+    "[error] Event",
+    "[log] WebSocket disconnected: 1006 ",
+    "[error] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "[error] WebSocket error: Event",
+    "[error] Event",
+    "[log] WebSocket disconnected: 1006 ",
+    "[error] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "[error] WebSocket error: Event",
+    "[error] Event",
+    "[log] WebSocket disconnected: 1006 "
+  ],
+  "url": "http://127.0.0.1:4173/",
+  "title": "Help Me Name My Cat!",
+  "home_has_pick_names": false,
+  "has_create_account": true,
+  "has_sign_in": true,
+  "body_excerpt": "Skip to main content\nPick\nAnalyze\nSuggest\nProfile\nGrid\nName Shortlist\nPICK NAMES\n\nKeep the names that feel right. Choose at least two contenders to unlock the tournament bracket.\n\nYour Picks\n0\nLocked In\n8\nStatus\nNeed 2 more\nMy cat is namedLocked into every bracket\nSmeemo\nPRONUNCIATION\nSMEE-mo\nElectra's term for black cats\nSun\nPRONUNCIATION\nSUN\nMy son from the house of the sun\nInquiry\nPRONUNCIATION\nin-KWAIR-ee\nHe's curious about everything\nAJ\nPRONUNCIATION\nAY-JAY\nShort for Aaron Jr. Obviously.\nNosferatu\nPRONUNCIATION\nnos-fer-AH-too\nOriginal name – mysterious\nNova\nPRONUNCIATION\nNO-vuh\nMeans 'new star' – brightness\nOrbit\nPRONUNCIATION\nOR-bit\nCelestial path – dynamic\nNedjem\nPRONUNCIATION\nneh-JEM\nEgyptian for 'Sweet One'\nSelection progress\n0% of visible names chosen\n0/16\nSelect at least 2 names8 locked-in names join automatically\nAll\nRandom\nClear\nStart Tournament(8 total)\nNoche[NO-chay]\n\nSpanish for night\n\nKiko[KEE-ko]\n\nIndigenous Mexican name meaning 'sun'\n\nUkulele[oo-koo-LAY-lee]\n\nI like nonsensical names\n\nWinston[WIN-stun]\n\nReddit app with black cat icon\n\nGibby[GIB-ee]\n\nSounds like my username guitarbeat\n\nArchie[AR-chee]\n\nGot the name from that one song, thought it sounded cute\n\nIfemi[ee-FEM-ee]\n\nYoruba for 'my love'\n\nCowboy[COW-boy]\n\nAdventure and exploration energy\n\nMetichito[muh-tee-CHEE-to]\n\nMeans nosey – he's always curious\n\nIcarus[IK-uh-rus]\n\nDude who flew too close to the sun\n\nSprite[SPRYT]\n\nFrom Soot Sprites – whimsical\n\nJpeg[JAY-peg]\n\nDigital format – sharp and artistic\n\nEkko[EK-oh]\n\nCharacter who messes with time\n\nHuey[HEW-ee]\n\nAfro kid from The Boondocks – wise\n\nChidi[CHEE-dee]\n\nIgbo for 'God exists' – sun-inspired gift\n\nOrion[oh-RY-un]\n\nProminent constellation\n\nHidden Names (148)\nClick to expand\n?\n?\n?\n?\n?\n?\nSubmit A Name\nDROP YOUR BEST CAT NAME IDEA\n\nShare your creative cat name with the community. Great suggestions help everyone discover fun new options and make the tournament more exciting!\n\nForm Progress0%\nName suggestion*0/50\nWhy this name?*0/500\n\nHelp",
+  "selection_count_text": "2/16",
+  "start_button_count": 1,
+  "start_button_enabled": true,
+  "start_button_text": "Start Tournament(10 total)",
+  "url_after_start": "http://127.0.0.1:4173/tournament",
+  "reached_tournament": true,
+  "tournament_excerpt": "Skip to main content\nHome\nAnalyze\nSuggest\nProfile\nGrid\nRound 1R1/4\nMatch 1 of 911%\nTools\nKiko\n[KEE-ko]\n\nIndigenous Mexican name meaning 'sun'\n\nVS\nOrbit\n[OR-bit]\n\nCelestial path – dynamic"
+}

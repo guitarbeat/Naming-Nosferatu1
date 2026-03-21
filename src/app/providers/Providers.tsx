@@ -16,7 +16,7 @@
  * @example
  * // main.tsx
  * import { Providers } from "@/app/providers/Providers";
- * import { authAdapter } from "@/services/authAdapter";
+ * import { supabaseAuthAdapter as authAdapter } from "@/services/supabaseAuthAdapter";
  *
  * <Providers auth={{ adapter: authAdapter }}>
  *   <App />

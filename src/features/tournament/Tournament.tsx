@@ -48,6 +48,8 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const prefersReducedMotion = useReducedMotion();
 
 	const tournament = useTournamentState(visibleNames, userName);
+	const playLevelUpSound = audioManager.playLevelUpSound;
+	const playWowSound = audioManager.playWowSound;
 	const {
 		currentMatch,
 		ratings,
@@ -73,6 +75,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const roundAnnouncement = useTimedState<number | null>(null);
 	const previousRoundRef = useRef(roundNumber);
 	const winnerSequenceShownRef = useRef(false);
+	const completionHandledRef = useRef(false);
 	const [showWinnerSequence, setShowWinnerSequence] = useState(false);
 
 	// Calculate winning streaks
@@ -153,16 +156,24 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	);
 
 	useEffect(() => {
-		if (isComplete && onComplete) {
-			audioManager.playLevelUpSound();
-			setTimeout(() => audioManager.playWowSound(), 500);
-			const results: Record<string, { rating: number; wins: number; losses: number }> = {};
-			for (const [id, rating] of Object.entries(ratings)) {
-				results[idToName.get(id) ?? id] = { rating, wins: 0, losses: 0 };
-			}
-			onComplete(results);
+		if (!isComplete) {
+			completionHandledRef.current = false;
+			return;
 		}
-	}, [isComplete, ratings, onComplete, idToName, audioManager]);
+
+		if (!onComplete || completionHandledRef.current) {
+			return;
+		}
+
+		completionHandledRef.current = true;
+		playLevelUpSound();
+		setTimeout(() => playWowSound(), 500);
+		const results: Record<string, { rating: number; wins: number; losses: number }> = {};
+		for (const [id, rating] of Object.entries(ratings)) {
+			results[idToName.get(id) ?? id] = { rating, wins: 0, losses: 0 };
+		}
+		onComplete(results);
+	}, [idToName, isComplete, onComplete, playLevelUpSound, playWowSound, ratings]);
 
 	useLayoutEffect(() => {
 		if (!isComplete) {

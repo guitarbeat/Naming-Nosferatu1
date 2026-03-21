@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useOptionalToast } from "@/app/providers/Providers";
 import Button from "@/shared/components/layout/Button";
 import { Trophy } from "@/shared/lib/icons";
-import { ratingsAPI } from "@/shared/services/supabase/api";
+import { ratingsAPI } from "@/shared/services/supabase";
 import useAppStore from "@/store/appStore";
 import { NameSelector } from "../components/NameSelector";
 import { useTournamentHandlers } from "../hooks";

@@ -108,15 +108,6 @@ const EXIT_SPRING_CONFIG = {
 	velocity: 50,
 };
 
-// Shared hook for deferred sync to prevent render cycle issues
-const useDeferredSync = () => {
-	const deferredSync = useCallback((syncFn: () => void) => {
-		setTimeout(syncFn, 0);
-	}, []);
-
-	return deferredSync;
-};
-
 // Shared components for better DRY architecture
 
 // Selection badge component
@@ -313,8 +304,6 @@ export function NameSelector() {
 		Array<{ id: IdType; direction: "left" | "right"; timestamp: number }>
 	>([]);
 	const { tooltipRef, tooltipPosition, measureTooltip } = useSmartTooltip();
-	const deferredSync = useDeferredSync();
-
 	// Memoize cat images and build an id->image lookup map
 	const { catImages, catImageById } = useMemo(() => {
 		const images = names.map((nameItem) => getRandomCatImage(nameItem.id, CAT_IMAGES));
@@ -388,27 +377,17 @@ export function NameSelector() {
 		}
 	}, [toast]);
 
-	// Keep local selection in sync with store state and locked names after remounts.
+	// Keep local selection in sync with the active shortlist after remounts and catalog updates.
 	useEffect(() => {
 		const storedIds = new Set(storedSelectedNames.map((name) => name.id));
-		const availableIds = new Set(names.map((name) => name.id));
+		const availableIds = new Set(getActiveNames(names).map((name) => name.id));
 		const nextSelectedIds =
 			names.length > 0
 				? new Set([...storedIds].filter((id) => availableIds.has(id)))
 				: new Set(storedIds);
 
-		getLockedNames(names).forEach((name) => {
-			nextSelectedIds.add(name.id);
-		});
-
 		setSelectedNames((prev) => (areIdSetsEqual(prev, nextSelectedIds) ? prev : nextSelectedIds));
-
-		if (names.length === 0 || areIdSetsEqual(storedIds, nextSelectedIds)) {
-			return;
-		}
-
-		tournamentActions.setSelection(names.filter((name) => nextSelectedIds.has(name.id)));
-	}, [names, storedSelectedNames, tournamentActions]);
+	}, [names, storedSelectedNames]);
 
 	const getSelectedNameItems = useCallback(
 		(selectedIds: Set<IdType>) => names.filter((name) => selectedIds.has(name.id)),
@@ -423,41 +402,46 @@ export function NameSelector() {
 		[getSelectedNameItems, tournamentActions],
 	);
 
+	useEffect(() => {
+		const storedIds = new Set(storedSelectedNames.map((name) => name.id));
+		if (areIdSetsEqual(storedIds, selectedNames)) {
+			return;
+		}
+
+		syncSelectionToStore(selectedNames);
+	}, [selectedNames, storedSelectedNames, syncSelectionToStore]);
+
 	const handleStartTournament = useCallback(() => {
 		const selectedNameItems = getSelectedNameItems(selectedNames);
+		const bracketNames = [...getLockedNames(names), ...selectedNameItems];
 
 		if (selectedNameItems.length < 2) {
 			toast.showWarning("Choose at least two names before starting the tournament.");
 			return;
 		}
 
-		const tournamentId = `${createTournamentId(selectedNameItems, userName)}-${Date.now()}`;
+		const tournamentId = `${createTournamentId(bracketNames, userName)}-${Date.now()}`;
 		void selectionsAPI.recordTournamentSelections(
 			tournamentId,
 			selectedNameItems.map((name) => name.id),
 		);
 
-		tournamentActions.startTournament(selectedNameItems);
+		tournamentActions.startTournament(bracketNames);
 		navigate("/tournament");
-	}, [getSelectedNameItems, navigate, selectedNames, toast, tournamentActions, userName]);
+	}, [getSelectedNameItems, navigate, names, selectedNames, toast, tournamentActions, userName]);
 
-	const toggleName = useCallback(
-		(nameId: IdType) => {
-			setSelectedNames((prev) => {
-				const next = new Set(prev);
-				if (next.has(nameId)) {
-					next.delete(nameId);
-				} else {
-					next.add(nameId);
-				}
+	const toggleName = useCallback((nameId: IdType) => {
+		setSelectedNames((prev) => {
+			const next = new Set(prev);
+			if (next.has(nameId)) {
+				next.delete(nameId);
+			} else {
+				next.add(nameId);
+			}
 
-				syncSelectionToStore(next);
-
-				return next;
-			});
-		},
-		[syncSelectionToStore],
-	);
+			return next;
+		});
+	}, []);
 
 	// Trigger haptic feedback if available
 	const triggerHaptic = useCallback(() => {
@@ -504,8 +488,6 @@ export function NameSelector() {
 				setSelectedNames((prev) => {
 					const next = new Set(prev);
 					next.add(nameId);
-					// Use deferred sync to prevent render cycle issue
-					deferredSync(() => syncSelectionToStore(next));
 					return next;
 				});
 			}
@@ -527,7 +509,7 @@ export function NameSelector() {
 				}, resetDelay);
 			});
 		},
-		[markSwiped, syncSelectionToStore, triggerHaptic, deferredSync],
+		[markSwiped, triggerHaptic],
 	);
 
 	const handleDragEnd = useCallback(
@@ -577,14 +559,12 @@ export function NameSelector() {
 			setSelectedNames((prev) => {
 				const next = new Set(prev);
 				next.delete(lastSwipe.id);
-				// Use deferred sync to prevent render cycle issue
-				deferredSync(() => syncSelectionToStore(next));
 				return next;
 			});
 		}
 
 		triggerHaptic();
-	}, [swipeHistory, syncSelectionToStore, triggerHaptic, deferredSync]);
+	}, [swipeHistory, triggerHaptic]);
 
 	const handleToggleHidden = useCallback(
 		async (nameId: IdType, isCurrentlyHidden: boolean) => {
@@ -745,6 +725,7 @@ export function NameSelector() {
 		() => Math.round((selectedAvailableCount / Math.max(availableNames.length, 1)) * 100),
 		[selectedAvailableCount, availableNames.length],
 	);
+	const bracketSize = selectedIdsSet.size + lockedInNames.length;
 	const canSelectAllAvailable = useMemo(
 		() => availableNames.some((name) => !selectedIdsSet.has(name.id)),
 		[availableNames, selectedIdsSet],
@@ -814,20 +795,16 @@ export function NameSelector() {
 			availableNames.forEach((name) => {
 				next.add(name.id);
 			});
-			// Use deferred sync to prevent render cycle issue
-			deferredSync(() => syncSelectionToStore(next));
 			return next;
 		});
 		triggerHaptic();
-	}, [availableNames, syncSelectionToStore, triggerHaptic, deferredSync]);
+	}, [availableNames, triggerHaptic]);
 
 	const handleClearSelection = useCallback(() => {
-		const lockedIds = new Set(getLockedNames(names).map((name) => name.id));
-		setSelectedNames(lockedIds);
-		// Use deferred sync to prevent render cycle issue
-		deferredSync(() => syncSelectionToStore(lockedIds));
+		const nextSelectedIds = new Set<IdType>();
+		setSelectedNames(nextSelectedIds);
 		triggerHaptic();
-	}, [names, syncSelectionToStore, triggerHaptic, deferredSync]);
+	}, [triggerHaptic]);
 
 	const handleSelectRandomAvailable = useCallback(() => {
 		if (availableNames.length === 0) {
@@ -849,13 +826,11 @@ export function NameSelector() {
 			randomIds.forEach((id) => {
 				next.add(id);
 			});
-			// Use deferred sync to prevent render cycle issue
-			deferredSync(() => syncSelectionToStore(next));
 			return next;
 		});
 		triggerHaptic();
 		toast.showSuccess(`Added ${targetCount} random names.`);
-	}, [availableNames, syncSelectionToStore, toast, triggerHaptic, deferredSync]);
+	}, [availableNames, toast, triggerHaptic]);
 
 	if (isLoading) {
 		return (
@@ -907,7 +882,7 @@ export function NameSelector() {
 							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 								<div className="rounded-2xl border border-border/40 bg-background/70 px-4 py-3 shadow-sm">
 									<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-										Selected
+										Your Picks
 									</div>
 									<div className="mt-1 text-2xl font-semibold text-foreground">
 										{selectedIdsSet.size}
@@ -915,10 +890,10 @@ export function NameSelector() {
 								</div>
 								<div className="rounded-2xl border border-border/40 bg-background/70 px-4 py-3 shadow-sm">
 									<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-										Available
+										Locked In
 									</div>
 									<div className="mt-1 text-2xl font-semibold text-foreground">
-										{availableNames.length}
+										{lockedInNames.length}
 									</div>
 								</div>
 								<div className="rounded-2xl border border-border/40 bg-background/70 px-4 py-3 shadow-sm">
@@ -1014,6 +989,11 @@ export function NameSelector() {
 									>
 										{selectedIdsSet.size >= 2 ? "Tournament ready" : "Select at least 2 names"}
 									</span>
+									{lockedInNames.length > 0 && (
+										<span className="rounded-full bg-background/85 px-3 py-1 text-xs font-medium text-foreground/70">
+											{lockedInNames.length} locked-in names join automatically
+										</span>
+									)}
 									{selectedHiddenCount > 0 && (
 										<span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-3 py-1 text-xs font-medium text-warning/90">
 											<EyeOff size={12} />
@@ -1024,51 +1004,66 @@ export function NameSelector() {
 							</div>
 
 							<div className="flex justify-center lg:justify-end">
-								{isSwipeMode && swipeHistory.length > 0 ? (
-									<div className="flex items-center gap-3">
-										<Button
-											onClick={handleUndo}
-											variant="outline"
-											size="sm"
-											className="gap-2 border-warning/25 bg-background/80 text-warning hover:border-warning hover:bg-warning/10"
-										>
-											<Undo2 size={14} />
-											Undo ({swipeHistory.length})
-										</Button>
-									</div>
-								) : (
-									<div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-border/40 bg-background/85 p-1.5 shadow-sm">
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={handleSelectAllAvailable}
-											disabled={!canSelectAllAvailable}
-											className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60 disabled:opacity-50"
-										>
-											<CheckCircle size={14} />
-											All
-										</Button>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={handleSelectRandomAvailable}
-											className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60"
-										>
-											<Shuffle size={14} />
-											Random
-										</Button>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={handleClearSelection}
-											disabled={!hasAnySelection}
-											className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60 disabled:opacity-50"
-										>
-											<X size={14} />
-											Clear
-										</Button>
-									</div>
-								)}
+								<div className="flex flex-col items-center gap-3 lg:items-end">
+									{isSwipeMode && swipeHistory.length > 0 ? (
+										<div className="flex items-center gap-3">
+											<Button
+												onClick={handleUndo}
+												variant="outline"
+												size="sm"
+												className="gap-2 border-warning/25 bg-background/80 text-warning hover:border-warning hover:bg-warning/10"
+											>
+												<Undo2 size={14} />
+												Undo ({swipeHistory.length})
+											</Button>
+										</div>
+									) : (
+										<div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-border/40 bg-background/85 p-1.5 shadow-sm">
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={handleSelectAllAvailable}
+												disabled={!canSelectAllAvailable}
+												className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60 disabled:opacity-50"
+											>
+												<CheckCircle size={14} />
+												All
+											</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={handleSelectRandomAvailable}
+												className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60"
+											>
+												<Shuffle size={14} />
+												Random
+											</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={handleClearSelection}
+												disabled={!hasAnySelection}
+												className="h-9 gap-2 rounded-full px-4 text-sm font-medium hover:bg-accent/60 disabled:opacity-50"
+											>
+												<X size={14} />
+												Clear
+											</Button>
+										</div>
+									)}
+
+									<Button
+										onClick={handleStartTournament}
+										disabled={selectedIdsSet.size < 2}
+										className="min-w-[13rem] gap-2 rounded-full bg-gradient-to-r from-primary to-primary/80 px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:from-primary/90 hover:to-primary/70 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										Start Tournament
+										{bracketSize > 0 ? (
+											<span className="text-xs font-medium text-primary-foreground/80">
+												({bracketSize} total)
+											</span>
+										) : null}
+									</Button>
+								</div>
 							</div>
 						</div>
 					</div>

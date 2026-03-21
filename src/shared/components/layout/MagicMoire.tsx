@@ -427,7 +427,6 @@ export function MagicMoire({ theme, onError }: MagicMoireProps) {
 
 		return () => {
 			disposed = true;
-			setIsVisible(false);
 			window.cancelAnimationFrame(animationFrameId);
 			window.cancelAnimationFrame(revealFrameId);
 			window.cancelAnimationFrame(scrollFrameId);

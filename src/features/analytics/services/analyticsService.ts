@@ -1,6 +1,9 @@
 import { isNameHidden } from "@/shared/lib/basic";
-import { coreAPI, statsAPI as supabaseStatsAPI } from "@/shared/services/supabase/api";
-import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
+import {
+	coreAPI,
+	resolveSupabaseClient,
+	statsAPI as supabaseStatsAPI,
+} from "@/shared/services/supabase";
 import type { IdType, NameItem } from "@/shared/types";
 
 type Timeframe = "day" | "week" | "month" | "year";
