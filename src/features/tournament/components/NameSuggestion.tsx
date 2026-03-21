@@ -4,8 +4,8 @@
  * Uses the shared useNameSuggestion hook for consistent submission logic.
  */
 
-import { useCallback, useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
@@ -70,7 +70,6 @@ export function NameSuggestionInner() {
 
 				{/* Main Content Container */}
 				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-3xl border border-border/20 shadow-2xl p-8 sm:p-12">
-					
 					{/* Animated Header */}
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -101,7 +100,7 @@ export function NameSuggestionInner() {
 								<PartyPopper size={16} className="text-accent" />
 							</motion.div>
 						</motion.div>
-						
+
 						<motion.h1
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -110,14 +109,15 @@ export function NameSuggestionInner() {
 						>
 							Drop Your Best Cat Name Idea
 						</motion.h1>
-						
+
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.6 }}
 							className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
 						>
-							Share your creative cat name with the community. Great suggestions help everyone discover fun new options and make the tournament more exciting!
+							Share your creative cat name with the community. Great suggestions help everyone
+							discover fun new options and make the tournament more exciting!
 						</motion.p>
 					</motion.div>
 
@@ -151,7 +151,10 @@ export function NameSuggestionInner() {
 					>
 						{/* Name Input */}
 						<div className="space-y-3">
-							<label htmlFor="suggest-name" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+							<label
+								htmlFor="suggest-name"
+								className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+							>
 								<span className="w-2 h-2 bg-primary rounded-full" />
 								Name suggestion
 								<span className="text-destructive">*</span>
@@ -184,7 +187,10 @@ export function NameSuggestionInner() {
 						{/* Description Textarea */}
 						<div className="space-y-3">
 							<div className="flex items-center justify-between gap-2">
-								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+								<label
+									htmlFor="suggest-description"
+									className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+								>
 									<span className="w-2 h-2 bg-accent rounded-full" />
 									Why this name?
 									<span className="text-destructive">*</span>
@@ -267,7 +273,7 @@ export function NameSuggestionInner() {
 								</div>
 							</motion.div>
 						)}
-						
+
 						{successMessage && (
 							<motion.div
 								initial={{ opacity: 0, y: -10, scale: 0.95 }}

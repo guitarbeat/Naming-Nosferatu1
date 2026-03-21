@@ -6,10 +6,7 @@
 	"buildCommand": "pnpm run build",
 	"outputDirectory": "dist",
 	"git": {
-		"deploymentEnabled": {
-			"main": true,
-			"preview": false
-		}
+		"deploymentEnabled": false
 	},
 	"rewrites": [
 		{

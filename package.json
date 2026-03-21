@@ -36,6 +36,8 @@
 		"build": "vite build --config config/vite.config.ts",
 		"build:dev": "vite build --config config/vite.config.ts --mode development",
 		"preview": "vite preview --config config/vite.config.ts",
+		"release:preview": "pnpm run build && vercel",
+		"release:prod": "pnpm run check && pnpm run test && pnpm run build && vercel --prod",
 		"db:push": "drizzle-kit push",
 		"lint": "pnpm run check:maintenance && pnpm run lint:full && pnpm run lint:types",
 		"lint:full": "biome check --config-path config/biome.json src server",

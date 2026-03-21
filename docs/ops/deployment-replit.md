@@ -131,7 +131,7 @@ src/
 ### Core Services
 
 - **Supabase** (PostgreSQL + Auth): Primary database and authentication provider. URL: `ocghxwwwuubgmwsxgyoy.supabase.co`. Env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `DATABASE_URL`
-- **Vercel**: Deployment platform (configured in `vercel.json`), builds from `main` branch only
+- **Vercel**: Deployment platform (configured in `vercel.json`), used for manual preview and production releases only
 - **Vercel Analytics**: Client-side analytics via `@vercel/analytics/react`
 
 ### Key NPM Dependencies
@@ -165,3 +165,16 @@ src/
 - Frontend: Vite dev server on port **5000** with HMR and polling-based file watching
 - Backend: Express server on port **3001**, proxied from Vite via `/api` prefix
 - Start both with: `pnpm dev`
+
+## Vercel release workflow
+
+- `git push origin main` updates GitHub and runs CI, but does not create a Vercel deployment
+- `pnpm run release:preview` builds locally, then creates a manual preview deployment
+- `pnpm run release:prod` runs `check`, `test`, and `build`, then creates a production deployment
+- Production is allowed to lag behind `main` until a manual release is triggered
+
+### Local release prerequisites
+
+- Install the Vercel CLI on the machine used for releases
+- Authenticate with `vercel login`
+- Link the local checkout to `guitarbeats-projects/naming-nosferatu` if needed

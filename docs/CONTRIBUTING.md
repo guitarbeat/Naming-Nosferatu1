@@ -199,7 +199,15 @@ Working with AI agents works best in small, verifiable cycles:
 - [ ] `pnpm run check` passes with zero errors.
 - [ ] Documentation (if applicable) is updated in `docs/`.
 
-### 3. Administrative Operating Model (February 19, 2026)
+### 3. Release Workflow
+
+- `main` stays the everyday work branch and should remain releasable
+- `git push origin main` updates source control and GitHub CI only
+- Use `pnpm run release:preview` when you want a manual Vercel preview deployment
+- Use `pnpm run release:prod` when you want production to change
+- Production may intentionally lag behind `main`
+
+### 4. Administrative Operating Model (February 19, 2026)
 
 To reduce cycle time and merge friction, use these process rules:
 
@@ -219,7 +227,7 @@ Recommended daily cadence:
 1. Triage new issues and PRs once per day.
 2. Merge low-risk green PRs in small batches.
 3. Resolve conflicts in active stacks before opening new feature branches.
-4. Keep `main` releasable at all times.
+4. Keep `main` releasable at all times and cut production releases with `pnpm run release:prod` when ready.
 
 ---
 

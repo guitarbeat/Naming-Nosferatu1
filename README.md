@@ -78,6 +78,23 @@ pnpm run test:coverage
 -   **Maintenance Suite**: `pnpm run check:maintenance` (runs case-collision, copy-artifact, env, architecture, and circular dependency checks)
 -   **Dependency Check**: `pnpm run check:deps` (using Knip)
 
+### Deployment
+
+This project now uses manual Vercel releases:
+
+- `git push origin main` updates source control and GitHub CI only
+- Production changes only when you run `pnpm run release:prod`
+- Manual preview deployments are available through `pnpm run release:preview`
+
+Release commands:
+
+```bash
+pnpm run release:preview
+pnpm run release:prod
+```
+
+These commands assume the Vercel CLI is installed, authenticated, and linked to the correct project on your machine.
+
 ## 📚 Documentation
 
 For more detailed information, please refer to the [docs](./docs) directory:
