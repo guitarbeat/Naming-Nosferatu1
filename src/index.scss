@@ -1512,6 +1512,14 @@ h3 {
 	max-width: 90vw;
 }
 
+.indicator.top {
+	top: var(--space-4);
+}
+
+.indicator.bottom {
+	bottom: max(var(--space-4), env(safe-area-inset-bottom));
+}
+
 .indicator-content {
 	display: flex;
 	align-items: center;
