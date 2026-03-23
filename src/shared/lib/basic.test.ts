@@ -6,12 +6,12 @@ import {
 	getActiveNames,
 	getHiddenNames,
 	getLockedNames,
+	getRandomCatImage,
 	getVisibleNames,
 	isNameActive,
 	isNameHidden,
 	isNameLocked,
 	matchesNameSearchTerm,
-	getRandomCatImage,
 } from "./basic";
 
 describe("cn", () => {
@@ -20,7 +20,9 @@ describe("cn", () => {
 	});
 
 	it("merges conditional classes", () => {
-		expect(cn("class1", true && "class2", false && "class3")).toBe("class1 class2");
+		expect(cn("class1", true && "class2", false && "class3")).toBe(
+			"class1 class2",
+		);
 	});
 
 	it("merges and overrides tailwind classes correctly", () => {
@@ -31,12 +33,16 @@ describe("cn", () => {
 
 	it("handles arrays and objects", () => {
 		expect(cn(["class1", "class2"])).toBe("class1 class2");
-		expect(cn({ class1: true, class2: false, class3: true })).toBe("class1 class3");
+		expect(cn({ class1: true, class2: false, class3: true })).toBe(
+			"class1 class3",
+		);
 		expect(cn(["class1"], { class2: true })).toBe("class1 class2");
 	});
 
 	it("ignores falsy values", () => {
-		expect(cn("class1", null, undefined, false, 0, "", "class2")).toBe("class1 class2");
+		expect(cn("class1", null, undefined, false, 0, "", "class2")).toBe(
+			"class1 class2",
+		);
 	});
 });
 
@@ -68,7 +74,9 @@ describe("getVisibleNames", () => {
 			{ id: 1, name: "Mittens", isHidden: true },
 			{ id: 2, name: "Socks", isHidden: false },
 		] as unknown as NameItem[];
-		expect(getVisibleNames(names)).toEqual([{ id: 2, name: "Socks", isHidden: false }]);
+		expect(getVisibleNames(names)).toEqual([
+			{ id: 2, name: "Socks", isHidden: false },
+		]);
 	});
 
 	it("filters out items where is_hidden is true", () => {
@@ -76,7 +84,9 @@ describe("getVisibleNames", () => {
 			{ id: 1, name: "Mittens", is_hidden: true },
 			{ id: 2, name: "Socks", is_hidden: false },
 		] as unknown as NameItem[];
-		expect(getVisibleNames(names)).toEqual([{ id: 2, name: "Socks", is_hidden: false }]);
+		expect(getVisibleNames(names)).toEqual([
+			{ id: 2, name: "Socks", is_hidden: false },
+		]);
 	});
 
 	it("filters out items when either hidden flag is true", () => {
@@ -125,16 +135,24 @@ describe("getLockedNames", () => {
 
 describe("isNameHidden", () => {
 	it("reads both camelCase and snake_case hidden flags", () => {
-		expect(isNameHidden({ id: 1, name: "Cat", isHidden: true } as NameItem)).toBe(true);
-		expect(isNameHidden({ id: 2, name: "Cat", is_hidden: true } as NameItem)).toBe(true);
+		expect(
+			isNameHidden({ id: 1, name: "Cat", isHidden: true } as NameItem),
+		).toBe(true);
+		expect(
+			isNameHidden({ id: 2, name: "Cat", is_hidden: true } as NameItem),
+		).toBe(true);
 		expect(isNameHidden({ id: 3, name: "Cat" } as NameItem)).toBe(false);
 	});
 });
 
 describe("isNameLocked", () => {
 	it("reads both camelCase and snake_case locked flags", () => {
-		expect(isNameLocked({ id: 1, name: "Cat", lockedIn: true } as NameItem)).toBe(true);
-		expect(isNameLocked({ id: 2, name: "Cat", locked_in: true } as NameItem)).toBe(true);
+		expect(
+			isNameLocked({ id: 1, name: "Cat", lockedIn: true } as NameItem),
+		).toBe(true);
+		expect(
+			isNameLocked({ id: 2, name: "Cat", locked_in: true } as NameItem),
+		).toBe(true);
 		expect(isNameLocked({ id: 3, name: "Cat" } as NameItem)).toBe(false);
 	});
 });
@@ -142,16 +160,29 @@ describe("isNameLocked", () => {
 describe("isNameActive", () => {
 	it("returns true only when name is neither hidden nor locked", () => {
 		expect(isNameActive({ id: 1, name: "Cat" } as NameItem)).toBe(true);
-		expect(isNameActive({ id: 2, name: "Cat", isHidden: true } as NameItem)).toBe(false);
-		expect(isNameActive({ id: 3, name: "Cat", lockedIn: true } as NameItem)).toBe(false);
 		expect(
-			isNameActive({ id: 4, name: "Cat", is_hidden: false, locked_in: false } as NameItem),
+			isNameActive({ id: 2, name: "Cat", isHidden: true } as NameItem),
+		).toBe(false);
+		expect(
+			isNameActive({ id: 3, name: "Cat", lockedIn: true } as NameItem),
+		).toBe(false);
+		expect(
+			isNameActive({
+				id: 4,
+				name: "Cat",
+				is_hidden: false,
+				locked_in: false,
+			} as NameItem),
 		).toBe(true);
 	});
 });
 
 describe("matchesNameSearchTerm", () => {
-	const catName = { id: 1, name: "Mittens", description: "Fluffy orange cat" } as NameItem;
+	const catName = {
+		id: 1,
+		name: "Mittens",
+		description: "Fluffy orange cat",
+	} as NameItem;
 
 	it("matches on name and description", () => {
 		expect(matchesNameSearchTerm(catName, "Mittens")).toBe(true);
@@ -172,7 +203,9 @@ describe("calculatePercentile", () => {
 		});
 
 		it("returns 50 when array has no valid numbers", () => {
-			expect(calculatePercentile(10, [null, undefined, NaN] as unknown as number[])).toBe(50);
+			expect(
+				calculatePercentile(10, [null, undefined, NaN] as unknown as number[]),
+			).toBe(50);
 		});
 
 		it("calculates percentile correctly for simple case", () => {
@@ -226,7 +259,14 @@ describe("calculatePercentile", () => {
 		it("ignores null/undefined/NaN values within the array", () => {
 			// [5, 10, 15] effectively. Value 10 -> 33%
 			expect(
-				calculatePercentile(10, [5, null, 10, undefined, 15, NaN] as unknown as number[]),
+				calculatePercentile(10, [
+					5,
+					null,
+					10,
+					undefined,
+					15,
+					NaN,
+				] as unknown as number[]),
 			).toBe(33);
 		});
 
@@ -236,7 +276,6 @@ describe("calculatePercentile", () => {
 		});
 	});
 });
-
 
 describe("getRandomCatImage", () => {
 	const mockImages = ["image1.png", "image2.png", "image3.png"];
