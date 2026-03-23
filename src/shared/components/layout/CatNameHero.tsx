@@ -14,14 +14,10 @@ export function CatNameHero() {
 
 	const isSet = catChosenName?.is_set ?? false;
 
-	const firstName =
-		isSet && catChosenName?.first_name ? catChosenName.first_name : PLACEHOLDER;
+	const firstName = isSet && catChosenName?.first_name ? catChosenName.first_name : PLACEHOLDER;
 	const middleNames =
-		isSet && catChosenName?.middle_names?.length
-			? catChosenName.middle_names
-			: [PLACEHOLDER];
-	const lastName =
-		isSet && catChosenName?.last_name ? catChosenName.last_name : PLACEHOLDER;
+		isSet && catChosenName?.middle_names?.length ? catChosenName.middle_names : [PLACEHOLDER];
+	const lastName = isSet && catChosenName?.last_name ? catChosenName.last_name : PLACEHOLDER;
 
 	const nameParts = [firstName, ...middleNames, lastName];
 

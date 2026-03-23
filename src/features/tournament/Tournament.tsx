@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { ErrorComponent } from "@/shared/components/layout/Feedback";
+import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import {
@@ -43,7 +44,6 @@ import {
 } from "./utils/heat";
 import { extractMatchData, getMatchSideId } from "./utils/matchHelpers";
 import { useTimedState } from "./utils/useTimedState";
-import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 
 interface StreakBurst {
 	key: number;

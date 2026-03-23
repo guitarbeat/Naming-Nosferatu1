@@ -6,12 +6,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useId, useRef } from "react";
-import {
-	Button,
-	Input,
-	LiquidGlass,
-	Textarea,
-} from "@/shared/components/layout";
+import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
 import { CheckCircle, X } from "@/shared/lib/icons";
@@ -34,22 +29,15 @@ interface NameSuggestionProps {
 // ============================================================================
 
 export function NameSuggestionInner() {
-	const {
-		values,
-		isSubmitting,
-		handleChange,
-		handleSubmit,
-		globalError,
-		successMessage,
-	} = useNameSuggestion();
+	const { values, isSubmitting, handleChange, handleSubmit, globalError, successMessage } =
+		useNameSuggestion();
 
 	const handleLocalSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		await handleSubmit();
 	};
 
-	const isFormComplete =
-		values.name.trim().length > 0 && values.description.trim().length > 0;
+	const isFormComplete = values.name.trim().length > 0 && values.description.trim().length > 0;
 
 	return (
 		<form onSubmit={handleLocalSubmit} className="w-full max-w-2xl mx-auto">
@@ -57,10 +45,7 @@ export function NameSuggestionInner() {
 				{/* Name Input */}
 				<div className="space-y-2">
 					<div className="flex items-center justify-between">
-						<label
-							htmlFor="suggest-name"
-							className="text-sm font-semibold text-foreground/90"
-						>
+						<label htmlFor="suggest-name" className="text-sm font-semibold text-foreground/90">
 							Cat name suggestion{" "}
 							<span className="text-destructive" aria-hidden="true">
 								*
@@ -307,10 +292,7 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 					</div>
 
 					<div className="p-6">
-						<p
-							id="suggest-name-description"
-							className="text-sm text-muted-foreground mb-6"
-						>
+						<p id="suggest-name-description" className="text-sm text-muted-foreground mb-6">
 							Help us expand the list by suggesting new cat names!
 						</p>
 
@@ -371,12 +353,7 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 							)}
 
 							<div className="flex justify-end gap-3 mt-4 pt-4 border-t border-border">
-								<Button
-									type="button"
-									variant="ghost"
-									onClick={handleClose}
-									disabled={isSubmitting}
-								>
+								<Button type="button" variant="ghost" onClick={handleClose} disabled={isSubmitting}>
 									Cancel
 								</Button>
 								<Button

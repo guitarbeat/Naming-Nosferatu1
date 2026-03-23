@@ -37,9 +37,7 @@ export function ConfirmDialog({
 			return;
 		}
 		const previouslyFocusedElement =
-			document.activeElement instanceof HTMLElement
-				? document.activeElement
-				: null;
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
 		const getFocusableElements = () =>
 			Array.from(
@@ -79,10 +77,7 @@ export function ConfirmDialog({
 			const lastElement = focusableElements[focusableElements.length - 1];
 
 			if (event.shiftKey) {
-				if (
-					document.activeElement === firstElement ||
-					document.activeElement === dialogElement
-				) {
+				if (document.activeElement === firstElement || document.activeElement === dialogElement) {
 					event.preventDefault();
 					lastElement?.focus();
 				}
@@ -130,9 +125,7 @@ export function ConfirmDialog({
 						role="dialog"
 						aria-modal="true"
 						aria-labelledby="confirm-dialog-title"
-						aria-describedby={
-							description ? "confirm-dialog-description" : undefined
-						}
+						aria-describedby={description ? "confirm-dialog-description" : undefined}
 						className="fixed inset-0 z-[1100] grid place-items-center p-4"
 					>
 						<div
@@ -141,28 +134,17 @@ export function ConfirmDialog({
 							className="w-full max-w-md rounded-2xl border border-white/15 bg-slate-950/95 p-6 text-white shadow-2xl"
 							onClick={(event) => event.stopPropagation()}
 						>
-							<h3
-								id="confirm-dialog-title"
-								className="text-lg font-bold leading-tight"
-							>
+							<h3 id="confirm-dialog-title" className="text-lg font-bold leading-tight">
 								{title}
 							</h3>
 							{description && (
-								<p
-									id="confirm-dialog-description"
-									className="mt-2 text-sm text-muted-foreground"
-								>
+								<p id="confirm-dialog-description" className="mt-2 text-sm text-muted-foreground">
 									{description}
 								</p>
 							)}
 
 							<div className="mt-6 flex items-center justify-end gap-3">
-								<Button
-									type="button"
-									variant="ghost"
-									onClick={onCancel}
-									disabled={loading}
-								>
+								<Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>
 									{cancelLabel}
 								</Button>
 								<Button
@@ -170,9 +152,7 @@ export function ConfirmDialog({
 									variant={confirmTone === "danger" ? "danger" : "gradient"}
 									onClick={() => void onConfirm()}
 									loading={loading}
-									className={cn(
-										confirmTone === "danger" && "bg-red-600 hover:bg-red-500",
-									)}
+									className={cn(confirmTone === "danger" && "bg-red-600 hover:bg-red-500")}
 								>
 									{confirmLabel}
 								</Button>

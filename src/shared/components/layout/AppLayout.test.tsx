@@ -33,9 +33,7 @@ vi.mock("./Button", () => ({
 vi.mock("./Feedback", () => ({
 	ErrorBoundary: ({ children }: { children: ReactNode }) => <>{children}</>,
 	ErrorComponent: () => <div data-testid="error-component" />,
-	Loading: ({ text }: { text?: string }) => (
-		<div data-testid="loading">{text}</div>
-	),
+	Loading: ({ text }: { text?: string }) => <div data-testid="loading">{text}</div>,
 	OfflineIndicator: () => <div data-testid="offline-indicator" />,
 }));
 
@@ -68,8 +66,6 @@ describe("AppLayout", () => {
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByRole("main")).not.toHaveClass(
-			"app-main-shell--nav-safe",
-		);
+		expect(screen.getByRole("main")).not.toHaveClass("app-main-shell--nav-safe");
 	});
 });

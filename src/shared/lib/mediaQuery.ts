@@ -15,9 +15,7 @@ function noop() {
 }
 
 export function supportsMatchMedia(): boolean {
-	return (
-		typeof window !== "undefined" && typeof window.matchMedia === "function"
-	);
+	return typeof window !== "undefined" && typeof window.matchMedia === "function";
 }
 
 export function getMediaQueryList(query: string): MediaQueryList | null {
@@ -76,7 +74,5 @@ export function subscribeToMediaQuery(
 		onChange(mediaQueryList.matches);
 	}
 
-	return addMediaQueryListener(mediaQueryList, (event) =>
-		onChange(event.matches, event),
-	);
+	return addMediaQueryListener(mediaQueryList, (event) => onChange(event.matches, event));
 }

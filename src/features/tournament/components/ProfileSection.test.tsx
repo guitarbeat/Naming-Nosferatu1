@@ -31,12 +31,10 @@ vi.mock("@/shared/components/layout", () => {
 				{children}
 			</button>
 		),
-		Input: forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-			(props, ref) => <input ref={ref} {...props} />,
-		),
-		Section: ({ children }: { children: React.ReactNode }) => (
-			<section>{children}</section>
-		),
+		Input: forwardRef<HTMLInputElement, React.ComponentProps<"input">>((props, ref) => (
+			<input ref={ref} {...props} />
+		)),
+		Section: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
 	};
 });
 

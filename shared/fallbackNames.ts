@@ -82,9 +82,7 @@ export const FALLBACK_NAMES = [
 ] as const;
 
 export function getFallbackNames(includeHidden = true) {
-	return FALLBACK_NAMES.filter((item) => includeHidden || !item.isHidden).map(
-		(item) => ({
-			...item,
-		}),
-	);
+	return FALLBACK_NAMES.filter((item) => includeHidden || !item.isHidden).map((item) => ({
+		...item,
+	}));
 }

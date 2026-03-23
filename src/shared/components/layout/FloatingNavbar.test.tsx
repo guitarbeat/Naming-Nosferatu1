@@ -33,12 +33,8 @@ const mockStore = {
 
 vi.mock("framer-motion", () => ({
 	motion: {
-		button: ({ whileTap: _whileTap, ...props }: Record<string, unknown>) => (
-			<button {...props} />
-		),
-		div: ({ whileTap: _whileTap, ...props }: Record<string, unknown>) => (
-			<div {...props} />
-		),
+		button: ({ whileTap: _whileTap, ...props }: Record<string, unknown>) => <button {...props} />,
+		div: ({ whileTap: _whileTap, ...props }: Record<string, unknown>) => <div {...props} />,
 	},
 }));
 
@@ -164,9 +160,7 @@ describe("FloatingNavbar", () => {
 
 		expect(startButton).toBeInTheDocument();
 		expect(startButton).toHaveClass("floating-navbar__item--accent");
-		expect(
-			screen.queryByRole("button", { name: "Pick Names" }),
-		).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Pick Names" })).not.toBeInTheDocument();
 	}, 20000);
 
 	it("shows analyze as the current destination on the analysis route", () => {
@@ -245,8 +239,6 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		expect(
-			screen.queryByRole("navigation", { name: "Primary" }),
-		).not.toBeInTheDocument();
+		expect(screen.queryByRole("navigation", { name: "Primary" })).not.toBeInTheDocument();
 	});
 });

@@ -4,9 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { MatchSideCard } from "./MatchSideCard";
 
 vi.mock("@/shared/components/layout/CatImage", () => ({
-	default: ({ alt }: { alt: string }) => (
-		<div data-testid="cat-image">{alt}</div>
-	),
+	default: ({ alt }: { alt: string }) => <div data-testid="cat-image">{alt}</div>,
 }));
 
 describe("MatchSideCard", () => {
@@ -34,9 +32,7 @@ describe("MatchSideCard", () => {
 
 		expect(card).toHaveClass("ring-2");
 		expect(card).not.toHaveClass("animate-float");
-		expect(screen.getByTestId("streak-chip-left")).toHaveTextContent(
-			"Hot streak x5",
-		);
+		expect(screen.getByTestId("streak-chip-left")).toHaveTextContent("Hot streak x5");
 		expect(screen.queryByText("🔥")).not.toBeInTheDocument();
 		expect(screen.getByText("[loo-nah]")).toBeInTheDocument();
 		expect(screen.getByText("Moonlit menace")).toBeInTheDocument();
@@ -60,9 +56,9 @@ describe("MatchSideCard", () => {
 			/>,
 		);
 
-		expect(
-			screen.getByRole("button", { name: "Vote for name Miso" }),
-		).toHaveClass("opacity-[0.55]");
+		expect(screen.getByRole("button", { name: "Vote for name Miso" })).toHaveClass(
+			"opacity-[0.55]",
+		);
 		expect(screen.queryByTestId("streak-chip-right")).not.toBeInTheDocument();
 	});
 });

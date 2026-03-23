@@ -12,10 +12,7 @@ import { useTilt } from "@/shared/hooks/useTilt";
 import { cn } from "@/shared/lib/basic";
 import { TIMING } from "@/shared/lib/constants";
 import { ZoomIn } from "@/shared/lib/icons";
-import LiquidGlass, {
-	DEFAULT_GLASS_CONFIG,
-	resolveGlassConfig,
-} from "../LiquidGlass";
+import LiquidGlass, { DEFAULT_GLASS_CONFIG, resolveGlassConfig } from "../LiquidGlass";
 
 type CardVariant =
 	| "default"
@@ -165,9 +162,7 @@ const CardBase = memo(
 				shadow,
 				bordered: border,
 				background:
-					background !== "solid" && background !== "glass" && !liquidGlass
-						? background
-						: "solid",
+					background !== "solid" && background !== "glass" && !liquidGlass ? background : "solid",
 			});
 
 			const finalClasses = cn(
@@ -187,10 +182,7 @@ const CardBase = memo(
 			const glassId = useId();
 
 			if (shouldUseLiquidGlass) {
-				const glassConfig = resolveGlassConfig(
-					liquidGlass,
-					DEFAULT_GLASS_CONFIG,
-				) as GlassConfig;
+				const glassConfig = resolveGlassConfig(liquidGlass, DEFAULT_GLASS_CONFIG) as GlassConfig;
 				const {
 					width = 240,
 					height = 110,
@@ -231,12 +223,7 @@ const CardBase = memo(
 						}}
 						{...glassProps}
 					>
-						<Component
-							ref={ref}
-							className={contentClasses}
-							onClick={onClick}
-							{...props}
-						>
+						<Component ref={ref} className={contentClasses} onClick={onClick} {...props}>
 							{children}
 						</Component>
 					</LiquidGlass>
@@ -254,9 +241,7 @@ const CardBase = memo(
 					}
 				: { style };
 
-			const CommonComponent = (
-				tilt.isEnabled ? motion.div : Component
-			) as React.ElementType;
+			const CommonComponent = (tilt.isEnabled ? motion.div : Component) as React.ElementType;
 
 			return (
 				<CommonComponent
@@ -319,9 +304,7 @@ const CardStatsBase = memo(function CardStats({
 }: CardStatsProps) {
 	const labelText = title || label || "stat";
 	const valueText =
-		typeof value === "string" || typeof value === "number"
-			? String(value)
-			: "value";
+		typeof value === "string" || typeof value === "number" ? String(value) : "value";
 	const ariaLabel = `${labelText}: ${valueText}`;
 
 	// Determine top accent color based on variant
@@ -339,15 +322,11 @@ const CardStatsBase = memo(function CardStats({
 	};
 	const valueColor: Record<CardVariant, string> = {
 		default: "text-foreground",
-		primary:
-			"text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60",
-		success:
-			"text-transparent bg-clip-text bg-gradient-to-r from-chart-2 to-chart-2/60",
-		warning:
-			"text-transparent bg-clip-text bg-gradient-to-r from-chart-4 to-chart-4/60",
+		primary: "text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60",
+		success: "text-transparent bg-clip-text bg-gradient-to-r from-chart-2 to-chart-2/60",
+		warning: "text-transparent bg-clip-text bg-gradient-to-r from-chart-4 to-chart-4/60",
 		info: "text-transparent bg-clip-text bg-gradient-to-r from-chart-5 to-chart-5/60",
-		danger:
-			"text-transparent bg-clip-text bg-gradient-to-r from-destructive to-destructive/60",
+		danger: "text-transparent bg-clip-text bg-gradient-to-r from-destructive to-destructive/60",
 		secondary: "text-secondary-foreground",
 		elevated: "text-foreground",
 		outlined: "text-foreground",
@@ -389,11 +368,7 @@ const CardStatsBase = memo(function CardStats({
 			>
 				{value}
 			</span>
-			{emoji && (
-				<span className={cn("text-2xl mt-2 drop-shadow-sm", emojiClassName)}>
-					{emoji}
-				</span>
-			)}
+			{emoji && <span className={cn("text-2xl mt-2 drop-shadow-sm", emojiClassName)}>{emoji}</span>}
 		</Card>
 	);
 });
@@ -466,10 +441,7 @@ const CardNameBase = memo(function CardName({
 	// Disable tilt on touch devices for better performance
 	const [isTouchDevice, setIsTouchDevice] = useState(false);
 	useEffect(() => {
-		if (
-			typeof window === "undefined" ||
-			typeof window.matchMedia !== "function"
-		) {
+		if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
 			setIsTouchDevice(false);
 			return;
 		}
@@ -480,10 +452,7 @@ const CardNameBase = memo(function CardName({
 
 	useEffect(() => {
 		if (isRippling) {
-			const timer = setTimeout(
-				() => setIsRippling(false),
-				TIMING.RIPPLE_ANIMATION_DURATION_MS,
-			);
+			const timer = setTimeout(() => setIsRippling(false), TIMING.RIPPLE_ANIMATION_DURATION_MS);
 			return () => clearTimeout(timer);
 		}
 		return undefined;
@@ -550,16 +519,13 @@ const CardNameBase = memo(function CardName({
 		return text.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
 	};
 
-	const isInteractive =
-		!disabled && (!!onClick || (isAdmin && !!onSelectionChange));
+	const isInteractive = !disabled && (!!onClick || (isAdmin && !!onSelectionChange));
 	const Component = isInteractive ? "button" : "div";
 
 	const cardContent = (
 		<div
 			className="relative w-full h-full"
-			style={{
-				perspective: shouldEnableTilt && !disabled ? "800px" : undefined,
-			}}
+			style={{ perspective: shouldEnableTilt && !disabled ? "800px" : undefined }}
 		>
 			<Card
 				as={Component}
@@ -572,20 +538,15 @@ const CardNameBase = memo(function CardName({
 						? "border-primary bg-gradient-to-br from-primary/20 to-primary/10 shadow-[0_0_30px_rgba(168,85,247,0.2)]"
 						: "border-border/10 bg-gradient-to-br from-foreground/10 to-foreground/5 shadow-lg hover:border-border/20 hover:bg-foreground/10",
 					disabled && "opacity-50 cursor-not-allowed filter grayscale",
-					isHidden &&
-						"opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
+					isHidden && "opacity-75 bg-chart-4/10 border-chart-4/50 grayscale-[0.4]",
 					image && "min-h-[220px] p-0 overflow-hidden",
 					className,
 				)}
 				onClick={
-					isInteractive
-						? (handleInteraction as unknown as React.MouseEventHandler)
-						: undefined
+					isInteractive ? (handleInteraction as unknown as React.MouseEventHandler) : undefined
 				}
 				onKeyDown={
-					isInteractive
-						? (handleInteraction as unknown as React.KeyboardEventHandler)
-						: undefined
+					isInteractive ? (handleInteraction as unknown as React.KeyboardEventHandler) : undefined
 				}
 				// @ts-expect-error - Card props might not fully match HTML attributes
 				disabled={isInteractive ? disabled : undefined}
@@ -663,9 +624,7 @@ const CardNameBase = memo(function CardName({
 					<h3
 						className={cn(
 							"font-bold leading-tight m-0 tracking-tight",
-							image
-								? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
-								: "text-foreground",
+							image ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]" : "text-foreground",
 							size === "small" ? "text-sm" : "text-lg md:text-xl",
 							isHidden && "text-chart-4/80",
 						)}

@@ -107,9 +107,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 					{isEditing ? (
 						<div className="space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 							<div className="space-y-2">
-								<label className="text-sm font-medium text-foreground/80 block">
-									Your Name
-								</label>
+								<label className="text-sm font-medium text-foreground/80 block">Your Name</label>
 								<div className="relative">
 									<User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/50" />
 									<Input
@@ -150,9 +148,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 					) : (
 						<div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
 							<div className="flex items-center gap-3">
-								<h3 className="text-2xl md:text-3xl font-bold text-foreground">
-									{user.name}
-								</h3>
+								<h3 className="text-2xl md:text-3xl font-bold text-foreground">{user.name}</h3>
 								<button
 									type="button"
 									onClick={() => setIsEditing(true)}
@@ -167,10 +163,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 								onClick={handleLogout}
 								className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors group"
 							>
-								<LogOut
-									size={16}
-									className="group-hover:-translate-x-0.5 transition-transform"
-								/>
+								<LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
 								Logout
 							</button>
 						</div>
@@ -193,12 +186,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 
 export function ProfileSection({ onLogin }: ProfileSectionProps) {
 	return (
-		<Section
-			id="profile"
-			variant="minimal"
-			padding="comfortable"
-			maxWidth="full"
-		>
+		<Section id="profile" variant="minimal" padding="comfortable" maxWidth="full">
 			<div className="mx-auto w-full max-w-3xl">
 				<ProfileInner onLogin={onLogin} />
 			</div>

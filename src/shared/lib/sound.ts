@@ -40,14 +40,7 @@ class SoundManager {
 	];
 
 	// Sound effects (small files, <200KB) - for actions/events
-	private soundEffects = [
-		"vote",
-		"undo",
-		"level-up",
-		"wow",
-		"surprise",
-		"streak",
-	];
+	private soundEffects = ["vote", "undo", "level-up", "wow", "surprise", "streak"];
 
 	// Synth fallback patterns when files are missing or unavailable
 	private fallbackMusicPatterns: SynthNote[][] = [
@@ -130,10 +123,7 @@ class SoundManager {
 
 	private isAutoplayError(error: unknown): boolean {
 		const maybeError = error as { name?: string } | null;
-		return (
-			maybeError?.name === "NotAllowedError" ||
-			maybeError?.name === "AbortError"
-		);
+		return maybeError?.name === "NotAllowedError" || maybeError?.name === "AbortError";
 	}
 
 	private getAudioContext(): AudioContext | null {
@@ -145,8 +135,7 @@ class SoundManager {
 			AudioContext?: typeof AudioContext;
 			webkitAudioContext?: typeof AudioContext;
 		};
-		const AudioContextConstructor =
-			browserGlobal.AudioContext || browserGlobal.webkitAudioContext;
+		const AudioContextConstructor = browserGlobal.AudioContext || browserGlobal.webkitAudioContext;
 		if (!AudioContextConstructor) {
 			return null;
 		}
@@ -184,10 +173,7 @@ class SoundManager {
 		const noteVolume = Math.max(0.001, Math.min(1, volume * (note.gain ?? 1)));
 		const attack = Math.min(0.02, note.duration * 0.2);
 		const release = Math.min(0.08, note.duration * 0.45);
-		const releaseStart = Math.max(
-			startAt + attack + 0.01,
-			startAt + note.duration - release,
-		);
+		const releaseStart = Math.max(startAt + attack + 0.01, startAt + note.duration - release);
 
 		oscillator.type = note.wave ?? "triangle";
 		oscillator.frequency.setValueAtTime(note.frequency, startAt);
@@ -289,9 +275,8 @@ class SoundManager {
 			}
 
 			const pattern =
-				this.fallbackMusicPatterns[
-					this.currentTrackIndex % this.fallbackMusicPatterns.length
-				] ?? this.fallbackMusicPatterns[0];
+				this.fallbackMusicPatterns[this.currentTrackIndex % this.fallbackMusicPatterns.length] ??
+				this.fallbackMusicPatterns[0];
 			if (!pattern) {
 				return;
 			}
@@ -318,10 +303,7 @@ class SoundManager {
 				650,
 				Math.round(Math.max(leadDuration, bassDuration, 1.35) * 1000),
 			);
-			this.fallbackMusicTimeout = window.setTimeout(
-				playLoop,
-				loopDurationMs - 35,
-			);
+			this.fallbackMusicTimeout = window.setTimeout(playLoop, loopDurationMs - 35);
 		};
 
 		playLoop();
@@ -340,14 +322,11 @@ class SoundManager {
 	}
 
 	private preloadBackgroundMusic() {
-		this.loadBackgroundTrack(
-			this.backgroundTracks[this.currentTrackIndex] ?? "",
-		);
+		this.loadBackgroundTrack(this.backgroundTracks[this.currentTrackIndex] ?? "");
 	}
 
 	playNextTrack() {
-		this.currentTrackIndex =
-			(this.currentTrackIndex + 1) % this.backgroundTracks.length;
+		this.currentTrackIndex = (this.currentTrackIndex + 1) % this.backgroundTracks.length;
 		const nextTrack = this.backgroundTracks[this.currentTrackIndex];
 		if (nextTrack) {
 			this.loadBackgroundTrack(nextTrack);
@@ -359,8 +338,7 @@ class SoundManager {
 
 	playPreviousTrack() {
 		this.currentTrackIndex =
-			(this.currentTrackIndex - 1 + this.backgroundTracks.length) %
-			this.backgroundTracks.length;
+			(this.currentTrackIndex - 1 + this.backgroundTracks.length) % this.backgroundTracks.length;
 		const prevTrack = this.backgroundTracks[this.currentTrackIndex];
 		if (prevTrack) {
 			this.loadBackgroundTrack(prevTrack);
@@ -420,8 +398,7 @@ class SoundManager {
 			}
 
 			// Try to get from cache first
-			let audio: HTMLAudioElement | null =
-				this.audioCache.get(soundName) ?? null;
+			let audio: HTMLAudioElement | null = this.audioCache.get(soundName) ?? null;
 
 			// If not in cache, try to create it on-demand
 			if (!audio) {
@@ -479,11 +456,7 @@ class SoundManager {
 		}
 
 		const trackName = this.backgroundTracks[this.currentTrackIndex];
-		if (
-			!trackName ||
-			this.failedAssets.has(trackName) ||
-			!this.backgroundMusic
-		) {
+		if (!trackName || this.failedAssets.has(trackName) || !this.backgroundMusic) {
 			this.startFallbackMusic();
 			return;
 		}
@@ -527,8 +500,7 @@ class SoundManager {
 		}
 
 		// Support both historical and current key names.
-		const soundEnabled =
-			getStorageString("soundEnabled") ?? getStorageString("sound-enabled");
+		const soundEnabled = getStorageString("soundEnabled") ?? getStorageString("sound-enabled");
 		return soundEnabled !== "false";
 	}
 }
@@ -562,10 +534,7 @@ export const getCurrentTrack = () => soundManager.getCurrentTrack();
 /**
  * Additional sound effects
  */
-export const playLevelUpSound = (config?: SoundConfig) =>
-	playSound("level-up", config);
+export const playLevelUpSound = (config?: SoundConfig) => playSound("level-up", config);
 export const playWowSound = (config?: SoundConfig) => playSound("wow", config);
-export const playSurpriseSound = (config?: SoundConfig) =>
-	playSound("surprise", config);
-export const playStreakSound = (config?: SoundConfig) =>
-	playSound("streak", config);
+export const playSurpriseSound = (config?: SoundConfig) => playSound("surprise", config);
+export const playStreakSound = (config?: SoundConfig) => playSound("streak", config);

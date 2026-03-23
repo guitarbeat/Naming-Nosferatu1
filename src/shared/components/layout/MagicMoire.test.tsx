@@ -53,10 +53,7 @@ vi.mock("ogl", () => ({
 	Mesh: class {
 		geometry;
 		program;
-		constructor(
-			_gl: unknown,
-			options: { geometry?: unknown; program?: unknown },
-		) {
+		constructor(_gl: unknown, options: { geometry?: unknown; program?: unknown }) {
 			this.geometry = options.geometry;
 			this.program = options.program;
 		}
@@ -120,24 +117,13 @@ describe("MagicMoire", () => {
 		const { unmount } = render(<MagicMoire theme="dark" />);
 
 		expect(screen.getByTestId("magic-container")).toBeInTheDocument();
-		expect(screen.getByTestId("magic-container").querySelector("canvas")).toBe(
-			mockCanvas,
-		);
-		expect(window.addEventListener).toHaveBeenCalledWith(
-			"resize",
-			expect.any(Function),
-		);
-		expect(window.addEventListener).toHaveBeenCalledWith(
-			"scroll",
-			expect.any(Function),
-			{
-				passive: true,
-			},
-		);
+		expect(screen.getByTestId("magic-container").querySelector("canvas")).toBe(mockCanvas);
+		expect(window.addEventListener).toHaveBeenCalledWith("resize", expect.any(Function));
+		expect(window.addEventListener).toHaveBeenCalledWith("scroll", expect.any(Function), {
+			passive: true,
+		});
 		expect(
-			(
-				document.body.addEventListener as ReturnType<typeof vi.fn>
-			).mock.calls.some(([eventName]) =>
+			(document.body.addEventListener as ReturnType<typeof vi.fn>).mock.calls.some(([eventName]) =>
 				["mousemove", "touchstart"].includes(String(eventName)),
 			),
 		).toBe(true);
@@ -146,25 +132,15 @@ describe("MagicMoire", () => {
 			rafQueue.at(-1)?.(0);
 		});
 
-		expect(screen.getByTestId("magic-container")).toHaveClass(
-			"magic-container--visible",
-		);
+		expect(screen.getByTestId("magic-container")).toHaveClass("magic-container--visible");
 
 		unmount();
 
-		expect(window.removeEventListener).toHaveBeenCalledWith(
-			"resize",
-			expect.any(Function),
-		);
-		expect(window.removeEventListener).toHaveBeenCalledWith(
-			"scroll",
-			expect.any(Function),
-		);
+		expect(window.removeEventListener).toHaveBeenCalledWith("resize", expect.any(Function));
+		expect(window.removeEventListener).toHaveBeenCalledWith("scroll", expect.any(Function));
 		expect(
-			(
-				document.body.removeEventListener as ReturnType<typeof vi.fn>
-			).mock.calls.some(([eventName]) =>
-				["mousemove", "touchstart"].includes(String(eventName)),
+			(document.body.removeEventListener as ReturnType<typeof vi.fn>).mock.calls.some(
+				([eventName]) => ["mousemove", "touchstart"].includes(String(eventName)),
 			),
 		).toBe(true);
 		expect(mockCanvas.parentNode).toBeNull();

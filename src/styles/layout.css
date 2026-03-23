@@ -182,11 +182,7 @@
 			);
 			bottom: max(
 				5rem,
-				calc(
-					var(--mobile-nav-height) +
-					env(safe-area-inset-bottom) +
-					var(--mobile-safe-spacing)
-				)
+				calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--mobile-safe-spacing))
 			);
 		}
 	}

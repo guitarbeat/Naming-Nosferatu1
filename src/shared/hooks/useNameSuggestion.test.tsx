@@ -46,9 +46,7 @@ describe("useNameSuggestion", () => {
 
 	it("submits valid data successfully", async () => {
 		const onSuccessMock = vi.fn();
-		const { result } = renderHook(() =>
-			useNameSuggestion({ onSuccess: onSuccessMock }),
-		);
+		const { result } = renderHook(() => useNameSuggestion({ onSuccess: onSuccessMock }));
 
 		// Setup mock success response
 		mockedCoreAPI.addName.mockResolvedValue({
@@ -66,9 +64,7 @@ describe("useNameSuggestion", () => {
 		});
 
 		expect(coreAPI.addName).toHaveBeenCalledWith("Test Cat", "A cute test cat");
-		expect(result.current.successMessage).toBe(
-			"Name suggestion submitted successfully!",
-		);
+		expect(result.current.successMessage).toBe("Name suggestion submitted successfully!");
 		expect(result.current.values).toEqual({ name: "", description: "" });
 		expect(onSuccessMock).toHaveBeenCalled();
 	});
@@ -77,10 +73,7 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion());
 
 		// Setup mock error response
-		mockedCoreAPI.addName.mockResolvedValue({
-			success: false,
-			error: "Duplicate name",
-		});
+		mockedCoreAPI.addName.mockResolvedValue({ success: false, error: "Duplicate name" });
 
 		act(() => {
 			result.current.handleChange("name", "Duplicate Cat");

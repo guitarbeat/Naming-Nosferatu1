@@ -2,19 +2,13 @@ import { STORAGE_KEYS } from "./constants";
 
 export function isStorageAvailable(): boolean {
 	try {
-		return (
-			typeof window !== "undefined" &&
-			typeof window.localStorage !== "undefined"
-		);
+		return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 	} catch {
 		return false;
 	}
 }
 
-export function getStorageString(
-	key: string,
-	fallback: string | null = null,
-): string | null {
+export function getStorageString(key: string, fallback: string | null = null): string | null {
 	if (!isStorageAvailable()) {
 		return fallback;
 	}

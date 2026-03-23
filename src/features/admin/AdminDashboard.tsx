@@ -4,13 +4,7 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-	type ChangeEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
@@ -24,12 +18,7 @@ import {
 } from "@/shared/lib/basic";
 import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
-import {
-	coreAPI,
-	hiddenNamesAPI,
-	imagesAPI,
-	statsAPI,
-} from "@/shared/services/supabase/api";
+import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/shared/services/supabase/api";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
@@ -90,10 +79,7 @@ function mapNameToDisplay(name: NameItem): NameWithStats {
 	};
 }
 
-function buildAdminStats(
-	names: NameWithStats[],
-	siteStats: SiteStatsLike | null,
-): AdminStats {
+function buildAdminStats(names: NameWithStats[], siteStats: SiteStatsLike | null): AdminStats {
 	return {
 		totalNames: names.length,
 		activeNames: getActiveNames(names).length,
@@ -124,9 +110,7 @@ function filterNamesByStatusAndSearch(
 		return filtered;
 	}
 
-	return filtered.filter((name) =>
-		matchesNameSearchTerm(name, normalizedSearch),
-	);
+	return filtered.filter((name) => matchesNameSearchTerm(name, normalizedSearch));
 }
 
 export function AdminDashboard() {
@@ -177,11 +161,7 @@ export function AdminDashboard() {
 	}, [names]);
 
 	const handleToggleHidden = useCallback(
-		async (
-			nameId: string | number,
-			isHidden: boolean,
-			options: ToggleOptions = {},
-		) => {
+		async (nameId: string | number, isHidden: boolean, options: ToggleOptions = {}) => {
 			try {
 				const idStr = String(nameId);
 				const result = isHidden
@@ -203,11 +183,7 @@ export function AdminDashboard() {
 	);
 
 	const handleToggleLocked = useCallback(
-		async (
-			nameId: string | number,
-			isLocked: boolean,
-			options: ToggleOptions = {},
-		) => {
+		async (nameId: string | number, isLocked: boolean, options: ToggleOptions = {}) => {
 			try {
 				const idStr = String(nameId);
 				await withSupabase(async (client) => {
@@ -227,9 +203,7 @@ export function AdminDashboard() {
 					}
 
 					if (result.error) {
-						throw new Error(
-							result.error.message || "Failed to toggle locked status",
-						);
+						throw new Error(result.error.message || "Failed to toggle locked status");
 					}
 					return result.data;
 				}, null);
@@ -250,18 +224,11 @@ export function AdminDashboard() {
 				return;
 			}
 
-			const actionHandlers: Record<
-				BulkAction,
-				(name: NameWithStats) => Promise<void>
-			> = {
-				hide: (name) =>
-					handleToggleHidden(name.id, false, { skipRefresh: true }),
-				unhide: (name) =>
-					handleToggleHidden(name.id, true, { skipRefresh: true }),
-				lock: (name) =>
-					handleToggleLocked(name.id, false, { skipRefresh: true }),
-				unlock: (name) =>
-					handleToggleLocked(name.id, true, { skipRefresh: true }),
+			const actionHandlers: Record<BulkAction, (name: NameWithStats) => Promise<void>> = {
+				hide: (name) => handleToggleHidden(name.id, false, { skipRefresh: true }),
+				unhide: (name) => handleToggleHidden(name.id, true, { skipRefresh: true }),
+				lock: (name) => handleToggleLocked(name.id, false, { skipRefresh: true }),
+				unlock: (name) => handleToggleLocked(name.id, true, { skipRefresh: true }),
 			};
 
 			try {
@@ -278,13 +245,7 @@ export function AdminDashboard() {
 				console.error("Failed to perform bulk action:", error);
 			}
 		},
-		[
-			handleToggleHidden,
-			handleToggleLocked,
-			loadAdminData,
-			nameById,
-			selectedNames,
-		],
+		[handleToggleHidden, handleToggleLocked, loadAdminData, nameById, selectedNames],
 	);
 
 	const handleImageUpload = useCallback(
@@ -308,36 +269,28 @@ export function AdminDashboard() {
 		[actorName],
 	);
 
-	const handleSelectionChange = useCallback(
-		(nameId: string, checked: boolean) => {
-			setSelectedNames((prevSelectedNames) => {
-				const next = new Set(prevSelectedNames);
-				if (checked) {
-					next.add(nameId);
-				} else {
-					next.delete(nameId);
-				}
-				return next;
-			});
-		},
-		[],
-	);
+	const handleSelectionChange = useCallback((nameId: string, checked: boolean) => {
+		setSelectedNames((prevSelectedNames) => {
+			const next = new Set(prevSelectedNames);
+			if (checked) {
+				next.add(nameId);
+			} else {
+				next.delete(nameId);
+			}
+			return next;
+		});
+	}, []);
 
 	const handleTabChange = useCallback((tab: DashboardTab) => {
 		setActiveTab(tab);
 	}, []);
 
-	const handleFilterChange = useCallback(
-		(event: ChangeEvent<HTMLSelectElement>) => {
-			const option = FILTER_OPTIONS.find(
-				(item) => item.value === event.target.value,
-			);
-			if (option) {
-				setFilterStatus(option.value);
-			}
-		},
-		[],
-	);
+	const handleFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+		const option = FILTER_OPTIONS.find((item) => item.value === event.target.value);
+		if (option) {
+			setFilterStatus(option.value);
+		}
+	}, []);
 
 	if (isLoading) {
 		return (
@@ -353,9 +306,7 @@ export function AdminDashboard() {
 				<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 					Admin Dashboard
 				</h1>
-				<p className="text-muted-foreground">
-					Manage names and monitor site activity
-				</p>
+				<p className="text-muted-foreground">Manage names and monitor site activity</p>
 			</div>
 
 			{stats && (
@@ -363,13 +314,9 @@ export function AdminDashboard() {
 					<div className="p-6">
 						<div className="flex items-center gap-3 mb-2">
 							<BarChart3 className="text-primary" size={24} />
-							<h3 className="text-lg font-semibold text-primary">
-								Total Names
-							</h3>
+							<h3 className="text-lg font-semibold text-primary">Total Names</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">
-							{stats.totalNames}
-						</p>
+						<p className="text-3xl font-bold text-foreground">{stats.totalNames}</p>
 					</div>
 
 					<div className="p-6">
@@ -377,9 +324,7 @@ export function AdminDashboard() {
 							<Eye className="text-chart-2" size={24} />
 							<h3 className="text-lg font-semibold text-chart-2">Active</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">
-							{stats.activeNames}
-						</p>
+						<p className="text-3xl font-bold text-foreground">{stats.activeNames}</p>
 					</div>
 
 					<div className="p-6">
@@ -387,9 +332,7 @@ export function AdminDashboard() {
 							<Lock className="text-chart-4" size={24} />
 							<h3 className="text-lg font-semibold text-chart-4">Locked In</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">
-							{stats.lockedInNames}
-						</p>
+						<p className="text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
 					</div>
 
 					<div className="p-6">
@@ -397,9 +340,7 @@ export function AdminDashboard() {
 							<EyeOff className="text-destructive" size={24} />
 							<h3 className="text-lg font-semibold text-destructive">Hidden</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">
-							{stats.hiddenNames}
-						</p>
+						<p className="text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
 					</div>
 				</div>
 			)}
@@ -467,41 +408,22 @@ export function AdminDashboard() {
 							</div>
 						</div>
 
-						{selectedNames.size > 0 && (
 							<div className="mb-4 py-4 border-y border-border/10">
-								<p className="text-sm text-primary mb-2">
-									{selectedNames.size} names selected
-								</p>
+								<p className="text-sm text-primary mb-2">{selectedNames.size} names selected</p>
 								<div className="flex gap-2">
-									<Button
-										onClick={() => void handleBulkAction("hide")}
-										size="sm"
-									>
+									<Button onClick={() => void handleBulkAction("hide")} size="sm">
 										<EyeOff size={14} /> Hide
 									</Button>
-									<Button
-										onClick={() => void handleBulkAction("unhide")}
-										size="sm"
-									>
+									<Button onClick={() => void handleBulkAction("unhide")} size="sm">
 										<Eye size={14} /> Unhide
 									</Button>
-									<Button
-										onClick={() => void handleBulkAction("lock")}
-										size="sm"
-									>
+									<Button onClick={() => void handleBulkAction("lock")} size="sm">
 										<Lock size={14} /> Lock
 									</Button>
-									<Button
-										onClick={() => void handleBulkAction("unlock")}
-										size="sm"
-									>
+									<Button onClick={() => void handleBulkAction("unlock")} size="sm">
 										<Lock size={14} /> Unlock
 									</Button>
-									<Button
-										onClick={() => setSelectedNames(new Set())}
-										variant="ghost"
-										size="sm"
-									>
+									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="sm">
 										Clear
 									</Button>
 								</div>
@@ -520,33 +442,22 @@ export function AdminDashboard() {
 												<input
 													type="checkbox"
 													checked={selectedNames.has(nameId)}
-													onChange={(event) =>
-														handleSelectionChange(nameId, event.target.checked)
-													}
+													onChange={(event) => handleSelectionChange(nameId, event.target.checked)}
 													className="w-4 h-4"
 												/>
 												<div>
-													<h3 className="font-semibold text-foreground">
-														{name.name}
-													</h3>
+													<h3 className="font-semibold text-foreground">{name.name}</h3>
 													{name.description && (
-														<p className="text-sm text-muted-foreground">
-															{name.description}
-														</p>
+														<p className="text-sm text-muted-foreground">{name.description}</p>
 													)}
 													<div className="flex gap-4 mt-1 text-xs text-muted-foreground/60">
 														<span>Votes: {name.votes}</span>
 														<span>
 															Score:{" "}
-															{name.popularityScore == null
-																? "?"
-																: name.popularityScore.toFixed(1)}
+															{name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
 														</span>
 														{name.lastVoted && (
-															<span>
-																Last:{" "}
-																{new Date(name.lastVoted).toLocaleDateString()}
-															</span>
+															<span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>
 														)}
 													</div>
 												</div>
@@ -566,9 +477,7 @@ export function AdminDashboard() {
 
 												<div className="flex gap-1">
 													<Button
-														onClick={() =>
-															void handleToggleHidden(name.id, hidden)
-														}
+														onClick={() => void handleToggleHidden(name.id, hidden)}
 														variant="ghost"
 														size="sm"
 														iconOnly={true}
@@ -576,9 +485,7 @@ export function AdminDashboard() {
 														{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
 													</Button>
 													<Button
-														onClick={() =>
-															void handleToggleLocked(name.id, locked)
-														}
+														onClick={() => void handleToggleLocked(name.id, locked)}
 														variant="ghost"
 														size="sm"
 														iconOnly={true}
@@ -625,12 +532,8 @@ export function AdminDashboard() {
 									</div>
 								</div>
 								<div>
-									<h3 className="text-lg font-semibold mb-2">
-										Recent Activity
-									</h3>
-									<p className="text-muted-foreground">
-										Activity tracking coming soon...
-									</p>
+									<h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
+									<p className="text-muted-foreground">Activity tracking coming soon...</p>
 								</div>
 							</div>
 						</div>
@@ -646,9 +549,7 @@ export function AdminDashboard() {
 					>
 						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">User Analytics</h2>
-							<p className="text-muted-foreground">
-								User tracking and analytics coming soon...
-							</p>
+							<p className="text-muted-foreground">User tracking and analytics coming soon...</p>
 						</div>
 					</motion.div>
 				)}
@@ -662,9 +563,7 @@ export function AdminDashboard() {
 					>
 						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">Site Analytics</h2>
-							<p className="text-muted-foreground">
-								Advanced analytics coming soon...
-							</p>
+							<p className="text-muted-foreground">Advanced analytics coming soon...</p>
 						</div>
 					</motion.div>
 				)}

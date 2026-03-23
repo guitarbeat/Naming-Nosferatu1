@@ -11,11 +11,7 @@
 type GlobalScope = typeof globalThis | typeof window | Record<string, unknown>;
 
 const GLOBAL_SCOPE: GlobalScope =
-	typeof globalThis !== "undefined"
-		? globalThis
-		: typeof window !== "undefined"
-			? window
-			: {};
+	typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : {};
 
 /**
  * * Get the global scope object
@@ -80,45 +76,34 @@ const ERROR_SEVERITY = {
 const USER_FRIENDLY_MESSAGES = {
 	[ERROR_TYPES.NETWORK]: {
 		[ERROR_SEVERITY.LOW]: "Connection is slow. Please try again.",
-		[ERROR_SEVERITY.MEDIUM]:
-			"Having trouble connecting. Check your internet and try again.",
-		[ERROR_SEVERITY.HIGH]:
-			"Can't connect right now. Please try again in a moment.",
-		[ERROR_SEVERITY.CRITICAL]:
-			"Service is temporarily unavailable. Please try again later.",
+		[ERROR_SEVERITY.MEDIUM]: "Having trouble connecting. Check your internet and try again.",
+		[ERROR_SEVERITY.HIGH]: "Can't connect right now. Please try again in a moment.",
+		[ERROR_SEVERITY.CRITICAL]: "Service is temporarily unavailable. Please try again later.",
 	},
 	[ERROR_TYPES.AUTH]: {
 		[ERROR_SEVERITY.LOW]: "Please log in again to continue.",
 		[ERROR_SEVERITY.MEDIUM]: "Your session expired. Please log in again.",
-		[ERROR_SEVERITY.HIGH]:
-			"Sign-in failed. Please check your credentials and try again.",
+		[ERROR_SEVERITY.HIGH]: "Sign-in failed. Please check your credentials and try again.",
 		[ERROR_SEVERITY.CRITICAL]:
 			"Unable to access your account. Please contact support if this continues.",
 	},
 	[ERROR_TYPES.DATABASE]: {
 		[ERROR_SEVERITY.LOW]: "Data is loading slowly. Please wait a moment.",
-		[ERROR_SEVERITY.MEDIUM]:
-			"Having trouble loading data. Please refresh the page.",
-		[ERROR_SEVERITY.HIGH]:
-			"Unable to load data right now. Please try again later.",
-		[ERROR_SEVERITY.CRITICAL]:
-			"Data service is temporarily unavailable. Please try again later.",
+		[ERROR_SEVERITY.MEDIUM]: "Having trouble loading data. Please refresh the page.",
+		[ERROR_SEVERITY.HIGH]: "Unable to load data right now. Please try again later.",
+		[ERROR_SEVERITY.CRITICAL]: "Data service is temporarily unavailable. Please try again later.",
 	},
 	[ERROR_TYPES.VALIDATION]: {
 		[ERROR_SEVERITY.LOW]: "Please check your input and try again.",
-		[ERROR_SEVERITY.MEDIUM]:
-			"There's an issue with your input. Please review and try again.",
-		[ERROR_SEVERITY.HIGH]:
-			"Invalid information entered. Please check your data and try again.",
+		[ERROR_SEVERITY.MEDIUM]: "There's an issue with your input. Please review and try again.",
+		[ERROR_SEVERITY.HIGH]: "Invalid information entered. Please check your data and try again.",
 		[ERROR_SEVERITY.CRITICAL]:
 			"Unable to process your request. Please contact support if this continues.",
 	},
 	[ERROR_TYPES.RUNTIME]: {
 		[ERROR_SEVERITY.LOW]: "Something went wrong. Please try again.",
-		[ERROR_SEVERITY.MEDIUM]:
-			"An error occurred. Please refresh the page and try again.",
-		[ERROR_SEVERITY.HIGH]:
-			"Something went wrong. Please try again in a moment.",
+		[ERROR_SEVERITY.MEDIUM]: "An error occurred. Please refresh the page and try again.",
+		[ERROR_SEVERITY.HIGH]: "Something went wrong. Please try again in a moment.",
 		[ERROR_SEVERITY.CRITICAL]:
 			"We're experiencing technical difficulties. Please try again later or contact support.",
 	},
@@ -227,10 +212,7 @@ function determineErrorType(error: unknown): string {
 	if (err.name === "TypeError" || err.name === "ReferenceError") {
 		return ERROR_TYPES.RUNTIME;
 	}
-	if (
-		err.code === "VALIDATION_ERROR" ||
-		(err.message as string)?.includes("validation")
-	) {
+	if (err.code === "VALIDATION_ERROR" || (err.message as string)?.includes("validation")) {
 		return ERROR_TYPES.VALIDATION;
 	}
 	return ERROR_TYPES.UNKNOWN;
@@ -282,10 +264,7 @@ function parseError(error: unknown): ParsedError {
 	};
 }
 
-function determineSeverity(
-	errorInfo: ParsedError,
-	metadata: Record<string, unknown>,
-): string {
+function determineSeverity(errorInfo: ParsedError, metadata: Record<string, unknown>): string {
 	if (metadata.isCritical) {
 		return ERROR_SEVERITY.CRITICAL;
 	}
@@ -310,10 +289,7 @@ function determineSeverity(
  * * Get the CSS class for a given error severity
  */
 
-function getUserFriendlyMessage(
-	errorInfo: ParsedError,
-	context: string,
-): string {
+function getUserFriendlyMessage(errorInfo: ParsedError, context: string): string {
 	const contextMap: Record<string, string> = {
 		"Tournament Completion": "Unable to complete tournament",
 		"Tournament Setup": "Unable to set up tournament",
@@ -325,10 +301,7 @@ function getUserFriendlyMessage(
 	};
 	const contextMessage = contextMap[context] || "An error occurred";
 	const severity = determineSeverity(errorInfo, {});
-	const messages = USER_FRIENDLY_MESSAGES as Record<
-		string,
-		Record<string, string>
-	>;
+	const messages = USER_FRIENDLY_MESSAGES as Record<string, Record<string, string>>;
 	if (
 		errorInfo.type === ERROR_TYPES.NETWORK &&
 		typeof navigator !== "undefined" &&
@@ -336,26 +309,17 @@ function getUserFriendlyMessage(
 	) {
 		return "You're currently offline. Please check your internet connection and try again.";
 	}
-	return (
-		messages[errorInfo.type]?.[severity] ||
-		`${contextMessage}. Please try again.`
-	);
+	return messages[errorInfo.type]?.[severity] || `${contextMessage}. Please try again.`;
 }
 
-function isRetryable(
-	errorInfo: ParsedError,
-	metadata: Record<string, unknown>,
-): boolean {
+function isRetryable(errorInfo: ParsedError, metadata: Record<string, unknown>): boolean {
 	if (metadata.isRetryable === false) {
 		return false;
 	}
 	if (metadata.isRetryable === true) {
 		return true;
 	}
-	if (
-		errorInfo.type === ERROR_TYPES.NETWORK ||
-		errorInfo.type === ERROR_TYPES.DATABASE
-	) {
+	if (errorInfo.type === ERROR_TYPES.NETWORK || errorInfo.type === ERROR_TYPES.DATABASE) {
 		return true;
 	}
 	return false;
@@ -414,12 +378,7 @@ function buildDiagnostics(
 	metadata: Record<string, unknown>,
 ): Record<string, unknown> {
 	const environment = collectEnvironmentSnapshot();
-	const debugHints = deriveDebugHints(
-		errorInfo,
-		context,
-		metadata,
-		environment,
-	);
+	const debugHints = deriveDebugHints(errorInfo, context, metadata, environment);
 	return {
 		fingerprint: createHash({
 			type: errorInfo.type,
@@ -561,17 +520,13 @@ function logError(
 			"",
 			"--- Stack Trace ---",
 			formattedError.stack || "(none)",
-			...(componentStack
-				? ["", "--- Component Stack ---", componentStack]
-				: []),
+			...(componentStack ? ["", "--- Component Stack ---", componentStack] : []),
 			...(metaLines ? ["", "--- Metadata ---", metaLines] : []),
 			...(diag.environment && Object.keys(diag.environment).length > 0
 				? [
 						"",
 						"--- Environment ---",
-						...Object.entries(diag.environment).map(
-							([k, v]) => `  ${k}: ${JSON.stringify(v)}`,
-						),
+						...Object.entries(diag.environment).map(([k, v]) => `  ${k}: ${JSON.stringify(v)}`),
 					]
 				: []),
 			"=========================",
@@ -607,10 +562,7 @@ function formatError(
 		aiContext: "",
 		stack: errorInfo.stack,
 	};
-	formatted.aiContext = buildAIContext(
-		formatted,
-		diagnostics as { fingerprint: string },
-	);
+	formatted.aiContext = buildAIContext(formatted, diagnostics as { fingerprint: string });
 	return formatted;
 }
 
@@ -629,10 +581,7 @@ export class CircuitBreaker {
 		this.resetTimeout = timeout;
 	}
 	async execute<T>(fn: () => Promise<T>): Promise<T> {
-		if (
-			this.state === "OPEN" &&
-			Date.now() - (this.lastFailureTime || 0) >= this.resetTimeout
-		) {
+		if (this.state === "OPEN" && Date.now() - (this.lastFailureTime || 0) >= this.resetTimeout) {
 			this.state = "HALF_OPEN";
 		}
 		if (this.state === "OPEN") {
@@ -679,9 +628,7 @@ function withRetry<T extends (...args: unknown[]) => Promise<unknown>>(
 	}) as T;
 }
 
-function createResilientFunction<
-	T extends (...args: unknown[]) => Promise<unknown>,
->(
+function createResilientFunction<T extends (...args: unknown[]) => Promise<unknown>>(
 	fn: T,
 	options: {
 		threshold?: number;
@@ -692,8 +639,7 @@ function createResilientFunction<
 ): T {
 	const cb = new CircuitBreaker(options.threshold, options.timeout);
 	const retried = withRetry(fn, options);
-	return (async (...args: unknown[]) =>
-		cb.execute(() => retried(...args))) as T;
+	return (async (...args: unknown[]) => cb.execute(() => retried(...args))) as T;
 }
 
 // ============================================================================

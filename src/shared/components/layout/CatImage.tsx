@@ -36,8 +36,7 @@ function analyseImage(imgEl: HTMLImageElement): {
 		const { data } = ctx.getImageData(0, 0, w, h);
 
 		const rowEnergy = Array(Number(h)).fill(0);
-		const toGray = (r: number, g: number, b: number) =>
-			r * 0.299 + g * 0.587 + b * 0.114;
+		const toGray = (r: number, g: number, b: number) => r * 0.299 + g * 0.587 + b * 0.114;
 		const idx = (x: number, y: number) => (y * w + x) * 4;
 
 		let totalR = 0,
@@ -58,16 +57,8 @@ function analyseImage(imgEl: HTMLImageElement): {
 				if (y > 0 && y < h - 1) {
 					const i1 = idx(x, y - 1),
 						i2 = idx(x, y + 1);
-					const g1 = toGray(
-						data[i1] ?? 0,
-						data[i1 + 1] ?? 0,
-						data[i1 + 2] ?? 0,
-					);
-					const g2 = toGray(
-						data[i2] ?? 0,
-						data[i2 + 1] ?? 0,
-						data[i2 + 2] ?? 0,
-					);
+					const g1 = toGray(data[i1] ?? 0, data[i1 + 1] ?? 0, data[i1 + 2] ?? 0);
+					const g2 = toGray(data[i2] ?? 0, data[i2 + 1] ?? 0, data[i2 + 2] ?? 0);
 					sum += Math.abs(g2 - g1);
 				}
 			}
@@ -82,8 +73,7 @@ function analyseImage(imgEl: HTMLImageElement): {
 			bestVal = -Infinity;
 
 		for (let y = start; y < end; y += 1) {
-			const e =
-				(rowEnergy[y - 1] || 0) + rowEnergy[y] + (rowEnergy[y + 1] || 0);
+			const e = (rowEnergy[y - 1] || 0) + rowEnergy[y] + (rowEnergy[y + 1] || 0);
 			if (e > bestVal) {
 				bestVal = e;
 				bestY = y;
@@ -111,10 +101,7 @@ function analyseImage(imgEl: HTMLImageElement): {
 	} catch (error) {
 		// Silently fail for CORS or canvas issues - focal analysis is optional enhancement
 		if (process.env.NODE_ENV === "development") {
-			console.debug(
-				"Could not analyze image (CORS or canvas issue):",
-				(error as Error).message,
-			);
+			console.debug("Could not analyze image (CORS or canvas issue):", (error as Error).message);
 		}
 		return {};
 	}
@@ -150,9 +137,7 @@ function CatImage({
 	const [hasError, setHasError] = useState(false);
 
 	const fallbackUrl =
-		CAT_IMAGES && CAT_IMAGES.length > 0
-			? (CAT_IMAGES[0] as string)
-			: "/assets/images/bby-cat.GIF";
+		CAT_IMAGES && CAT_IMAGES.length > 0 ? (CAT_IMAGES[0] as string) : "/assets/images/bby-cat.GIF";
 
 	// Reset error state when src changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: src changes should reset local error state
@@ -160,40 +145,33 @@ function CatImage({
 		setHasError(false);
 	}, [src]);
 
-	const applyImageEnhancements = useCallback(
-		(imgEl: HTMLImageElement | null) => {
-			if (!imgEl) {
-				return;
-			}
-			const container = containerRef.current;
-			if (!container) {
-				return;
-			}
+	const applyImageEnhancements = useCallback((imgEl: HTMLImageElement | null) => {
+		if (!imgEl) {
+			return;
+		}
+		const container = containerRef.current;
+		if (!container) {
+			return;
+		}
 
-			const { focal, accent, orientation } = analyseImage(imgEl);
-			if (focal != null) {
-				container.style.setProperty("--image-pos-y", `${focal}%`);
-			}
-			if (accent) {
-				container.style.setProperty("--cat-image-accent-rgb", accent);
-			}
-			if (orientation) {
-				container.dataset.orientation = orientation;
-			}
+		const { focal, accent, orientation } = analyseImage(imgEl);
+		if (focal != null) {
+			container.style.setProperty("--image-pos-y", `${focal}%`);
+		}
+		if (accent) {
+			container.style.setProperty("--cat-image-accent-rgb", accent);
+		}
+		if (orientation) {
+			container.dataset.orientation = orientation;
+		}
 
-			if (
-				imgEl.naturalWidth &&
-				imgEl.naturalHeight &&
-				imgEl.naturalHeight > 0
-			) {
-				const ratio = imgEl.naturalWidth / imgEl.naturalHeight;
-				container.style.setProperty("--cat-image-fit", "cover");
-				container.style.setProperty("--cat-image-ratio", ratio.toFixed(3));
-			}
-			container.dataset.loaded = "true";
-		},
-		[],
-	);
+		if (imgEl.naturalWidth && imgEl.naturalHeight && imgEl.naturalHeight > 0) {
+			const ratio = imgEl.naturalWidth / imgEl.naturalHeight;
+			container.style.setProperty("--cat-image-fit", "cover");
+			container.style.setProperty("--cat-image-ratio", ratio.toFixed(3));
+		}
+		container.dataset.loaded = "true";
+	}, []);
 
 	const handleLoad = useCallback(
 		(event: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -248,16 +226,11 @@ function CatImage({
 	const renderImage = () => {
 		const imageStyle: React.CSSProperties = {
 			objectPosition: "center var(--image-pos-y, 50%)",
-			objectFit:
-				objectFit ??
-				("var(--cat-image-fit, cover)" as React.CSSProperties["objectFit"]),
+			objectFit: objectFit ?? ("var(--cat-image-fit, cover)" as React.CSSProperties["objectFit"]),
 		};
 
 		// Only set CORS for external images; local assets don't need it
-		const isLocalAsset =
-			currentSrc &&
-			typeof currentSrc === "string" &&
-			currentSrc.startsWith("/");
+		const isLocalAsset = currentSrc && typeof currentSrc === "string" && currentSrc.startsWith("/");
 		const commonProps = {
 			ref: imageRef,
 			src: currentSrc || fallbackUrl,
@@ -271,18 +244,9 @@ function CatImage({
 			...(isLocalAsset ? {} : { crossOrigin: "anonymous" as const }),
 		};
 
-		if (
-			currentSrc &&
-			typeof currentSrc === "string" &&
-			currentSrc.startsWith("/assets/images/")
-		) {
+		if (currentSrc && typeof currentSrc === "string" && currentSrc.startsWith("/assets/images/")) {
 			const extension = currentSrc.split(".").pop()?.toLowerCase();
-			if (
-				!extension ||
-				extension === "gif" ||
-				extension === "avif" ||
-				extension === "webp"
-			) {
+			if (!extension || extension === "gif" || extension === "avif" || extension === "webp") {
 				return <img {...commonProps} />;
 			}
 			const base = currentSrc.replace(/\.[^.]+$/, "");

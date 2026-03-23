@@ -47,10 +47,7 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 		() => Array.from({ length: Math.max(1, totalRounds) }, (_, i) => i + 1),
 		[totalRounds],
 	);
-	const stageFlavor = useMemo(
-		() => getStageFlavor(round, totalRounds),
-		[round, totalRounds],
-	);
+	const stageFlavor = useMemo(() => getStageFlavor(round, totalRounds), [round, totalRounds]);
 
 	return (
 		<div className="rounded-xl border border-border/15 bg-foreground/[0.03] px-3 py-2">
@@ -69,10 +66,7 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 							: "border-border/20 bg-foreground/5 text-foreground/65";
 
 					return (
-						<div
-							key={`bracket-round-${stageRound}`}
-							className="flex items-center gap-1"
-						>
+						<div key={`bracket-round-${stageRound}`} className="flex items-center gap-1">
 							<div
 								className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}
 							>
@@ -82,11 +76,7 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 							{index < rounds.length - 1 && (
 								<div
 									className={`h-[1px] w-4 sm:w-6 ${
-										isDone
-											? "bg-chart-2/70"
-											: isActive
-												? "bg-primary/70"
-												: "bg-border/20"
+										isDone ? "bg-chart-2/70" : isActive ? "bg-primary/70" : "bg-border/20"
 									}`}
 								/>
 							)}

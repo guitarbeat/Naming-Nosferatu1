@@ -30,12 +30,7 @@ export function SectionHeading({
 }: SectionHeadingProps) {
 	if (variant === "matchcard") {
 		return (
-			<div
-				className={cn(
-					"flex flex-col items-center gap-0 py-1 mb-2 sm:mb-4 w-full",
-					className,
-				)}
-			>
+			<div className={cn("flex flex-col items-center gap-0 py-1 mb-2 sm:mb-4 w-full", className)}>
 				{isHero && (
 					<div
 						className="w-full h-px mb-3 bg-gradient-to-r from-transparent via-fuchsia-500/40 to-transparent"
@@ -50,9 +45,7 @@ export function SectionHeading({
 				<h2
 					className={cn(
 						"font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-violet-400 to-fuchsia-500 text-center leading-none",
-						isHero
-							? "text-3xl sm:text-4xl md:text-5xl mb-3"
-							: "text-2xl sm:text-3xl",
+						isHero ? "text-3xl sm:text-4xl md:text-5xl mb-3" : "text-2xl sm:text-3xl",
 					)}
 				>
 					{title}
@@ -64,21 +57,14 @@ export function SectionHeading({
 					/>
 				)}
 				{subtitle && !isHero && (
-					<p className="mt-1.5 text-sm text-muted-foreground text-center">
-						{subtitle}
-					</p>
+					<p className="mt-1.5 text-sm text-muted-foreground text-center">{subtitle}</p>
 				)}
 			</div>
 		);
 	}
 
 	return (
-		<div
-			className={cn(
-				"flex flex-col items-center gap-2 py-1 mb-2 sm:mb-4",
-				className,
-			)}
-		>
+		<div className={cn("flex flex-col items-center gap-2 py-1 mb-2 sm:mb-4", className)}>
 			<div className="flex w-full items-center gap-4" aria-hidden="true">
 				<div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
 				{Icon && (
@@ -90,12 +76,8 @@ export function SectionHeading({
 			</div>
 
 			<div className="text-center">
-				<h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-					{title}
-				</h2>
-				{subtitle && (
-					<p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-				)}
+				<h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{title}</h2>
+				{subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
 			</div>
 		</div>
 	);

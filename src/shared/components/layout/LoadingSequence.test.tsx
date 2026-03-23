@@ -51,9 +51,7 @@ describe("LoadingSequence", () => {
 			vi.advanceTimersByTime(480);
 		});
 
-		expect(screen.getByTestId("loading-sequence")).toHaveClass(
-			"loading-sequence--opening",
-		);
+		expect(screen.getByTestId("loading-sequence")).toHaveClass("loading-sequence--opening");
 		expect(document.documentElement.dataset.loadingSequence).toBe("opening");
 
 		act(() => {
@@ -86,9 +84,7 @@ describe("LoadingSequence", () => {
 			vi.advanceTimersByTime(120);
 		});
 
-		expect(screen.getByTestId("loading-sequence")).toHaveClass(
-			"loading-sequence--opening",
-		);
+		expect(screen.getByTestId("loading-sequence")).toHaveClass("loading-sequence--opening");
 
 		act(() => {
 			vi.advanceTimersByTime(240);
@@ -106,9 +102,7 @@ describe("LoadingSequence", () => {
 			value: undefined,
 		});
 
-		render(
-			<LoadingSequence title="Naming Nosferatu" onComplete={onComplete} />,
-		);
+		render(<LoadingSequence title="Naming Nosferatu" onComplete={onComplete} />);
 
 		act(() => {
 			vi.advanceTimersByTime(1700);

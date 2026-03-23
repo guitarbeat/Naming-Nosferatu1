@@ -54,10 +54,7 @@ interface UseTournamentStateResult {
 	isVoting: boolean;
 	handleVoteWithAnimation: (winnerId: string, loserId: string) => void;
 	matchHistory: MatchRecord[];
-	subscribeToTournamentUpdates?: (
-		tournamentId: string,
-		callback: (update: any) => void,
-	) => void;
+	subscribeToTournamentUpdates?: (tournamentId: string, callback: (update: any) => void) => void;
 	subscribeToMatchResults?: (callback: (result: any) => void) => void;
 	subscribeToUserActivity?: (callback: (activity: any) => void) => void;
 }
@@ -73,10 +70,7 @@ function haveSameIds(a: string[], b: string[]): boolean {
 	return left.every((id, index) => id === right[index]);
 }
 
-export function useTournamentState(
-	names: NameItem[],
-	userName?: string,
-): UseTournamentStateResult {
+export function useTournamentState(names: NameItem[], userName?: string): UseTournamentStateResult {
 	const toast = useToast();
 	const audioManager = useAudioManager();
 	const [isVoting, setIsVoting] = useState(false);
@@ -84,16 +78,10 @@ export function useTournamentState(
 	const [history, setHistory] = useState<HistoryEntry[]>([]);
 	const [refreshKey, setRefreshKey] = useState(0);
 	const [elo] = useState(() => new EloRating());
-	const tournamentMode = useMemo(
-		() => resolveTournamentMode(names.length),
-		[names.length],
-	);
+	const tournamentMode = useMemo(() => resolveTournamentMode(names.length), [names.length]);
 
 	const namesKey = useMemo(() => createNamesKey(names), [names]);
-	const tournamentId = useMemo(
-		() => createTournamentId(names, userName),
-		[names, userName],
-	);
+	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
 
 	const webSocket = useWebSocket({
 		url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
@@ -105,12 +93,11 @@ export function useTournamentState(
 		[userName],
 	);
 
-	const [persistentStateRaw, setPersistentState] =
-		useLocalStorage<PersistentTournamentState>(
-			tournamentId,
-			defaultPersistentState,
-			{ debounceWait: 1000 },
-		);
+	const [persistentStateRaw, setPersistentState] = useLocalStorage<PersistentTournamentState>(
+		tournamentId,
+		defaultPersistentState,
+		{ debounceWait: 1000 },
+	);
 
 	const persistentState = useMemo(
 		(): PersistentTournamentState =>
@@ -122,13 +109,10 @@ export function useTournamentState(
 		(
 			updates:
 				| Partial<PersistentTournamentState>
-				| ((
-						prev: PersistentTournamentState,
-				  ) => Partial<PersistentTournamentState>),
+				| ((prev: PersistentTournamentState) => Partial<PersistentTournamentState>),
 		) => {
 			setPersistentState((prev) => {
-				const delta =
-					typeof updates === "function" ? updates(prev) || {} : updates || {};
+				const delta = typeof updates === "function" ? updates(prev) || {} : updates || {};
 				return { ...prev, ...delta };
 			});
 		},
@@ -165,8 +149,7 @@ export function useTournamentState(
 			// Clean up any event listeners
 			const cleanupEvents = ["beforeunload", "pagehide", "visibilitychange"];
 			cleanupEvents.forEach((event) => {
-				const handlers =
-					(window as any).__tournamentEventHandlers?.[event] || [];
+				const handlers = (window as any).__tournamentEventHandlers?.[event] || [];
 				handlers.forEach((handler: EventListener) => {
 					window.removeEventListener(event, handler);
 				});
@@ -199,8 +182,7 @@ export function useTournamentState(
 		// Batch all state updates to prevent race conditions
 		const initializeTournament = () => {
 			const hasValidPersistence =
-				persistentState.namesKey === namesKey &&
-				persistentState.mode === tournamentMode;
+				persistentState.namesKey === namesKey && persistentState.mode === tournamentMode;
 			const initialRatings = buildInitialRatings(names);
 
 			let teams = persistentState.teams;
@@ -218,9 +200,7 @@ export function useTournamentState(
 				!hasValidPersistence ||
 				persistentState.bracketEntrants.length === 0 ||
 				!haveSameIds(
-					persistentState.bracketEntrants.filter(
-						(id) => !id.startsWith("__BYE__"),
-					),
+					persistentState.bracketEntrants.filter((id) => !id.startsWith("__BYE__")),
 					participantIds,
 				);
 			const bracketEntrants = shouldResetBracket
@@ -249,9 +229,7 @@ export function useTournamentState(
 				shouldResetBracket ||
 				(tournamentMode === "2v2" && teams !== persistentState.teams)
 			) {
-				stateUpdates.ratings = shouldResetBracket
-					? initialRatings
-					: persistentState.ratings;
+				stateUpdates.ratings = shouldResetBracket ? initialRatings : persistentState.ratings;
 			}
 
 			// Update ratings and persistent state atomically
@@ -291,16 +269,9 @@ export function useTournamentState(
 	]);
 
 	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
-	const teamsById = useMemo(
-		() => createTeamsById(persistentState.teams),
-		[persistentState.teams],
-	);
+	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
 	const bracketDerived = useMemo(
-		() =>
-			deriveBracketState(
-				persistentState.bracketEntrants,
-				persistentState.matchHistory,
-			),
+		() => deriveBracketState(persistentState.bracketEntrants, persistentState.matchHistory),
 		[persistentState.bracketEntrants, persistentState.matchHistory],
 	);
 
@@ -312,13 +283,7 @@ export function useTournamentState(
 			teamsById,
 			idToNameMap,
 		});
-	}, [
-		refreshKey,
-		idToNameMap,
-		tournamentMode,
-		bracketDerived.pendingMatchIds,
-		teamsById,
-	]);
+	}, [refreshKey, idToNameMap, tournamentMode, bracketDerived.pendingMatchIds, teamsById]);
 
 	const isComplete = bracketDerived.isComplete;
 	const metrics = useMemo(
@@ -328,15 +293,8 @@ export function useTournamentState(
 			}),
 		[bracketDerived],
 	);
-	const {
-		totalMatches,
-		matchNumber,
-		round,
-		totalRounds,
-		stageLabel,
-		progress,
-		etaMinutes,
-	} = metrics;
+	const { totalMatches, matchNumber, round, totalRounds, stageLabel, progress, etaMinutes } =
+		metrics;
 
 	const handleVote = useCallback(
 		(winnerId: string, loserId: string) => {
@@ -383,14 +341,7 @@ export function useTournamentState(
 
 			setRefreshKey((k) => k + 1);
 		},
-		[
-			currentMatch,
-			elo,
-			matchNumber,
-			round,
-			updatePersistentState,
-			tournamentMode,
-		],
+		[currentMatch, elo, matchNumber, round, updatePersistentState, tournamentMode],
 	);
 
 	const handleVoteWithAnimation = useCallback(

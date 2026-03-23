@@ -1,9 +1,6 @@
 import type { Database } from "@/integrations/supabase/types";
 import { isNameHidden } from "@/shared/lib/basic";
-import {
-	coreAPI,
-	statsAPI as supabaseStatsAPI,
-} from "@/shared/services/supabase/api";
+import { coreAPI, statsAPI as supabaseStatsAPI } from "@/shared/services/supabase/api";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 import type { NameItem } from "@/shared/types";
 
@@ -115,10 +112,7 @@ function mapLeaderboardRow(row: Record<string, unknown>): LeaderboardItem {
 	};
 }
 
-function getTimeframeStart(
-	now: Date,
-	timeframe: "day" | "week" | "month" | "year",
-): Date {
+function getTimeframeStart(now: Date, timeframe: "day" | "week" | "month" | "year"): Date {
 	const start = new Date(now);
 	if (timeframe === "day") {
 		start.setDate(start.getDate() - 1);
@@ -132,14 +126,9 @@ function getTimeframeStart(
 	return start;
 }
 
-function filterSelectionsSince(
-	rows: SelectionRow[],
-	since: Date,
-): SelectionRow[] {
+function filterSelectionsSince(rows: SelectionRow[], since: Date): SelectionRow[] {
 	const lowerBound = since.getTime();
-	return rows.filter(
-		(row) => new Date(row.selected_at).getTime() >= lowerBound,
-	);
+	return rows.filter((row) => new Date(row.selected_at).getTime() >= lowerBound);
 }
 
 function countDistinct<T>(rows: T[], getValue: (row: T) => string): number {
@@ -178,9 +167,7 @@ function groupSelectionsByTournament(rows: SelectionRow[]) {
 	return groups;
 }
 
-function averageTournamentMinutes(
-	groups: ReturnType<typeof groupSelectionsByTournament>,
-): number {
+function averageTournamentMinutes(groups: ReturnType<typeof groupSelectionsByTournament>): number {
 	const durations = [...groups.values()]
 		.filter((group) => group.count > 1)
 		.map((group) => (group.end - group.start) / 1000 / 60)
@@ -190,9 +177,7 @@ function averageTournamentMinutes(
 		return 0;
 	}
 
-	return roundNumber(
-		durations.reduce((sum, duration) => sum + duration, 0) / durations.length,
-	);
+	return roundNumber(durations.reduce((sum, duration) => sum + duration, 0) / durations.length);
 }
 
 function getPeakActiveUsers(rows: SelectionRow[]): number {
@@ -204,10 +189,7 @@ function getPeakActiveUsers(rows: SelectionRow[]): number {
 		usersByDay.set(dayKey, users);
 	}
 
-	return [...usersByDay.values()].reduce(
-		(peak, users) => Math.max(peak, users.size),
-		0,
-	);
+	return [...usersByDay.values()].reduce((peak, users) => Math.max(peak, users.size), 0);
 }
 
 function modeLabel(values: string[], fallback: string): string {
@@ -220,36 +202,20 @@ function modeLabel(values: string[], fallback: string): string {
 		counts.set(value, (counts.get(value) ?? 0) + 1);
 	}
 
-	return (
-		[...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] ??
-		fallback
-	);
+	return [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] ?? fallback;
 }
 
 function getMostActiveHour(rows: SelectionRow[]): string {
 	return modeLabel(
-		rows.map(
-			(row) =>
-				`${String(new Date(row.selected_at).getHours()).padStart(2, "0")}:00`,
-		),
+		rows.map((row) => `${String(new Date(row.selected_at).getHours()).padStart(2, "0")}:00`),
 		"00:00",
 	);
 }
 
 function getMostActiveDay(rows: SelectionRow[]): string {
-	const dayNames = [
-		"Sunday",
-		"Monday",
-		"Tuesday",
-		"Wednesday",
-		"Thursday",
-		"Friday",
-		"Saturday",
-	];
+	const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 	return modeLabel(
-		rows.map(
-			(row) => dayNames[new Date(row.selected_at).getDay()] ?? "Unknown",
-		),
+		rows.map((row) => dayNames[new Date(row.selected_at).getDay()] ?? "Unknown"),
 		"Unknown",
 	);
 }
@@ -267,9 +233,7 @@ function getRetentionRate(rows: SelectionRow[]): number {
 		return 0;
 	}
 
-	const retainedUsers = [...activeDaysByUser.values()].filter(
-		(days) => days.size > 1,
-	).length;
+	const retainedUsers = [...activeDaysByUser.values()].filter((days) => days.size > 1).length;
 	return roundNumber((retainedUsers / activeDaysByUser.size) * 100);
 }
 
@@ -277,10 +241,7 @@ async function getAnalyticsClient() {
 	return (await resolveSupabaseClient()) as any;
 }
 
-async function getUserSelectionsCount(
-	client: any,
-	userName: string,
-): Promise<number> {
+async function getUserSelectionsCount(client: any, userName: string): Promise<number> {
 	const { count, error } = await client
 		.from("cat_tournament_selections")
 		.select("id", { count: "exact", head: true })
@@ -289,10 +250,7 @@ async function getUserSelectionsCount(
 	return error ? 0 : (count ?? 0);
 }
 
-async function getUserRatingRows(
-	client: any,
-	userName: string,
-): Promise<UserRatingRow[]> {
+async function getUserRatingRows(client: any, userName: string): Promise<UserRatingRow[]> {
 	const { data, error } = await client
 		.from("cat_name_ratings")
 		.select("name_id, rating, wins, losses")
@@ -301,10 +259,7 @@ async function getUserRatingRows(
 	return error ? [] : ((data ?? []) as UserRatingRow[]);
 }
 
-async function getUserStatsFallback(
-	client: any,
-	userName: string,
-): Promise<UserStats | null> {
+async function getUserStatsFallback(client: any, userName: string): Promise<UserStats | null> {
 	const ratings = await getUserRatingRows(client, userName);
 	if (ratings.length === 0) {
 		return {
@@ -317,10 +272,7 @@ async function getUserStatsFallback(
 	}
 
 	const totalWins = ratings.reduce((sum, row) => sum + toNumber(row.wins), 0);
-	const totalLosses = ratings.reduce(
-		(sum, row) => sum + toNumber(row.losses),
-		0,
-	);
+	const totalLosses = ratings.reduce((sum, row) => sum + toNumber(row.losses), 0);
 	const totalSelections = await getUserSelectionsCount(client, userName);
 	const denominator = totalWins + totalLosses;
 
@@ -334,9 +286,7 @@ async function getUserStatsFallback(
 }
 
 export const leaderboardAPI = {
-	getLeaderboard: async (
-		limit: number | null = 50,
-	): Promise<LeaderboardItem[]> => {
+	getLeaderboard: async (limit: number | null = 50): Promise<LeaderboardItem[]> => {
 		try {
 			const client = await getAnalyticsClient();
 			if (!client) {
@@ -348,9 +298,7 @@ export const leaderboardAPI = {
 			});
 
 			if (!error && Array.isArray(data)) {
-				return data.map((row: Record<string, unknown>) =>
-					mapLeaderboardRow(row),
-				);
+				return data.map((row: Record<string, unknown>) => mapLeaderboardRow(row));
 			}
 
 			const names = await coreAPI.getTrendingNames(false);
@@ -361,9 +309,7 @@ export const leaderboardAPI = {
 				wins: toNumber(name.wins),
 				total_ratings: toNumber(name.wins) + toNumber(name.losses),
 				created_at:
-					(typeof name.created_at === "string"
-						? name.created_at
-						: name.createdAt) ?? null,
+					(typeof name.created_at === "string" ? name.created_at : name.createdAt) ?? null,
 				date_submitted: null,
 			}));
 		} catch {
@@ -416,10 +362,7 @@ export const statsAPI = {
 			}
 
 			const selections = (data ?? []) as SelectionRow[];
-			const timeframeSelections = filterSelectionsSince(
-				selections,
-				timeframeStart,
-			);
+			const timeframeSelections = filterSelectionsSince(selections, timeframeStart);
 			const daySelections = filterSelectionsSince(selections, dayStart);
 			const weekSelections = filterSelectionsSince(selections, weekStart);
 			const tournamentGroups = groupSelectionsByTournament(timeframeSelections);
@@ -432,9 +375,7 @@ export const statsAPI = {
 			const bounceRate =
 				totalTournaments > 0
 					? roundNumber(
-							([...tournamentGroups.values()].filter(
-								(group) => group.count <= 1,
-							).length /
+							([...tournamentGroups.values()].filter((group) => group.count <= 1).length /
 								totalTournaments) *
 								100,
 						)
@@ -461,9 +402,7 @@ export const statsAPI = {
 		}
 	},
 
-	getDetailedUserStats: async (
-		userName: string,
-	): Promise<DetailedUserStats | null> => {
+	getDetailedUserStats: async (userName: string): Promise<DetailedUserStats | null> => {
 		try {
 			const client = await getAnalyticsClient();
 			if (!client) {
@@ -485,27 +424,20 @@ export const statsAPI = {
 			const groups = groupSelectionsByTournament(selections);
 			const lastActiveAt = selections[selections.length - 1]?.selected_at;
 			const favoriteNames = (await statsAPI.getUserRatedNames(userName))
-				.sort(
-					(left, right) =>
-						toNumber(right.user_rating) - toNumber(left.user_rating),
-				)
+				.sort((left, right) => toNumber(right.user_rating) - toNumber(left.user_rating))
 				.slice(0, 3)
 				.map((item) => item.name);
 
 			const engagementScore = Math.min(
 				100,
-				baseStats.totalRatings * 5 +
-					baseStats.totalSelections * 2 +
-					baseStats.totalWins,
+				baseStats.totalRatings * 5 + baseStats.totalSelections * 2 + baseStats.totalWins,
 			);
 
 			return {
 				...baseStats,
 				lastActiveAt,
 				totalTournaments: groups.size,
-				completedTournaments: [...groups.values()].filter(
-					(group) => group.count > 1,
-				).length,
+				completedTournaments: [...groups.values()].filter((group) => group.count > 1).length,
 				averageTournamentTime: averageTournamentMinutes(groups),
 				favoriteNames,
 				preferredCategories: [],
@@ -561,11 +493,7 @@ export const statsAPI = {
 				getUserSelectionsCount(client, userName),
 			]);
 
-			if (
-				statsResult.error ||
-				!Array.isArray(statsResult.data) ||
-				statsResult.data.length === 0
-			) {
+			if (statsResult.error || !Array.isArray(statsResult.data) || statsResult.data.length === 0) {
 				return getUserStatsFallback(client, userName);
 			}
 

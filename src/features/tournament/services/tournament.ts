@@ -19,15 +19,10 @@ export class EloRating {
 	updateRating(r: number, exp: number, act: number, games = 0) {
 		// Use constant multiplier for new players (< 15 games) for faster convergence
 		const kMultiplier =
-			games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD
-				? ELO_RATING.NEW_PLAYER_K_MULTIPLIER
-				: 1;
+			games < ELO_RATING.NEW_PLAYER_GAME_THRESHOLD ? ELO_RATING.NEW_PLAYER_K_MULTIPLIER : 1;
 		const k = this.kFactor * kMultiplier;
 		const updated = Math.round(r + k * (act - exp));
-		return Math.max(
-			ELO_RATING.MIN_RATING,
-			Math.min(ELO_RATING.MAX_RATING, updated),
-		);
+		return Math.max(ELO_RATING.MIN_RATING, Math.min(ELO_RATING.MAX_RATING, updated));
 	}
 	calculateNewRatings(
 		ra: number,
@@ -77,9 +72,7 @@ function shuffleArray<T>(items: T[]): T[] {
 	return shuffled;
 }
 
-export function generateRandomTeams(
-	participants: Array<{ id: string; name: string }>,
-): Team[] {
+export function generateRandomTeams(participants: Array<{ id: string; name: string }>): Team[] {
 	const shuffled = shuffleArray(participants);
 	const teams: Team[] = [];
 
@@ -127,46 +120,29 @@ export function applyTeamMatchElo({
 	rightTeam: Team;
 	winnerSide: "left" | "right";
 }): Record<string, number> {
-	const leftRatings = leftTeam.memberIds.map(
-		(id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING,
-	);
-	const rightRatings = rightTeam.memberIds.map(
-		(id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING,
-	);
-	const leftAverage =
-		leftRatings.reduce((sum, value) => sum + value, 0) / leftRatings.length;
-	const rightAverage =
-		rightRatings.reduce((sum, value) => sum + value, 0) / rightRatings.length;
+	const leftRatings = leftTeam.memberIds.map((id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING);
+	const rightRatings = rightTeam.memberIds.map((id) => ratings[id] ?? ELO_RATING.DEFAULT_RATING);
+	const leftAverage = leftRatings.reduce((sum, value) => sum + value, 0) / leftRatings.length;
+	const rightAverage = rightRatings.reduce((sum, value) => sum + value, 0) / rightRatings.length;
 
-	const teamResult = elo.calculateNewRatings(
-		leftAverage,
-		rightAverage,
-		winnerSide,
-	);
+	const teamResult = elo.calculateNewRatings(leftAverage, rightAverage, winnerSide);
 	const leftDeltaPerMember = teamResult.newRatingA - leftAverage;
 	const rightDeltaPerMember = teamResult.newRatingB - rightAverage;
 
 	const nextRatings = { ...ratings };
 	for (const memberId of leftTeam.memberIds) {
 		const current = ratings[memberId] ?? ELO_RATING.DEFAULT_RATING;
-		nextRatings[memberId] = clampRating(
-			Math.round(current + leftDeltaPerMember),
-		);
+		nextRatings[memberId] = clampRating(Math.round(current + leftDeltaPerMember));
 	}
 	for (const memberId of rightTeam.memberIds) {
 		const current = ratings[memberId] ?? ELO_RATING.DEFAULT_RATING;
-		nextRatings[memberId] = clampRating(
-			Math.round(current + rightDeltaPerMember),
-		);
+		nextRatings[memberId] = clampRating(Math.round(current + rightDeltaPerMember));
 	}
 
 	return nextRatings;
 }
 
-export function getBracketStageLabel(
-	round: number,
-	totalRounds: number,
-): string {
+export function getBracketStageLabel(round: number, totalRounds: number): string {
 	const safeRound = Math.max(1, round);
 	const safeTotal = Math.max(1, totalRounds);
 	const remaining = safeTotal - safeRound;

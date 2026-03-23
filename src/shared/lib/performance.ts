@@ -61,9 +61,7 @@ function reportMetric(name: string, value: number, unit = ""): void {
  * Report navigation timing using the Navigation Timing Level 2 API.
  */
 function reportNavigationMetrics(): void {
-	const entries = performance.getEntriesByType(
-		"navigation",
-	) as PerformanceNavigationTiming[];
+	const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
 	const nav = entries[0];
 	if (!nav) {
 		return;
@@ -88,14 +86,9 @@ function reportNavigationMetrics(): void {
  * Safely create and register a `PerformanceObserver` for a single entry type.
  * Returns silently if the entry type isn't supported in the current browser.
  */
-function observeWebVital(
-	type: string,
-	callback: (entries: PerformanceEntryList) => void,
-): void {
+function observeWebVital(type: string, callback: (entries: PerformanceEntryList) => void): void {
 	try {
-		const observer = new PerformanceObserver((list) =>
-			callback(list.getEntries()),
-		);
+		const observer = new PerformanceObserver((list) => callback(list.getEntries()));
 		observer.observe({ type, buffered: true });
 		observers.push(observer);
 	} catch {
@@ -110,9 +103,7 @@ function observeWebVital(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Start collecting Web Vitals and navigation metrics (dev only). */
-export function initializePerformanceMonitoring(
-	config: PerformanceConfig = {},
-): void {
+export function initializePerformanceMonitoring(config: PerformanceConfig = {}): void {
 	currentConfig = config;
 
 	if (!isDev || typeof window === "undefined") {
@@ -120,11 +111,7 @@ export function initializePerformanceMonitoring(
 	}
 
 	// Navigation timing (after full page load)
-	window.addEventListener(
-		"load",
-		() => setTimeout(reportNavigationMetrics, 0),
-		{ once: true },
-	);
+	window.addEventListener("load", () => setTimeout(reportNavigationMetrics, 0), { once: true });
 
 	if (!("PerformanceObserver" in window)) {
 		return;
@@ -147,9 +134,7 @@ export function initializePerformanceMonitoring(
 			| (PerformanceEntry & { renderTime?: number; loadTime?: number })
 			| undefined;
 		if (last) {
-			metrics.lcp = Math.round(
-				last.renderTime || last.loadTime || last.startTime,
-			);
+			metrics.lcp = Math.round(last.renderTime || last.loadTime || last.startTime);
 			if (metrics.lcp !== undefined) {
 				reportMetric("LCP", metrics.lcp, "ms");
 			}
@@ -175,9 +160,7 @@ export function initializePerformanceMonitoring(
 
 	// First Input Delay
 	observeWebVital("first-input", (entries) => {
-		const entry = entries[0] as
-			| (PerformanceEntry & { processingStart: number })
-			| undefined;
+		const entry = entries[0] as (PerformanceEntry & { processingStart: number }) | undefined;
 		if (entry) {
 			metrics.fid = Math.round(entry.processingStart - entry.startTime);
 			if (metrics.fid !== undefined) {

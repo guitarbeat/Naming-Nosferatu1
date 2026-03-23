@@ -4,10 +4,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	matchesMediaQuery,
-	subscribeToMediaQuery,
-} from "@/shared/lib/mediaQuery";
+import { matchesMediaQuery, subscribeToMediaQuery } from "@/shared/lib/mediaQuery";
 import {
 	getStorageString,
 	parseJsonValue,
@@ -26,10 +23,7 @@ import { STORAGE_KEYS } from "@/shared/lib/constants";
 /**
  * Simple debounce utility for internal use.
  */
-function debounce<T extends (...args: unknown[]) => void>(
-	func: T,
-	wait: number,
-): T {
+function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): T {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 	return function (this: unknown, ...args: Parameters<T>) {
 		if (timeout) {
@@ -146,20 +140,12 @@ function isSlowNetwork(connection: NetworkInformation | null): boolean {
 	const saveData = Boolean(connection.saveData);
 	const rtt = connection.rtt ?? 0;
 	const downlink = connection.downlink ?? 10;
-	return (
-		type === "slow-2g" ||
-		type === "2g" ||
-		saveData ||
-		rtt > 300 ||
-		downlink < 1.5
-	);
+	return type === "slow-2g" || type === "2g" || saveData || rtt > 300 || downlink < 1.5;
 }
 
 export function useBrowserState() {
 	const isOnline = useOnlineStatus();
-	const prefersReducedMotion = useMediaQuery(
-		"(prefers-reduced-motion: reduce)",
-	);
+	const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 	const readViewport = useCallback(() => {
 		if (!IS_BROWSER) {
 			return {
@@ -195,9 +181,7 @@ export function useBrowserState() {
 			});
 		};
 		window.addEventListener("resize", handleResize, { passive: true });
-		window.addEventListener("orientationchange", handleResize, {
-			passive: true,
-		});
+		window.addEventListener("orientationchange", handleResize, { passive: true });
 		return () => {
 			if (rafId) {
 				window.cancelAnimationFrame(rafId);
@@ -241,10 +225,7 @@ export function useOfflineSync(): void {
 		try {
 			const userName = getStorageString(STORAGE_KEYS.USER) ?? "anonymous";
 			await flushRatingsMutations(async (entry) => {
-				const ratingsRecord: Record<
-					string,
-					{ rating: number; wins: number; losses: number }
-				> = {};
+				const ratingsRecord: Record<string, { rating: number; wins: number; losses: number }> = {};
 				for (const r of entry.payload.ratings) {
 					ratingsRecord[r.name_id] = {
 						rating: r.rating,
@@ -327,9 +308,7 @@ export function useLocalStorage<T>(
 		}
 
 		const raw = getStorageString(key, null);
-		return raw === null
-			? initialRef.current
-			: parseJsonValue(raw, initialRef.current);
+		return raw === null ? initialRef.current : parseJsonValue(raw, initialRef.current);
 	}, [key]);
 
 	const [stored, setStored] = useState<T>(readValue);
@@ -357,8 +336,7 @@ export function useLocalStorage<T>(
 	const setValue = useCallback(
 		(next: SetStateAction<T>) => {
 			try {
-				const resolved =
-					next instanceof Function ? next(valueRef.current) : next;
+				const resolved = next instanceof Function ? next(valueRef.current) : next;
 				setStored(resolved);
 				valueRef.current = resolved;
 				if (debouncedSetItemRef.current) {
@@ -429,10 +407,7 @@ interface CollapsibleReturn {
  * const sidebar = useCollapsible(false, "sidebar-collapsed");
  * <button onClick={sidebar.toggle}>{sidebar.isCollapsed ? "▶" : "▼"}</button>
  */
-export function useCollapsible(
-	defaultValue = false,
-	storageKey?: string,
-): CollapsibleReturn {
+export function useCollapsible(defaultValue = false, storageKey?: string): CollapsibleReturn {
 	const [value, setValueRaw] = useState<boolean>(() => {
 		if (storageKey && IS_BROWSER) {
 			return readStorageJson<boolean>(storageKey, defaultValue);
@@ -483,29 +458,19 @@ interface UseNameSuggestionResult {
 	setGlobalError: (error: string) => void;
 }
 
-export function useNameSuggestion(
-	props: UseNameSuggestionProps = {},
-): UseNameSuggestionResult {
+export function useNameSuggestion(props: UseNameSuggestionProps = {}): UseNameSuggestionResult {
 	const [values, setValues] = useState({ name: "", description: "" });
-	const [errors, setErrors] = useState<{ name?: string; description?: string }>(
-		{},
-	);
-	const [touched, setTouched] = useState<{
-		name?: boolean;
-		description?: boolean;
-	}>({});
+	const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+	const [touched, setTouched] = useState<{ name?: boolean; description?: boolean }>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [globalError, setGlobalError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
 
-	const handleChange = useCallback(
-		(field: "name" | "description", value: string) => {
-			setValues((prev) => ({ ...prev, [field]: value }));
-			setErrors((prev) => ({ ...prev, [field]: undefined }));
-			setGlobalError("");
-		},
-		[],
-	);
+	const handleChange = useCallback((field: "name" | "description", value: string) => {
+		setValues((prev) => ({ ...prev, [field]: value }));
+		setErrors((prev) => ({ ...prev, [field]: undefined }));
+		setGlobalError("");
+	}, []);
 
 	const handleBlur = useCallback((field: "name" | "description") => {
 		setTouched((prev) => ({ ...prev, [field]: true }));
@@ -541,9 +506,7 @@ export function useNameSuggestion(
 			props.onSuccess?.();
 		} catch (submitError) {
 			setGlobalError(
-				submitError instanceof Error
-					? submitError.message
-					: "Failed to submit suggestion",
+				submitError instanceof Error ? submitError.message : "Failed to submit suggestion",
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -558,8 +521,7 @@ export function useNameSuggestion(
 		setSuccessMessage("");
 	}, []);
 
-	const isValid =
-		!errors.name && !errors.description && values.name.trim() !== "";
+	const isValid = !errors.name && !errors.description && values.name.trim() !== "";
 
 	return {
 		values,

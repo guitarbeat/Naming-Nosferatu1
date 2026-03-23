@@ -37,8 +37,7 @@ function isIndexedDbAvailable(): boolean {
 function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
 	return new Promise((resolve, reject) => {
 		request.onsuccess = () => resolve(request.result);
-		request.onerror = () =>
-			reject(request.error ?? new Error("IndexedDB request failed"));
+		request.onerror = () => reject(request.error ?? new Error("IndexedDB request failed"));
 	});
 }
 
@@ -60,8 +59,7 @@ function openOutboxDb(): Promise<IDBDatabase> {
 		};
 
 		request.onsuccess = () => resolve(request.result);
-		request.onerror = () =>
-			reject(request.error ?? new Error("Failed to open IndexedDB"));
+		request.onerror = () => reject(request.error ?? new Error("Failed to open IndexedDB"));
 	});
 }
 
@@ -194,8 +192,7 @@ export async function flushRatingsMutations(
 			succeeded += 1;
 		} catch (error) {
 			failed += 1;
-			const message =
-				error instanceof Error ? error.message : "Outbox replay failed";
+			const message = error instanceof Error ? error.message : "Outbox replay failed";
 			await updateMutation(entry, {
 				attempts: entry.attempts + 1,
 				lastAttemptAt: Date.now(),
@@ -211,14 +208,10 @@ export async function flushRatingsMutations(
 	const remaining = (await listRatingsMutations()).length;
 	if (remaining > 0) {
 		const snapshot = await getRatingsOutboxSnapshot();
-		ErrorManager.addBreadcrumb(
-			"outbox.stale",
-			"Ratings outbox still has pending work",
-			{
-				remaining,
-				oldestAgeMs: snapshot.oldestAgeMs ?? 0,
-			},
-		);
+		ErrorManager.addBreadcrumb("outbox.stale", "Ratings outbox still has pending work", {
+			remaining,
+			oldestAgeMs: snapshot.oldestAgeMs ?? 0,
+		});
 	}
 
 	return {

@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	cleanupPerformanceMonitoring,
-	initializePerformanceMonitoring,
-} from "./performance";
+import { cleanupPerformanceMonitoring, initializePerformanceMonitoring } from "./performance";
 
 type MockObserverRecord = {
 	type?: string;
@@ -51,9 +48,7 @@ describe("performance monitoring", () => {
 	beforeEach(() => {
 		mockObservers.length = 0;
 		vi.stubGlobal("PerformanceObserver", MockPerformanceObserver);
-		vi.spyOn(window.performance, "getEntriesByType").mockReturnValue(
-			[] as PerformanceEntryList,
-		);
+		vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([] as PerformanceEntryList);
 	});
 
 	afterEach(() => {

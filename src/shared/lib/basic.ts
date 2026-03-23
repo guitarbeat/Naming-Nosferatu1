@@ -49,36 +49,28 @@ export function matchesNameSearchTerm(
 	);
 }
 
-export function getVisibleNames(
-	names: NameItem[] | null | undefined,
-): NameItem[] {
+export function getVisibleNames(names: NameItem[] | null | undefined): NameItem[] {
 	if (!Array.isArray(names)) {
 		return [];
 	}
 	return names.filter((name) => !isNameHidden(name));
 }
 
-export function getActiveNames(
-	names: NameItem[] | null | undefined,
-): NameItem[] {
+export function getActiveNames(names: NameItem[] | null | undefined): NameItem[] {
 	if (!Array.isArray(names)) {
 		return [];
 	}
 	return names.filter(isNameActive);
 }
 
-export function getHiddenNames(
-	names: NameItem[] | null | undefined,
-): NameItem[] {
+export function getHiddenNames(names: NameItem[] | null | undefined): NameItem[] {
 	if (!Array.isArray(names)) {
 		return [];
 	}
 	return names.filter(isNameHidden);
 }
 
-export function getLockedNames(
-	names: NameItem[] | null | undefined,
-): NameItem[] {
+export function getLockedNames(names: NameItem[] | null | undefined): NameItem[] {
 	if (!Array.isArray(names)) {
 		return [];
 	}

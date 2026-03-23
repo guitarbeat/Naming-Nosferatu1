@@ -1,12 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	leaderboardAPI,
-	statsAPI,
-} from "@/features/analytics/services/analyticsService";
-import {
-	coreAPI,
-	statsAPI as supabaseStatsAPI,
-} from "@/shared/services/supabase/api";
+import { leaderboardAPI, statsAPI } from "@/features/analytics/services/analyticsService";
+import { coreAPI, statsAPI as supabaseStatsAPI } from "@/shared/services/supabase/api";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 
 vi.mock("@/shared/services/supabase/runtime", () => ({
@@ -49,9 +43,7 @@ describe("analyticsService", () => {
 
 		const result = await leaderboardAPI.getLeaderboard(25);
 
-		expect(rpc).toHaveBeenCalledWith("get_leaderboard_stats", {
-			limit_count: 25,
-		});
+		expect(rpc).toHaveBeenCalledWith("get_leaderboard_stats", { limit_count: 25 });
 		expect(result).toEqual([
 			{
 				name_id: "id-1",
@@ -96,18 +88,14 @@ describe("analyticsService", () => {
 		});
 		const from = vi.fn().mockReturnValue({ select });
 		const rpc = vi.fn().mockResolvedValue({
-			data: [
-				{ total_ratings: 3, total_wins: 9, total_losses: 6, win_rate: 60 },
-			],
+			data: [{ total_ratings: 3, total_wins: 9, total_losses: 6, win_rate: 60 }],
 			error: null,
 		});
 		mockedResolveSupabaseClient.mockResolvedValue({ from, rpc } as never);
 
 		const result = await statsAPI.getUserStats("aaron");
 
-		expect(rpc).toHaveBeenCalledWith("get_user_stats", {
-			p_user_name: "aaron",
-		});
+		expect(rpc).toHaveBeenCalledWith("get_user_stats", { p_user_name: "aaron" });
 		expect(result).toEqual({
 			totalRatings: 3,
 			totalSelections: 7,
@@ -119,18 +107,10 @@ describe("analyticsService", () => {
 
 	it("falls back to coreAPI names if the leaderboard RPC is unavailable", async () => {
 		mockedResolveSupabaseClient.mockResolvedValue({
-			rpc: vi
-				.fn()
-				.mockResolvedValue({ data: null, error: new Error("unavailable") }),
+			rpc: vi.fn().mockResolvedValue({ data: null, error: new Error("unavailable") }),
 		} as never);
 		mockedCoreApi.getTrendingNames.mockResolvedValue([
-			{
-				id: "fallback-1",
-				name: "Fallback Cat",
-				avg_rating: 1501,
-				wins: 2,
-				losses: 1,
-			},
+			{ id: "fallback-1", name: "Fallback Cat", avg_rating: 1501, wins: 2, losses: 1 },
 		]);
 
 		const result = await leaderboardAPI.getLeaderboard(10);

@@ -4,11 +4,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type {
-	MatchResult,
-	TournamentUpdate,
-	UserActivity,
-} from "../services/websocketService";
+import type { MatchResult, TournamentUpdate, UserActivity } from "../services/websocketService";
 import { getWebSocketService } from "../services/websocketService";
 
 interface UseWebSocketOptions {
@@ -22,9 +18,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 	>("disconnected");
 	const [lastMessage, setLastMessage] = useState<string>("");
 	const [activeUsers, setActiveUsers] = useState<UserActivity[]>([]);
-	const wsServiceRef = useRef<ReturnType<typeof getWebSocketService> | null>(
-		null,
-	);
+	const wsServiceRef = useRef<ReturnType<typeof getWebSocketService> | null>(null);
 
 	// Initialize WebSocket service
 	useEffect(() => {
@@ -70,9 +64,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 		const interval = setInterval(updateConnectionState, 1000);
 		service.onMessage("connection_state", (message) => {
 			if (message.data) {
-				setConnectionState(
-					message.data as "connecting" | "connected" | "disconnected" | "error",
-				);
+				setConnectionState(message.data as "connecting" | "connected" | "disconnected" | "error");
 			}
 		});
 
@@ -86,34 +78,25 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 	const subscribeToTournament = useCallback(
 		(tournamentId: string, callback: (update: TournamentUpdate) => void) => {
 			if (wsServiceRef.current) {
-				return wsServiceRef.current.subscribeToTournament(
-					tournamentId,
-					callback,
-				);
+				return wsServiceRef.current.subscribeToTournament(tournamentId, callback);
 			}
 		},
 		[],
 	);
 
 	// Match results subscription
-	const subscribeToMatches = useCallback(
-		(callback: (result: MatchResult) => void) => {
-			if (wsServiceRef.current) {
-				return wsServiceRef.current.subscribeToMatches(callback);
-			}
-		},
-		[],
-	);
+	const subscribeToMatches = useCallback((callback: (result: MatchResult) => void) => {
+		if (wsServiceRef.current) {
+			return wsServiceRef.current.subscribeToMatches(callback);
+		}
+	}, []);
 
 	// User activity subscription
-	const subscribeToUserActivity = useCallback(
-		(callback: (activity: UserActivity) => void) => {
-			if (wsServiceRef.current) {
-				return wsServiceRef.current.subscribeToUserActivity(callback);
-			}
-		},
-		[],
-	);
+	const subscribeToUserActivity = useCallback((callback: (activity: UserActivity) => void) => {
+		if (wsServiceRef.current) {
+			return wsServiceRef.current.subscribeToUserActivity(callback);
+		}
+	}, []);
 
 	// Send custom message
 	const sendMessage = useCallback((message: any) => {
@@ -137,28 +120,21 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 			wsServiceRef.current.onMessage("match_result", (message) => {
 				if (message.data && typeof message.data === "object") {
 					const result = message.data as MatchResult;
-					setLastMessage(
-						`Match completed: ${result.winnerId} defeated ${result.loserId}`,
-					);
+					setLastMessage(`Match completed: ${result.winnerId} defeated ${result.loserId}`);
 				}
 			});
 
 			wsServiceRef.current.onMessage("user_joined", (message) => {
 				if (message.data && typeof message.data === "object") {
 					const activity = message.data as UserActivity;
-					setActiveUsers((prev) => [
-						...prev.filter((u) => u.userId !== activity.userId),
-						activity,
-					]);
+					setActiveUsers((prev) => [...prev.filter((u) => u.userId !== activity.userId), activity]);
 				}
 			});
 
 			wsServiceRef.current.onMessage("user_left", (message) => {
 				if (message.data && typeof message.data === "object") {
 					const activity = message.data as UserActivity;
-					setActiveUsers((prev) =>
-						prev.filter((u) => u.userId !== activity.userId),
-					);
+					setActiveUsers((prev) => prev.filter((u) => u.userId !== activity.userId));
 				}
 			});
 		}

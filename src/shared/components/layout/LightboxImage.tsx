@@ -14,13 +14,7 @@ interface LightboxImageProps {
 	onLoad?: () => void;
 }
 
-export function LightboxImage({
-	src,
-	alt,
-	className,
-	onError,
-	onLoad,
-}: LightboxImageProps) {
+export function LightboxImage({ src, alt, className, onError, onLoad }: LightboxImageProps) {
 	const [isLoading, setIsLoading] = useState(true);
 	const [hasError, setHasError] = useState(false);
 	const [retryCount, setRetryCount] = useState(0);
@@ -83,9 +77,7 @@ export function LightboxImage({
 
 	if (hasError) {
 		return (
-			<div
-				className={`flex items-center justify-center text-muted-foreground ${className}`}
-			>
+			<div className={`flex items-center justify-center text-muted-foreground ${className}`}>
 				<div className="text-center">
 					<div className="text-6xl mb-4">🐱</div>
 					<p className="text-sm mb-2">Image failed to load</p>
@@ -110,9 +102,7 @@ export function LightboxImage({
 	return (
 		<div className="relative">
 			{isLoading && (
-				<div
-					className={`absolute inset-0 flex items-center justify-center ${className}`}
-				>
+				<div className={`absolute inset-0 flex items-center justify-center ${className}`}>
 					<div className="animate-spin rounded-full h-12 w-12 border-4 border-foreground/20 border-t-foreground" />
 				</div>
 			)}

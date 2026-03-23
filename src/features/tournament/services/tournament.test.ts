@@ -81,9 +81,7 @@ describe("EloRating", () => {
 			// Expected change: kFactor * 2 * (1 - 0.5)
 			// Default kFactor is 40 -> 80 * 0.5 = +40 points
 			const newRating = elo.updateRating(rating, exp, act, games);
-			expect(newRating).toBe(
-				Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 2 * 0.5),
-			);
+			expect(newRating).toBe(Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 2 * 0.5));
 		});
 
 		it("should use standard kFactor for an experienced player (games >= NEW_PLAYER_GAME_THRESHOLD)", () => {
@@ -96,9 +94,7 @@ describe("EloRating", () => {
 			// Expected change: kFactor * (1 - 0.5)
 			// Default kFactor is 40 -> 40 * 0.5 = +20 points
 			const newRating = elo.updateRating(rating, exp, act, games);
-			expect(newRating).toBe(
-				Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 0.5),
-			);
+			expect(newRating).toBe(Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 0.5));
 		});
 
 		it("should treat a player as new when games argument is not provided", () => {
@@ -109,9 +105,7 @@ describe("EloRating", () => {
 
 			// Expected change: kFactor * 2 * (1 - 0.5)
 			const newRating = elo.updateRating(rating, exp, act);
-			expect(newRating).toBe(
-				Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 2 * 0.5),
-			);
+			expect(newRating).toBe(Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * 2 * 0.5));
 		});
 
 		it("should decrease rating when actual outcome is lower than expected", () => {
@@ -123,9 +117,7 @@ describe("EloRating", () => {
 
 			// Expected change: 40 * (0 - 0.5) = -20 points
 			const newRating = elo.updateRating(rating, exp, act, games);
-			expect(newRating).toBe(
-				Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * -0.5),
-			);
+			expect(newRating).toBe(Math.round(1500 + ELO_RATING.DEFAULT_K_FACTOR * -0.5));
 		});
 
 		it("should bound the maximum rating to ELO_RATING.MAX_RATING", () => {
@@ -168,17 +160,13 @@ describe("EloRating", () => {
 			const ratingMax = ELO_RATING.MAX_RATING;
 			const expMax = elo.getExpectedScore(ratingMax, 1000);
 			const actMax = 1;
-			expect(elo.updateRating(ratingMax, expMax, actMax, 100)).toBe(
-				ELO_RATING.MAX_RATING,
-			);
+			expect(elo.updateRating(ratingMax, expMax, actMax, 100)).toBe(ELO_RATING.MAX_RATING);
 
 			// Min rating losing against high rating -> should remain min rating
 			const ratingMin = ELO_RATING.MIN_RATING;
 			const expMin = elo.getExpectedScore(ratingMin, 2000);
 			const actMin = 0;
-			expect(elo.updateRating(ratingMin, expMin, actMin, 100)).toBe(
-				ELO_RATING.MIN_RATING,
-			);
+			expect(elo.updateRating(ratingMin, expMin, actMin, 100)).toBe(ELO_RATING.MIN_RATING);
 		});
 	});
 
@@ -335,16 +323,8 @@ describe("team utilities", () => {
 
 	it("applyTeamMatchElo updates individual ratings for both members", () => {
 		const elo = new EloRating();
-		const leftTeam = {
-			id: "team-1",
-			memberIds: ["1", "2"],
-			memberNames: ["A", "B"],
-		};
-		const rightTeam = {
-			id: "team-2",
-			memberIds: ["3", "4"],
-			memberNames: ["C", "D"],
-		};
+		const leftTeam = { id: "team-1", memberIds: ["1", "2"], memberNames: ["A", "B"] };
+		const rightTeam = { id: "team-2", memberIds: ["3", "4"], memberNames: ["C", "D"] };
 		const initialRatings = { 1: 1500, 2: 1500, 3: 1500, 4: 1500 };
 
 		const updated = applyTeamMatchElo({
@@ -369,16 +349,8 @@ describe("team utilities", () => {
 
 	it("applyTeamMatchElo respects rating clamps", () => {
 		const elo = new EloRating();
-		const leftTeam = {
-			id: "team-1",
-			memberIds: ["1", "2"],
-			memberNames: ["A", "B"],
-		};
-		const rightTeam = {
-			id: "team-2",
-			memberIds: ["3", "4"],
-			memberNames: ["C", "D"],
-		};
+		const leftTeam = { id: "team-1", memberIds: ["1", "2"], memberNames: ["A", "B"] };
+		const rightTeam = { id: "team-2", memberIds: ["3", "4"], memberNames: ["C", "D"] };
 		const initialRatings = {
 			1: ELO_RATING.MAX_RATING - 1,
 			2: ELO_RATING.MAX_RATING - 1,

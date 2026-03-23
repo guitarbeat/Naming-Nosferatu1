@@ -19,10 +19,7 @@ const createRenderTargetOptions = (
 ) => {
 	const halfFloatExtension = gl.renderer.extensions.OES_texture_half_float;
 	const resolvedType =
-		type ??
-		gl.HALF_FLOAT ??
-		halfFloatExtension?.HALF_FLOAT_OES ??
-		gl.UNSIGNED_BYTE;
+		type ?? gl.HALF_FLOAT ?? halfFloatExtension?.HALF_FLOAT_OES ?? gl.UNSIGNED_BYTE;
 	const internalFormat = gl.renderer.isWebgl2
 		? resolvedType === gl.FLOAT
 			? (gl as WebGL2RenderingContext).RGBA32F
@@ -45,21 +42,10 @@ class GpgpuSurface {
 	write: RenderTarget;
 	mesh: Mesh;
 
-	constructor(
-		gl: OGLRenderingContext,
-		width: number,
-		height: number,
-		type?: number,
-	) {
+	constructor(gl: OGLRenderingContext, width: number, height: number, type?: number) {
 		this.gl = gl;
-		this.read = new RenderTarget(
-			gl,
-			createRenderTargetOptions(gl, width, height, type),
-		);
-		this.write = new RenderTarget(
-			gl,
-			createRenderTargetOptions(gl, width, height, type),
-		);
+		this.read = new RenderTarget(gl, createRenderTargetOptions(gl, width, height, type));
+		this.write = new RenderTarget(gl, createRenderTargetOptions(gl, width, height, type));
 		this.mesh = new Mesh(gl, { geometry: new Triangle(gl) });
 	}
 

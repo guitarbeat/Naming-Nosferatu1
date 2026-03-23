@@ -19,11 +19,7 @@ import {
 	setBackgroundMusicVolume,
 	stopBackgroundMusic,
 } from "@/shared/lib/sound";
-import {
-	getStorageString,
-	isStorageAvailable,
-	setStorageString,
-} from "@/shared/lib/storage";
+import { getStorageString, isStorageAvailable, setStorageString } from "@/shared/lib/storage";
 
 /* =========================================================================
    AUDIO MANAGER HOOK
@@ -211,15 +207,12 @@ export function useAudioManager(): UseAudioManagerResult {
 		});
 	}, [isMuted]);
 
-	const handleBackgroundMusicVolumeChange = useCallback(
-		(nextVolume: number) => {
-			const newVolume = Math.min(1, Math.max(0, nextVolume));
-			setBackgroundMusicVolumeState(newVolume);
-			setBackgroundMusicVolume(newVolume);
-			writeStorage(STORAGE_KEYS.MUSIC_VOLUME, String(newVolume));
-		},
-		[],
-	);
+	const handleBackgroundMusicVolumeChange = useCallback((nextVolume: number) => {
+		const newVolume = Math.min(1, Math.max(0, nextVolume));
+		setBackgroundMusicVolumeState(newVolume);
+		setBackgroundMusicVolume(newVolume);
+		writeStorage(STORAGE_KEYS.MUSIC_VOLUME, String(newVolume));
+	}, []);
 
 	const handleNextTrack = useCallback(() => {
 		playNextTrack();
