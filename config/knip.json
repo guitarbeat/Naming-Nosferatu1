@@ -8,6 +8,14 @@
 		"src/features/tournament/hooks/useTournamentSelectionSaver.ts",
 		"src/features/tournament/hooks/useTournamentSelectionSaver.bench.ts"
 	],
-	"ignoreDependencies": ["@capacitor/cli", "tailwindcss"],
+	"ignoreDependencies": [
+		"@capacitor/cli",
+		"tailwindcss",
+		"multer",
+		"@types/multer",
+		"react-window",
+		"@types/react-window",
+		"@sentry/tracing"
+	],
 	"typescript": true
 }

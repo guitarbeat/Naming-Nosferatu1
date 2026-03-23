@@ -256,6 +256,9 @@
 	z-index: var(--z-toast);
 	min-width: 3.25rem;
 	min-height: 3.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	padding: var(--space-3);
 	border-radius: var(--radius-full);
 	box-shadow: 0 16px 35px var(--overlay-dark);

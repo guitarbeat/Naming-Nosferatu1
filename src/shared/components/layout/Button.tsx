@@ -6,7 +6,7 @@
 import { cva } from "class-variance-authority";
 import React, { memo } from "react";
 import { cn } from "@/shared/lib/basic";
-import { Loader2 } from "@/shared/lib/icons";
+import { ArrowUp, Loader2 } from "@/shared/lib/icons";
 import "./FancyButton.css";
 
 /**
@@ -260,7 +260,7 @@ const ScrollToTopButton = ({
 			aria-label="Scroll to top"
 			tabIndex={0}
 		>
-			↑
+			<ArrowUp className="w-6 h-6" />
 		</button>
 	);
 };
