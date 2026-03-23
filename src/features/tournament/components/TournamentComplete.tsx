@@ -34,18 +34,27 @@ export function TournamentComplete({
 						Tournament Complete!
 					</h1>
 					<p className="mb-6 text-foreground/72">
-						Your results are ready. Review the bracket, then decide whether to start again.
+						Your results are ready. Review the bracket, then decide whether to
+						start again.
 					</p>
 
 					<div className="space-y-4">
 						<div className="grid grid-cols-2 gap-4 text-left">
 							<div className="rounded-xl border border-border/12 bg-foreground/[0.03] p-4">
-								<div className="text-sm text-muted-foreground mb-1">Total Matches</div>
-								<div className="text-xl font-bold text-foreground">{totalMatches}</div>
+								<div className="text-sm text-muted-foreground mb-1">
+									Total Matches
+								</div>
+								<div className="text-xl font-bold text-foreground">
+									{totalMatches}
+								</div>
 							</div>
 							<div className="rounded-xl border border-border/12 bg-foreground/[0.03] p-4">
-								<div className="text-sm text-muted-foreground mb-1">Participants</div>
-								<div className="text-xl font-bold text-foreground">{participantCount}</div>
+								<div className="text-sm text-muted-foreground mb-1">
+									Participants
+								</div>
+								<div className="text-xl font-bold text-foreground">
+									{participantCount}
+								</div>
 							</div>
 						</div>
 

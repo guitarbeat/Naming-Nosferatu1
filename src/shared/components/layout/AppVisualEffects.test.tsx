@@ -35,13 +35,27 @@ describe("AppVisualEffects", () => {
 			expect(screen.getByTestId("magic-moire")).toBeInTheDocument();
 		});
 
-		expect(container.querySelector(".cat-background__moire")).not.toBeInTheDocument();
+		expect(
+			container.querySelector(".cat-background__moire"),
+		).not.toBeInTheDocument();
 	});
 
 	it.each([
-		["reduced motion", { prefersReducedMotion: true, isSlowConnection: false }, true],
-		["slow connection", { prefersReducedMotion: false, isSlowConnection: true }, true],
-		["missing WebGL", { prefersReducedMotion: false, isSlowConnection: false }, false],
+		[
+			"reduced motion",
+			{ prefersReducedMotion: true, isSlowConnection: false },
+			true,
+		],
+		[
+			"slow connection",
+			{ prefersReducedMotion: false, isSlowConnection: true },
+			true,
+		],
+		[
+			"missing WebGL",
+			{ prefersReducedMotion: false, isSlowConnection: false },
+			false,
+		],
 	])("falls back to CSS moire for %s", async (_label, browserState, webglSupport) => {
 		useBrowserStateMock.mockReturnValue(browserState);
 		supportsWebGLMock.mockReturnValue(webglSupport);
@@ -49,7 +63,9 @@ describe("AppVisualEffects", () => {
 		const { container } = render(<AppVisualEffects theme="dark" />);
 
 		await waitFor(() => {
-			expect(container.querySelector(".cat-background__moire")).toBeInTheDocument();
+			expect(
+				container.querySelector(".cat-background__moire"),
+			).toBeInTheDocument();
 		});
 
 		expect(screen.queryByTestId("magic-moire")).not.toBeInTheDocument();

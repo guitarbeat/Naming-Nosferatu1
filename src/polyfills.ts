@@ -16,7 +16,10 @@ if (typeof window !== "undefined" && !window.matchMedia) {
 				matches: false,
 				media: query,
 				onchange: null,
-				addEventListener: ((type: string, listener: EventListenerOrEventListenerObject | null) => {
+				addEventListener: ((
+					type: string,
+					listener: EventListenerOrEventListenerObject | null,
+				) => {
 					if (type !== "change" || !listener) {
 						return;
 					}

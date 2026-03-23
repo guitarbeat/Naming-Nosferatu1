@@ -5,7 +5,13 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import React, { forwardRef, useCallback, useEffect, useId, useState } from "react";
+import React, {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useId,
+	useState,
+} from "react";
 import type { z } from "zod";
 import { cn } from "@/shared/lib/basic";
 
@@ -39,7 +45,9 @@ interface FormFieldContextValue {
 	error: string | null;
 }
 
-const FormFieldContext = React.createContext<FormFieldContextValue | null>(null);
+const FormFieldContext = React.createContext<FormFieldContextValue | null>(
+	null,
+);
 
 // ============================================================================
 // HOOKS
@@ -89,8 +97,10 @@ const useFormValidation = (
 		return () => clearTimeout(timer);
 	}, [value, isTouched, schema, validate, debounceMs]);
 
-	const currentError = externalError !== undefined ? externalError : internalError;
-	const currentTouched = externalTouched !== undefined ? externalTouched : isTouched;
+	const currentError =
+		externalError !== undefined ? externalError : internalError;
+	const currentTouched =
+		externalTouched !== undefined ? externalTouched : isTouched;
 	const hasError = currentTouched && currentError && !isValidating;
 
 	return {
@@ -112,7 +122,8 @@ const useFormValidation = (
 const inputBaseStyles =
 	"flex h-12 w-full rounded-xl border border-border/10 bg-background/20 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all text-foreground backdrop-blur-sm";
 
-const errorStyles = "border-destructive/50 focus-visible:ring-destructive/50 animate-pulse";
+const errorStyles =
+	"border-destructive/50 focus-visible:ring-destructive/50 animate-pulse";
 const successStyles = "border-chart-2/50 focus-visible:ring-chart-2/50";
 
 // ============================================================================
@@ -139,7 +150,9 @@ const FormField: React.FC<FormFieldProps> = ({
 	const errorId = error ? `${fieldId}-error` : undefined;
 
 	return (
-		<FormFieldContext.Provider value={{ id: fieldId, errorId, error: error || null }}>
+		<FormFieldContext.Provider
+			value={{ id: fieldId, errorId, error: error || null }}
+		>
 			<div className={cn("flex flex-col gap-2 w-full", className)}>
 				{label && (
 					<label
@@ -202,15 +215,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 	) => {
 		const internalId = useId();
 		const id = props.id || internalId;
-		const { setIsTouched, validate, currentError, currentTouched, hasError, isValidating } =
-			useFormValidation(
-				schema,
-				value,
-				onValidationChange,
-				debounceMs,
-				externalError,
-				externalTouched,
-			);
+		const {
+			setIsTouched,
+			validate,
+			currentError,
+			currentTouched,
+			hasError,
+			isValidating,
+		} = useFormValidation(
+			schema,
+			value,
+			onValidationChange,
+			debounceMs,
+			externalError,
+			externalTouched,
+		);
 
 		const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 			setIsTouched(true);
@@ -231,7 +250,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 			String(value || "").length > 0;
 
 		return (
-			<FormField id={id} label={label} error={hasError ? currentError : null} required={required}>
+			<FormField
+				id={id}
+				label={label}
+				error={hasError ? currentError : null}
+				required={required}
+			>
 				<div className="relative">
 					<input
 						{...props}
@@ -311,15 +335,21 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 	) => {
 		const internalId = useId();
 		const id = props.id || internalId;
-		const { setIsTouched, validate, currentError, currentTouched, hasError, isValidating } =
-			useFormValidation(
-				schema,
-				value,
-				onValidationChange,
-				debounceMs,
-				externalError,
-				externalTouched,
-			);
+		const {
+			setIsTouched,
+			validate,
+			currentError,
+			currentTouched,
+			hasError,
+			isValidating,
+		} = useFormValidation(
+			schema,
+			value,
+			onValidationChange,
+			debounceMs,
+			externalError,
+			externalTouched,
+		);
 
 		const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			setIsTouched(true);
@@ -351,7 +381,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 			.join(" ");
 
 		return (
-			<FormField id={id} label={label} error={hasError ? currentError : null} required={required}>
+			<FormField
+				id={id}
+				label={label}
+				error={hasError ? currentError : null}
+				required={required}
+			>
 				<textarea
 					{...props}
 					id={id}

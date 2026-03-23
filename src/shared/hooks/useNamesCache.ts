@@ -24,40 +24,48 @@ function isCacheEntry(value: unknown): value is CacheEntry {
 		return false;
 	}
 	const candidate = value as Partial<CacheEntry>;
-	return typeof candidate.timestamp === "number" && isNameItemArray(candidate.data);
+	return (
+		typeof candidate.timestamp === "number" && isNameItemArray(candidate.data)
+	);
 }
 
 export function useNamesCache() {
 	const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
 
-	const getCachedData = useCallback((includeHidden: boolean): NameItem[] | null => {
-		const key = `${CACHE_KEY}_${includeHidden}`;
-		const entry = cacheRef.current.get(key);
+	const getCachedData = useCallback(
+		(includeHidden: boolean): NameItem[] | null => {
+			const key = `${CACHE_KEY}_${includeHidden}`;
+			const entry = cacheRef.current.get(key);
 
-		if (!entry) {
-			return null;
-		}
+			if (!entry) {
+				return null;
+			}
 
-		const now = Date.now();
-		if (now - entry.timestamp > CACHE_TTL) {
-			cacheRef.current.delete(key);
-			return null;
-		}
+			const now = Date.now();
+			if (now - entry.timestamp > CACHE_TTL) {
+				cacheRef.current.delete(key);
+				return null;
+			}
 
-		return entry.data;
-	}, []);
+			return entry.data;
+		},
+		[],
+	);
 
-	const setCachedData = useCallback((data: NameItem[], includeHidden: boolean): void => {
-		const key = `${CACHE_KEY}_${includeHidden}`;
-		cacheRef.current.set(key, {
-			data,
-			timestamp: Date.now(),
-		});
+	const setCachedData = useCallback(
+		(data: NameItem[], includeHidden: boolean): void => {
+			const key = `${CACHE_KEY}_${includeHidden}`;
+			cacheRef.current.set(key, {
+				data,
+				timestamp: Date.now(),
+			});
 
-		// Persist to localStorage after updating cache
-		const cacheObject = Object.fromEntries(cacheRef.current);
-		writeStorageJson("names_cache_map", cacheObject);
-	}, []);
+			// Persist to localStorage after updating cache
+			const cacheObject = Object.fromEntries(cacheRef.current);
+			writeStorageJson("names_cache_map", cacheObject);
+		},
+		[],
+	);
 
 	const invalidateCache = useCallback((): void => {
 		cacheRef.current.clear();
@@ -72,7 +80,9 @@ export function useNamesCache() {
 		}
 
 		const now = Date.now();
-		for (const [key, entry] of Object.entries(stored as Record<string, unknown>)) {
+		for (const [key, entry] of Object.entries(
+			stored as Record<string, unknown>,
+		)) {
 			if (isCacheEntry(entry) && now - entry.timestamp <= CACHE_TTL) {
 				cacheRef.current.set(key, entry);
 			}

@@ -17,7 +17,9 @@ describe("imagesAPI", () => {
 	describe("imagesAPI.list", () => {
 		it("should return a list of image names when successful", async () => {
 			const mockData = [{ name: "cat1.jpg" }, { name: "cat2.png" }];
-			const mockList = vi.fn().mockResolvedValue({ data: mockData, error: null });
+			const mockList = vi
+				.fn()
+				.mockResolvedValue({ data: mockData, error: null });
 			const mockFrom = vi.fn().mockReturnValue({ list: mockList });
 			const mockClient = { storage: { from: mockFrom } };
 
@@ -37,7 +39,9 @@ describe("imagesAPI", () => {
 
 		it("should return empty array and log error when listing fails", async () => {
 			const mockError = { message: "Bucket not found" };
-			const mockList = vi.fn().mockResolvedValue({ data: null, error: mockError });
+			const mockList = vi
+				.fn()
+				.mockResolvedValue({ data: null, error: mockError });
 			const mockFrom = vi.fn().mockReturnValue({ list: mockList });
 			const mockClient = { storage: { from: mockFrom } };
 
@@ -49,14 +53,18 @@ describe("imagesAPI", () => {
 	});
 
 	describe("imagesAPI.upload", () => {
-		const mockFile = new File(["dummy content"], "test-cat.jpg", { type: "image/jpeg" });
+		const mockFile = new File(["dummy content"], "test-cat.jpg", {
+			type: "image/jpeg",
+		});
 		const userName = "test-admin";
 
 		it("should upload a file and return the public URL on success", async () => {
-			const mockUpload = vi.fn().mockResolvedValue({ data: { path: "some-path" }, error: null });
-			const mockGetPublicUrl = vi
+			const mockUpload = vi
 				.fn()
-				.mockReturnValue({ data: { publicUrl: "https://example.com/test-cat.jpg" } });
+				.mockResolvedValue({ data: { path: "some-path" }, error: null });
+			const mockGetPublicUrl = vi.fn().mockReturnValue({
+				data: { publicUrl: "https://example.com/test-cat.jpg" },
+			});
 			const mockFrom = vi.fn().mockReturnValue({
 				upload: mockUpload,
 				getPublicUrl: mockGetPublicUrl,
@@ -81,9 +89,13 @@ describe("imagesAPI", () => {
 		it("should fail if file size exceeds 5MB", async () => {
 			const mockFrom = vi.fn();
 			const mockClient = { storage: { from: mockFrom } };
-			const largeFile = new File([new Uint8Array(6 * 1024 * 1024)], "large.jpg", {
-				type: "image/jpeg",
-			});
+			const largeFile = new File(
+				[new Uint8Array(6 * 1024 * 1024)],
+				"large.jpg",
+				{
+					type: "image/jpeg",
+				},
+			);
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await imagesAPI.upload(largeFile, userName);
@@ -96,13 +108,17 @@ describe("imagesAPI", () => {
 		it("should fail if file type is not allowed", async () => {
 			const mockFrom = vi.fn();
 			const mockClient = { storage: { from: mockFrom } };
-			const invalidFile = new File(["dummy content"], "test.pdf", { type: "application/pdf" });
+			const invalidFile = new File(["dummy content"], "test.pdf", {
+				type: "application/pdf",
+			});
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await imagesAPI.upload(invalidFile, userName);
 
 			expect(result.success).toBe(false);
-			expect(result.error).toBe("Only JPEG, PNG, GIF, and WebP images are allowed");
+			expect(result.error).toBe(
+				"Only JPEG, PNG, GIF, and WebP images are allowed",
+			);
 			expect(mockFrom).not.toHaveBeenCalled();
 		});
 
@@ -115,7 +131,9 @@ describe("imagesAPI", () => {
 
 		it("should return error when upload fails", async () => {
 			const mockError = { message: "Network error" };
-			const mockUpload = vi.fn().mockResolvedValue({ data: null, error: mockError });
+			const mockUpload = vi
+				.fn()
+				.mockResolvedValue({ data: null, error: mockError });
 			const mockFrom = vi.fn().mockReturnValue({ upload: mockUpload });
 			const mockClient = { storage: { from: mockFrom } };
 
