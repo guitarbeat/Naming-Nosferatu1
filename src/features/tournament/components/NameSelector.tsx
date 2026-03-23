@@ -1000,11 +1000,11 @@ export function NameSelector() {
 					</div>
 				</div>
 
-				{isSwipeMode ? (
+			{isSwipeMode ? (
 					<>
 						<div
 							className="relative w-full flex items-center justify-center"
-							style={{ minHeight: "600px" }}
+							style={{ minHeight: "min(70dvh, 550px)" }}
 						>
 							<AnimatePresence mode="popLayout">
 								{visibleCards.length > 0 ? (
