@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { isRpcSignatureError } from "./errors";
 
 describe("isRpcSignatureError", () => {
@@ -7,11 +7,15 @@ describe("isRpcSignatureError", () => {
 	});
 
 	it('should return true when "function" and "no function matches" are in the message', () => {
-		expect(isRpcSignatureError("no function matches the given name")).toBe(true);
+		expect(isRpcSignatureError("no function matches the given name")).toBe(
+			true,
+		);
 	});
 
 	it('should return true when "function" and "could not find" are in the message', () => {
-		expect(isRpcSignatureError("could not find function update_record")).toBe(true);
+		expect(isRpcSignatureError("could not find function update_record")).toBe(
+			true,
+		);
 	});
 
 	it("should handle mixed case messages", () => {
@@ -35,7 +39,9 @@ describe("isRpcSignatureError", () => {
 	it("should return false for completely unrelated error messages", () => {
 		expect(isRpcSignatureError("syntax error at or near select")).toBe(false);
 		expect(isRpcSignatureError("relation users does not exist")).toBe(false);
-		expect(isRpcSignatureError("null value in column violates not-null constraint")).toBe(false);
+		expect(
+			isRpcSignatureError("null value in column violates not-null constraint"),
+		).toBe(false);
 	});
 
 	it("should return false for empty string", () => {

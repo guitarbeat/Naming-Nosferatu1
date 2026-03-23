@@ -26,14 +26,14 @@
 
 /* Section visibility toggle animation */
 section[id] {
-        transition:
-                max-height 0.3s ease-in-out,
-                opacity 0.3s ease-in-out;
+	transition:
+		max-height 0.3s ease-in-out,
+		opacity 0.3s ease-in-out;
 }
 
 section[id][data-hidden="true"] {
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        pointer-events: none;
+	max-height: 0;
+	opacity: 0;
+	overflow: hidden;
+	pointer-events: none;
 }
