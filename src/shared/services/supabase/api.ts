@@ -81,7 +81,10 @@ async function getNamesFromSupabase(
 	const selectColumns =
 		"id, name, description, pronunciation, avg_rating, created_at, is_hidden, is_active, locked_in, is_deleted";
 
-	const filters: Record<string, unknown> = { is_active: true, is_deleted: false };
+	const filters: Record<string, unknown> = {
+		is_active: true,
+		is_deleted: false,
+	};
 	if (!includeHidden) {
 		filters.is_hidden = false;
 	}
@@ -109,7 +112,7 @@ async function getNamesFromSupabase(
 export const imagesAPI = {
 	list: async (_path = "") => {
 		try {
-			const client = (await resolveSupabaseClient());
+			const client = await resolveSupabaseClient();
 			if (!client) {
 				return [] as string[];
 			}
@@ -121,7 +124,9 @@ export const imagesAPI = {
 				return [] as string[];
 			}
 
-			return (data || []).map((item: { name: string; [key: string]: unknown }) => item.name);
+			return (data || []).map(
+				(item: { name: string; [key: string]: unknown }) => item.name,
+			);
 		} catch (error) {
 			console.error("Error listing images:", error);
 			return [] as string[];
@@ -130,7 +135,7 @@ export const imagesAPI = {
 
 	upload: async (file: File | Blob, userName: string) => {
 		try {
-			const client = (await resolveSupabaseClient());
+			const client = await resolveSupabaseClient();
 			if (!client) {
 				return {
 					path: null,
@@ -212,7 +217,7 @@ export const imagesAPI = {
 
 	delete: async (fileName: string) => {
 		try {
-			const client = (await resolveSupabaseClient());
+			const client = await resolveSupabaseClient();
 			if (!client) {
 				return { success: false, error: "Storage client not available" };
 			}
@@ -637,7 +642,7 @@ const cleanupLocalStorage = (priorityKeys: string[] = []): void => {
 	);
 };
 
-const safeLocalStorageSet = (
+const _safeLocalStorageSet = (
 	key: string,
 	value: string,
 	isPriority: boolean = false,
@@ -672,7 +677,7 @@ const safeLocalStorageSet = (
 };
 
 // Validation utilities
-const validateRatingsData = (
+const _validateRatingsData = (
 	userId: string,
 	ratings: Record<string, { rating: number; wins: number; losses: number }>,
 ): { isValid: boolean; error?: string } => {
