@@ -32,31 +32,31 @@ import { useEffect } from "react";
 import { create, type StateCreator } from "zustand";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 import {
-        addMediaQueryListener,
-        getMediaQueryList,
-        matchesMediaQuery,
+	addMediaQueryListener,
+	getMediaQueryList,
+	matchesMediaQuery,
 } from "@/shared/lib/mediaQuery";
 import {
-        clearUserStorage,
-        getStorageString,
-        parseJsonValue,
-        removeStorageItem,
-        setStorageString,
+	clearUserStorage,
+	getStorageString,
+	parseJsonValue,
+	removeStorageItem,
+	setStorageString,
 } from "@/shared/lib/storage";
 
 import type {
-        CatChosenName,
-        ErrorLog,
-        ErrorState,
-        NameItem,
-        RatingData,
-        SiteSettingsState,
-        ThemePreference,
-        ThemeValue,
-        TournamentState,
-        UIState,
-        UserState,
-        VoteRecord,
+	CatChosenName,
+	ErrorLog,
+	ErrorState,
+	NameItem,
+	RatingData,
+	SiteSettingsState,
+	ThemePreference,
+	ThemeValue,
+	TournamentState,
+	UIState,
+	UserState,
+	VoteRecord,
 } from "@/shared/types";
 
 // Re-export domain types so consumers can import from either location
@@ -67,48 +67,48 @@ export type { NameItem, RatingData, VoteRecord };
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export interface TournamentActions {
-        setNames: (names: NameItem[] | null) => void;
-        setRatings: (
-                ratings:
-                        | Record<string, RatingData>
-                        | ((prev: Record<string, RatingData>) => Record<string, RatingData>),
-        ) => void;
-        setComplete: (isComplete: boolean) => void;
-        setLoading: (isLoading: boolean) => void;
-        addVote: (vote: VoteRecord) => void;
-        resetTournament: () => void;
-        setSelection: (names: NameItem[]) => void;
+	setNames: (names: NameItem[] | null) => void;
+	setRatings: (
+		ratings:
+			| Record<string, RatingData>
+			| ((prev: Record<string, RatingData>) => Record<string, RatingData>),
+	) => void;
+	setComplete: (isComplete: boolean) => void;
+	setLoading: (isLoading: boolean) => void;
+	addVote: (vote: VoteRecord) => void;
+	resetTournament: () => void;
+	setSelection: (names: NameItem[]) => void;
 }
 
 interface UserActions {
-        setUser: (data: Partial<UserState>) => void;
-        login: (userName: string, onContext?: (name: string) => void) => void;
-        logout: (onContext?: (name: null) => void) => void;
-        setAdminStatus: (isAdmin: boolean) => void;
-        setAvatar: (avatarUrl: string | undefined) => void;
-        initializeFromStorage: (onContext?: (name: string) => void) => void;
+	setUser: (data: Partial<UserState>) => void;
+	login: (userName: string, onContext?: (name: string) => void) => void;
+	logout: (onContext?: (name: null) => void) => void;
+	setAdminStatus: (isAdmin: boolean) => void;
+	setAvatar: (avatarUrl: string | undefined) => void;
+	initializeFromStorage: (onContext?: (name: string) => void) => void;
 }
 
 interface UIActions {
-        setTheme: (theme: ThemePreference) => void;
-        initializeTheme: () => void;
-        setMatrixMode: (enabled: boolean) => void;
-        setGlobalAnalytics: (show: boolean) => void;
-        setSwipeMode: (enabled: boolean) => void;
-        setCatPictures: (show: boolean) => void;
-        setUserComparison: (show: boolean) => void;
-        setEditingProfile: (editing: boolean) => void;
+	setTheme: (theme: ThemePreference) => void;
+	initializeTheme: () => void;
+	setMatrixMode: (enabled: boolean) => void;
+	setGlobalAnalytics: (show: boolean) => void;
+	setSwipeMode: (enabled: boolean) => void;
+	setCatPictures: (show: boolean) => void;
+	setUserComparison: (show: boolean) => void;
+	setEditingProfile: (editing: boolean) => void;
 }
 
 interface SiteSettingsActions {
-        setCatChosenName: (data: CatChosenName | null) => void;
-        markSettingsLoaded: () => void;
+	setCatChosenName: (data: CatChosenName | null) => void;
+	markSettingsLoaded: () => void;
 }
 
 interface ErrorActions {
-        setError: (error: unknown | null) => void;
-        clearError: () => void;
-        logError: (error: unknown, context: string, metadata?: Record<string, unknown>) => void;
+	setError: (error: unknown | null) => void;
+	clearError: () => void;
+	logError: (error: unknown, context: string, metadata?: Record<string, unknown>) => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -116,20 +116,20 @@ interface ErrorActions {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface AppState {
-        tournament: TournamentState;
-        tournamentActions: TournamentActions;
+	tournament: TournamentState;
+	tournamentActions: TournamentActions;
 
-        user: UserState;
-        userActions: UserActions;
+	user: UserState;
+	userActions: UserActions;
 
-        ui: UIState;
-        uiActions: UIActions;
+	ui: UIState;
+	uiActions: UIActions;
 
-        siteSettings: SiteSettingsState;
-        siteSettingsActions: SiteSettingsActions;
+	siteSettings: SiteSettingsState;
+	siteSettingsActions: SiteSettingsActions;
 
-        errors: ErrorState;
-        errorActions: ErrorActions;
+	errors: ErrorState;
+	errorActions: ErrorActions;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -140,10 +140,10 @@ type SetFn = Parameters<StateCreator<AppState>>[0];
 
 /** Merge partial updates into a nested slice. */
 function patch<K extends keyof AppState>(set: SetFn, key: K, updates: Partial<AppState[K]>): void {
-        set((state) => ({
-                ...state,
-                [key]: { ...state[key], ...updates },
-        }));
+	set((state) => ({
+		...state,
+		[key]: { ...state[key], ...updates },
+	}));
 }
 
 const IS_BROWSER = typeof window !== "undefined";
@@ -154,68 +154,68 @@ const IS_DEV = import.meta.env?.DEV ?? false;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function getInitialUserState(): UserState {
-        const base: UserState = {
-                id: null,
-                name: "",
-                isLoggedIn: false,
-                isAdmin: false,
-                preferences: {},
-        };
+	const base: UserState = {
+		id: null,
+		name: "",
+		isLoggedIn: false,
+		isAdmin: false,
+		preferences: {},
+	};
 
-        if (!IS_BROWSER) {
-                return base;
-        }
+	if (!IS_BROWSER) {
+		return base;
+	}
 
-        const stored = getStorageString(STORAGE_KEYS.USER);
-        if (stored?.trim()) {
-                const parsed = parseJsonValue<unknown>(stored, null);
-                if (typeof parsed === "string") {
-                        return { ...base, name: parsed, isLoggedIn: true };
-                }
-                if (parsed && typeof parsed === "object") {
-                        const parsedObj = parsed as { name?: unknown; isAdmin?: unknown };
-                        if (typeof parsedObj.name === "string") {
-                                return {
-                                        ...base,
-                                        name: parsedObj.name,
-                                        isLoggedIn: true,
-                                        isAdmin: Boolean(parsedObj.isAdmin),
-                                };
-                        }
-                }
-                return { ...base, name: stored.trim(), isLoggedIn: true };
-        }
-        return base;
+	const stored = getStorageString(STORAGE_KEYS.USER);
+	if (stored?.trim()) {
+		const parsed = parseJsonValue<unknown>(stored, null);
+		if (typeof parsed === "string") {
+			return { ...base, name: parsed, isLoggedIn: true };
+		}
+		if (parsed && typeof parsed === "object") {
+			const parsedObj = parsed as { name?: unknown; isAdmin?: unknown };
+			if (typeof parsedObj.name === "string") {
+				return {
+					...base,
+					name: parsedObj.name,
+					isLoggedIn: true,
+					isAdmin: Boolean(parsedObj.isAdmin),
+				};
+			}
+		}
+		return { ...base, name: stored.trim(), isLoggedIn: true };
+	}
+	return base;
 }
 
 function getInitialTheme(): Pick<UIState, "theme" | "themePreference"> {
-        if (!IS_BROWSER) {
-                return { theme: "dark", themePreference: "dark" };
-        }
+	if (!IS_BROWSER) {
+		return { theme: "dark", themePreference: "dark" };
+	}
 
-        const stored = getStorageString(STORAGE_KEYS.THEME);
-        if (stored === "light" || stored === "dark" || stored === "system") {
-                const resolved: ThemeValue =
-                        stored === "system"
-                                ? matchesMediaQuery("(prefers-color-scheme: dark)", true)
-                                        ? "dark"
-                                        : "light"
-                                : stored;
-                return { theme: resolved, themePreference: stored };
-        }
-        return { theme: "dark", themePreference: "dark" };
+	const stored = getStorageString(STORAGE_KEYS.THEME);
+	if (stored === "light" || stored === "dark" || stored === "system") {
+		const resolved: ThemeValue =
+			stored === "system"
+				? matchesMediaQuery("(prefers-color-scheme: dark)", true)
+					? "dark"
+					: "light"
+				: stored;
+		return { theme: resolved, themePreference: stored };
+	}
+	return { theme: "dark", themePreference: "dark" };
 }
 
 function getInitialSwipeMode(): boolean {
-        if (!IS_BROWSER) {
-                return false;
-        }
-        const stored = getStorageString(STORAGE_KEYS.SWIPE_MODE);
-        if (stored !== null) {
-                return stored === "true";
-        }
-        // Device-aware default: phones default to swipe mode
-        return window.matchMedia("(max-width: 768px)").matches;
+	if (!IS_BROWSER) {
+		return false;
+	}
+	const stored = getStorageString(STORAGE_KEYS.SWIPE_MODE);
+	if (stored !== null) {
+		return stored === "true";
+	}
+	// Device-aware default: phones default to swipe mode
+	return window.matchMedia("(max-width: 768px)").matches;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -223,58 +223,58 @@ function getInitialSwipeMode(): boolean {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const createTournamentSlice: StateCreator<
-        AppState,
-        [],
-        [],
-        Pick<AppState, "tournament" | "tournamentActions">
+	AppState,
+	[],
+	[],
+	Pick<AppState, "tournament" | "tournamentActions">
 > = (set, get) => ({
-        tournament: {
-                names: null,
-                ratings: {},
-                isComplete: false,
-                isLoading: false,
-                voteHistory: [],
-                selectedNames: [],
-        },
+	tournament: {
+		names: null,
+		ratings: {},
+		isComplete: false,
+		isLoading: false,
+		voteHistory: [],
+		selectedNames: [],
+	},
 
-        tournamentActions: {
-                setNames: (names) => {
-                        const currentRatings = get().tournament.ratings;
-                        patch(set, "tournament", {
-                                names:
-                                        names?.map((n) => ({
-                                                id: n.id,
-                                                name: n.name,
-                                                description: n.description,
-                                                rating: currentRatings[String(n.id)]?.rating ?? 1500,
-                                        })) ?? null,
-                        });
-                },
+	tournamentActions: {
+		setNames: (names) => {
+			const currentRatings = get().tournament.ratings;
+			patch(set, "tournament", {
+				names:
+					names?.map((n) => ({
+						id: n.id,
+						name: n.name,
+						description: n.description,
+						rating: currentRatings[String(n.id)]?.rating ?? 1500,
+					})) ?? null,
+			});
+		},
 
-                setRatings: (ratingsOrFn) => {
-                        const current = get().tournament.ratings;
-                        const next = typeof ratingsOrFn === "function" ? ratingsOrFn(current) : ratingsOrFn;
-                        patch(set, "tournament", { ratings: { ...current, ...next } });
-                },
+		setRatings: (ratingsOrFn) => {
+			const current = get().tournament.ratings;
+			const next = typeof ratingsOrFn === "function" ? ratingsOrFn(current) : ratingsOrFn;
+			patch(set, "tournament", { ratings: { ...current, ...next } });
+		},
 
-                setComplete: (isComplete) => patch(set, "tournament", { isComplete }),
-                setLoading: (isLoading) => patch(set, "tournament", { isLoading }),
+		setComplete: (isComplete) => patch(set, "tournament", { isComplete }),
+		setLoading: (isLoading) => patch(set, "tournament", { isLoading }),
 
-                addVote: (vote) =>
-                        patch(set, "tournament", {
-                                voteHistory: [...get().tournament.voteHistory, vote],
-                        }),
+		addVote: (vote) =>
+			patch(set, "tournament", {
+				voteHistory: [...get().tournament.voteHistory, vote],
+			}),
 
-                resetTournament: () =>
-                        patch(set, "tournament", {
-                                names: null,
-                                isComplete: false,
-                                voteHistory: [],
-                                isLoading: false,
-                        }),
+		resetTournament: () =>
+			patch(set, "tournament", {
+				names: null,
+				isComplete: false,
+				voteHistory: [],
+				isLoading: false,
+			}),
 
-                setSelection: (selectedNames) => patch(set, "tournament", { selectedNames }),
-        },
+		setSelection: (selectedNames) => patch(set, "tournament", { selectedNames }),
+	},
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -289,155 +289,155 @@ const createTournamentSlice: StateCreator<
 let systemThemeCleanup: (() => void) | null = null;
 
 const createUserAndSettingsSlice: StateCreator<
-        AppState,
-        [],
-        [],
-        Pick<
-                AppState,
-                "user" | "userActions" | "ui" | "uiActions" | "siteSettings" | "siteSettingsActions"
-        >
+	AppState,
+	[],
+	[],
+	Pick<
+		AppState,
+		"user" | "userActions" | "ui" | "uiActions" | "siteSettings" | "siteSettingsActions"
+	>
 > = (set, get) => ({
-        // ── User ────────────────────────────────────────────────────────────────
+	// ── User ────────────────────────────────────────────────────────────────
 
-        user: getInitialUserState(),
+	user: getInitialUserState(),
 
-        userActions: {
-                setUser: (data) => {
-                        patch(set, "user", data);
-                        const name = data.name ?? get().user.name;
-                        if (name) {
-                                setStorageString(STORAGE_KEYS.USER, name);
-                        } else {
-                                removeStorageItem(STORAGE_KEYS.USER);
-                        }
-                },
+	userActions: {
+		setUser: (data) => {
+			patch(set, "user", data);
+			const name = data.name ?? get().user.name;
+			if (name) {
+				setStorageString(STORAGE_KEYS.USER, name);
+			} else {
+				removeStorageItem(STORAGE_KEYS.USER);
+			}
+		},
 
-                login: (userName, onContext) => {
-                        patch(set, "user", { name: userName, isLoggedIn: true });
-                        setStorageString(STORAGE_KEYS.USER, userName);
-                        onContext?.(userName);
-                },
+		login: (userName, onContext) => {
+			patch(set, "user", { name: userName, isLoggedIn: true });
+			setStorageString(STORAGE_KEYS.USER, userName);
+			onContext?.(userName);
+		},
 
-                logout: (onContext) => {
-                        // Centralised: clears all user-identity/session keys.
-                        // Device-preference keys are intentionally preserved.
-                        clearUserStorage();
-                        onContext?.(null);
-                        set((state) => ({
-                                ...state,
-                                user: { ...state.user, name: "", isLoggedIn: false, isAdmin: false, avatarUrl: undefined },
-                                tournament: {
-                                        ...state.tournament,
-                                        names: null,
-                                        ratings: {},
-                                        isComplete: false,
-                                        voteHistory: [],
-                                        selectedNames: [],
-                                },
-                        }));
-                },
+		logout: (onContext) => {
+			// Centralised: clears all user-identity/session keys.
+			// Device-preference keys are intentionally preserved.
+			clearUserStorage();
+			onContext?.(null);
+			set((state) => ({
+				...state,
+				user: { ...state.user, name: "", isLoggedIn: false, isAdmin: false, avatarUrl: undefined },
+				tournament: {
+					...state.tournament,
+					names: null,
+					ratings: {},
+					isComplete: false,
+					voteHistory: [],
+					selectedNames: [],
+				},
+			}));
+		},
 
-                setAdminStatus: (isAdmin) => patch(set, "user", { isAdmin }),
+		setAdminStatus: (isAdmin) => patch(set, "user", { isAdmin }),
 
-                setAvatar: (avatarUrl) => {
-                        patch(set, "user", { avatarUrl });
-                        if (avatarUrl) {
-                                setStorageString(STORAGE_KEYS.USER_AVATAR, avatarUrl);
-                        } else {
-                                removeStorageItem(STORAGE_KEYS.USER_AVATAR);
-                        }
-                },
+		setAvatar: (avatarUrl) => {
+			patch(set, "user", { avatarUrl });
+			if (avatarUrl) {
+				setStorageString(STORAGE_KEYS.USER_AVATAR, avatarUrl);
+			} else {
+				removeStorageItem(STORAGE_KEYS.USER_AVATAR);
+			}
+		},
 
-                initializeFromStorage: (onContext) => {
-                        const storedUser = getStorageString(STORAGE_KEYS.USER);
-                        const storedAvatar = getStorageString(STORAGE_KEYS.USER_AVATAR);
-                        const updates: Partial<UserState> = {};
+		initializeFromStorage: (onContext) => {
+			const storedUser = getStorageString(STORAGE_KEYS.USER);
+			const storedAvatar = getStorageString(STORAGE_KEYS.USER_AVATAR);
+			const updates: Partial<UserState> = {};
 
-                        if (storedUser && get().user.name !== storedUser) {
-                                onContext?.(storedUser);
-                                updates.name = storedUser;
-                                updates.isLoggedIn = true;
-                        }
-                        if (storedAvatar && get().user.avatarUrl !== storedAvatar) {
-                                updates.avatarUrl = storedAvatar;
-                        }
-                        if (Object.keys(updates).length > 0) {
-                                patch(set, "user", updates);
-                        }
-                },
-        },
+			if (storedUser && get().user.name !== storedUser) {
+				onContext?.(storedUser);
+				updates.name = storedUser;
+				updates.isLoggedIn = true;
+			}
+			if (storedAvatar && get().user.avatarUrl !== storedAvatar) {
+				updates.avatarUrl = storedAvatar;
+			}
+			if (Object.keys(updates).length > 0) {
+				patch(set, "user", updates);
+			}
+		},
+	},
 
-        // ── UI ───────────────────────────────────────────────────────────────────
+	// ── UI ───────────────────────────────────────────────────────────────────
 
-        ui: {
-                ...getInitialTheme(),
-                showGlobalAnalytics: false,
-                showUserComparison: false,
-                matrixMode: false,
-                isSwipeMode: getInitialSwipeMode(),
-                showCatPictures: true,
-                isEditingProfile: false,
-        },
+	ui: {
+		...getInitialTheme(),
+		showGlobalAnalytics: false,
+		showUserComparison: false,
+		matrixMode: false,
+		isSwipeMode: getInitialSwipeMode(),
+		showCatPictures: true,
+		isEditingProfile: false,
+	},
 
-        uiActions: {
-                setTheme: (preference) => {
-                        systemThemeCleanup?.();
-                        systemThemeCleanup = null;
+	uiActions: {
+		setTheme: (preference) => {
+			systemThemeCleanup?.();
+			systemThemeCleanup = null;
 
-                        let resolved: ThemeValue;
+			let resolved: ThemeValue;
 
-                        if (preference === "system" && IS_BROWSER) {
-                                const mediaQueryList = getMediaQueryList("(prefers-color-scheme: dark)");
-                                resolved = mediaQueryList?.matches ? "dark" : "light";
+			if (preference === "system" && IS_BROWSER) {
+				const mediaQueryList = getMediaQueryList("(prefers-color-scheme: dark)");
+				resolved = mediaQueryList?.matches ? "dark" : "light";
 
-                                systemThemeCleanup = addMediaQueryListener(mediaQueryList, (event) => {
-                                        if (get().ui.themePreference === "system") {
-                                                patch(set, "ui", { theme: event.matches ? "dark" : "light" });
-                                        }
-                                });
-                        } else {
-                                resolved = preference === "light" ? "light" : "dark";
-                        }
+				systemThemeCleanup = addMediaQueryListener(mediaQueryList, (event) => {
+					if (get().ui.themePreference === "system") {
+						patch(set, "ui", { theme: event.matches ? "dark" : "light" });
+					}
+				});
+			} else {
+				resolved = preference === "light" ? "light" : "dark";
+			}
 
-                        patch(set, "ui", { theme: resolved, themePreference: preference });
-                        setStorageString(STORAGE_KEYS.THEME, preference);
-                },
+			patch(set, "ui", { theme: resolved, themePreference: preference });
+			setStorageString(STORAGE_KEYS.THEME, preference);
+		},
 
-                initializeTheme: () => {
-                        if (!IS_BROWSER) {
-                                return;
-                        }
-                        const stored = getStorageString(STORAGE_KEYS.THEME) ?? "dark";
-                        const pref = (
-                                ["light", "dark", "system"].includes(stored) ? stored : "dark"
-                        ) as ThemePreference;
-                        get().uiActions.setTheme(pref);
-                },
+		initializeTheme: () => {
+			if (!IS_BROWSER) {
+				return;
+			}
+			const stored = getStorageString(STORAGE_KEYS.THEME) ?? "dark";
+			const pref = (
+				["light", "dark", "system"].includes(stored) ? stored : "dark"
+			) as ThemePreference;
+			get().uiActions.setTheme(pref);
+		},
 
-                setMatrixMode: (enabled) => patch(set, "ui", { matrixMode: enabled }),
-                setGlobalAnalytics: (show) => patch(set, "ui", { showGlobalAnalytics: show }),
+		setMatrixMode: (enabled) => patch(set, "ui", { matrixMode: enabled }),
+		setGlobalAnalytics: (show) => patch(set, "ui", { showGlobalAnalytics: show }),
 
-                setSwipeMode: (enabled) => {
-                        patch(set, "ui", { isSwipeMode: enabled });
-                        setStorageString(STORAGE_KEYS.SWIPE_MODE, String(enabled));
-                },
+		setSwipeMode: (enabled) => {
+			patch(set, "ui", { isSwipeMode: enabled });
+			setStorageString(STORAGE_KEYS.SWIPE_MODE, String(enabled));
+		},
 
-                setCatPictures: (show) => patch(set, "ui", { showCatPictures: show }),
-                setUserComparison: (show) => patch(set, "ui", { showUserComparison: show }),
-                setEditingProfile: (editing) => patch(set, "ui", { isEditingProfile: editing }),
-        },
+		setCatPictures: (show) => patch(set, "ui", { showCatPictures: show }),
+		setUserComparison: (show) => patch(set, "ui", { showUserComparison: show }),
+		setEditingProfile: (editing) => patch(set, "ui", { isEditingProfile: editing }),
+	},
 
-        // ── Site Settings ────────────────────────────────────────────────────────
+	// ── Site Settings ────────────────────────────────────────────────────────
 
-        siteSettings: {
-                catChosenName: null,
-                isLoaded: false,
-        },
+	siteSettings: {
+		catChosenName: null,
+		isLoaded: false,
+	},
 
-        siteSettingsActions: {
-                setCatChosenName: (data) => patch(set, "siteSettings", { catChosenName: data }),
-                markSettingsLoaded: () => patch(set, "siteSettings", { isLoaded: true }),
-        },
+	siteSettingsActions: {
+		setCatChosenName: (data) => patch(set, "siteSettings", { catChosenName: data }),
+		markSettingsLoaded: () => patch(set, "siteSettings", { isLoaded: true }),
+	},
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -445,52 +445,52 @@ const createUserAndSettingsSlice: StateCreator<
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const createErrorSlice: StateCreator<
-        AppState,
-        [],
-        [],
-        Pick<AppState, "errors" | "errorActions">
+	AppState,
+	[],
+	[],
+	Pick<AppState, "errors" | "errorActions">
 > = (set, get) => ({
-        errors: {
-                current: null,
-                history: [],
-        },
+	errors: {
+		current: null,
+		history: [],
+	},
 
-        errorActions: {
-                setError: (error) => {
-                        const log: ErrorLog | null = error
-                                ? {
-                                                error,
-                                                context: "setError",
-                                                metadata: {},
-                                                timestamp: new Date().toISOString(),
-                                        }
-                                : null;
+	errorActions: {
+		setError: (error) => {
+			const log: ErrorLog | null = error
+				? {
+						error,
+						context: "setError",
+						metadata: {},
+						timestamp: new Date().toISOString(),
+					}
+				: null;
 
-                        patch(set, "errors", {
-                                current: error,
-                                history: log ? [...get().errors.history, log] : get().errors.history,
-                        });
-                },
+			patch(set, "errors", {
+				current: error,
+				history: log ? [...get().errors.history, log] : get().errors.history,
+			});
+		},
 
-                clearError: () => patch(set, "errors", { current: null }),
+		clearError: () => patch(set, "errors", { current: null }),
 
-                logError: (error, context, metadata = {}) => {
-                        const entry: ErrorLog = {
-                                error,
-                                context,
-                                metadata,
-                                timestamp: new Date().toISOString(),
-                        };
+		logError: (error, context, metadata = {}) => {
+			const entry: ErrorLog = {
+				error,
+				context,
+				metadata,
+				timestamp: new Date().toISOString(),
+			};
 
-                        patch(set, "errors", {
-                                history: [...get().errors.history, entry],
-                        });
+			patch(set, "errors", {
+				history: [...get().errors.history, entry],
+			});
 
-                        if (IS_DEV) {
-                                console.error("[Store] Error logged:", entry);
-                        }
-                },
-        },
+			if (IS_DEV) {
+				console.error("[Store] Error logged:", entry);
+			}
+		},
+	},
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -498,9 +498,9 @@ const createErrorSlice: StateCreator<
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const useAppStore = create<AppState>()((...args) => ({
-        ...createTournamentSlice(...args),
-        ...createUserAndSettingsSlice(...args),
-        ...createErrorSlice(...args),
+	...createTournamentSlice(...args),
+	...createUserAndSettingsSlice(...args),
+	...createErrorSlice(...args),
 }));
 
 export default useAppStore;
@@ -528,13 +528,13 @@ export default useAppStore;
  * }
  */
 export function useAppStoreInitialization(onUserContext?: (name: string) => void): void {
-        const initUser = useAppStore((s) => s.userActions.initializeFromStorage);
-        const initTheme = useAppStore((s) => s.uiActions.initializeTheme);
+	const initUser = useAppStore((s) => s.userActions.initializeFromStorage);
+	const initTheme = useAppStore((s) => s.uiActions.initializeTheme);
 
-        useEffect(() => {
-                initUser(onUserContext);
-                initTheme();
-        }, [initUser, initTheme, onUserContext]);
+	useEffect(() => {
+		initUser(onUserContext);
+		initTheme();
+	}, [initUser, initTheme, onUserContext]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -542,9 +542,9 @@ export function useAppStoreInitialization(onUserContext?: (name: string) => void
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const errorContexts = {
-        tournamentFlow: "Tournament Flow",
-        analysisDashboard: "Analysis Dashboard",
-        mainLayout: "Main Application Layout",
+	tournamentFlow: "Tournament Flow",
+	analysisDashboard: "Analysis Dashboard",
+	mainLayout: "Main Application Layout",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
