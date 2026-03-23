@@ -344,7 +344,15 @@ export const coreAPI = {
                         if (client) {
                                 try {
                                         if (userName) {
-                                                await client.rpc("set_user_context", { user_name_param: userName });
+                                                const contextResult = await client.rpc("set_user_context", {
+                                                        user_name_param: userName,
+                                                });
+                                                if (contextResult.error) {
+                                                        contextOk = false;
+                                                        failures.push(
+                                                                `set_user_context failed: ${contextResult.error.message}`,
+                                                        );
+                                                }
                                         }
                                 } catch (error) {
                                         contextOk = false;
