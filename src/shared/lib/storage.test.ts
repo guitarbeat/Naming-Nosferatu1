@@ -20,15 +20,21 @@ describe("storage", () => {
 		});
 
 		it("returns the fallback when the key does not exist and a fallback is provided", () => {
-			expect(getStorageString("non-existent-key", "fallback-value")).toBe("fallback-value");
+			expect(getStorageString("non-existent-key", "fallback-value")).toBe(
+				"fallback-value",
+			);
 		});
 
 		it("returns the fallback when localStorage.getItem throws an error", () => {
-			const getItemSpy = vi.spyOn(window.localStorage, "getItem").mockImplementation(() => {
-				throw new Error("Storage error");
-			});
+			const getItemSpy = vi
+				.spyOn(window.localStorage, "getItem")
+				.mockImplementation(() => {
+					throw new Error("Storage error");
+				});
 
-			expect(getStorageString("error-key", "fallback-value")).toBe("fallback-value");
+			expect(getStorageString("error-key", "fallback-value")).toBe(
+				"fallback-value",
+			);
 
 			getItemSpy.mockRestore();
 		});
@@ -43,7 +49,9 @@ describe("storage", () => {
 				configurable: true,
 			});
 
-			expect(getStorageString("unavailable-key", "fallback-value")).toBe("fallback-value");
+			expect(getStorageString("unavailable-key", "fallback-value")).toBe(
+				"fallback-value",
+			);
 
 			Object.defineProperty(window, "localStorage", {
 				value: originalLocalStorage,
