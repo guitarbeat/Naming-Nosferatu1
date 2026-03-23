@@ -50,13 +50,19 @@ function getManualChunk(id: string): string | undefined {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
         server: {
-		host: "0.0.0.0",
-		port: 5173,
-		strictPort: false,
-		allowedHosts: true,
-		watch: {
-			usePolling: true,
-		},
+                host: "0.0.0.0",
+                port: 5173,
+                strictPort: false,
+                allowedHosts: true,
+                hmr: {
+                        // Replit proxies the dev server through HTTPS/port 443.
+                        // Without this, the HMR WebSocket targets the internal port
+                        // and drops every few seconds behind the proxy.
+                        clientPort: 443,
+                },
+                watch: {
+                        usePolling: true,
+                },
         },
         css: {
                 postcss: {
