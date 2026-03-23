@@ -260,7 +260,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 	return (
 		<div className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
-			<header className="px-3 sm:px-4 pt-2 pb-1 flex-shrink-0 space-y-1.5">
+			<header className="px-2 sm:px-4 pt-1.5 sm:pt-2 pb-1 flex-shrink-0 space-y-1 sm:space-y-1.5">
 				{/* Row 1: Round info, progress bar, match count, controls */}
 				<div className="flex items-center gap-2 sm:gap-3">
 					<div className="shrink-0 px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-foreground/10 backdrop-blur-md border border-border/20">
