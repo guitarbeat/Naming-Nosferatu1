@@ -470,9 +470,6 @@ export function AdminDashboard() {
 
 						{selectedNames.size > 0 && (
 							<div className="mb-4 py-4 border-y border-border/10">
-								<p className="text-sm text-primary mb-2">
-									{selectedNames.size} names selected
-								</p>
 								<div className="flex gap-2">
 									<Button
 										onClick={() => void handleBulkAction("hide")}
