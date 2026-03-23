@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { getMatchSideId } from "./matchHelpers";
+import { describe, expect, it } from "vitest";
 import type { Match, NameItem, Team } from "@/shared/types";
+import { getMatchSideId } from "./matchHelpers";
 
 describe("matchHelpers", () => {
 	describe("getMatchSideId", () => {
