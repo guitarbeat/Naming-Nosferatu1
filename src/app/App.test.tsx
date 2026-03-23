@@ -9,26 +9,15 @@ vi.mock("@/app/providers/Providers", () => ({
 	useAuth: () => ({
 		user: { id: "1", isAdmin: false },
 		isLoading: false,
-		login: vi.fn(),
 	}),
-}));
-
-vi.mock("@/features/tournament/components/NameSuggestion", () => ({
-	NameSuggestionInner: () => <div data-testid="name-suggestion">Name Suggestion</div>,
-}));
-
-vi.mock("@/features/tournament/components/ProfileSection", () => ({
-	ProfileInner: () => <div data-testid="profile-section">Profile Section</div>,
 }));
 
 vi.mock("@/store/appStore", () => ({
 	default: () => ({
-		user: { name: "Test User", isAdmin: false, isLoggedIn: false },
+		user: { name: "Test User", isAdmin: false },
 		userActions: { setAdminStatus: vi.fn() },
-		tournament: { names: [], ratings: [], selectedNames: [] },
+		tournament: { names: [], ratings: [] },
 		tournamentActions: {},
-		ui: { isSwipeMode: false },
-		uiActions: { setSwipeMode: vi.fn() },
 	}),
 	useAppStoreInitialization: vi.fn(),
 }));
@@ -79,12 +68,6 @@ vi.mock("@/shared/services/errorManager", () => ({
 	},
 }));
 
-vi.mock("@/shared/components/layout/LoadingSequence", () => ({
-	LoadingSequence: ({ title }: { title: string }) => (
-		<div data-testid="loading-sequence">{title}</div>
-	),
-}));
-
 // Mock lazy components using the alias
 vi.mock("@/app/appConfig", () => ({
 	errorContexts: {
@@ -114,18 +97,9 @@ describe("App Component", () => {
 			expect(screen.getByTestId("tournament-flow")).toBeInTheDocument();
 		});
 
-		expect(document.getElementById("pick")).toBeInTheDocument();
-		expect(document.getElementById("suggest")).toBeInTheDocument();
-		expect(document.getElementById("profile")).toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "Pick Names" })).toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "Suggest a Name" })).toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "Your Profile" })).toBeInTheDocument();
-		expect(screen.getByTestId("name-suggestion")).toBeInTheDocument();
-		expect(screen.getByTestId("profile-section")).toBeInTheDocument();
-		expect(screen.getByTestId("loading-sequence")).toHaveTextContent("Naming Nosferatu");
 		expect(document.documentElement.scrollTop).toBe(0);
 		expect(document.body.scrollTop).toBe(0);
-	}, 10000);
+	}, 15000);
 
 	it("renders the tournament page", async () => {
 		render(

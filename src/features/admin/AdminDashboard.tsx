@@ -349,6 +349,7 @@ export function AdminDashboard() {
 				{ADMIN_TABS.map((tab) => (
 					<Button
 						key={tab.id}
+						type="button"
 						onClick={() => handleTabChange(tab.id)}
 						type="button"
 						variant={activeTab === tab.id ? "secondary" : "ghost"}
@@ -515,12 +516,21 @@ export function AdminDashboard() {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Image Upload</h3>
-									<input
-										type="file"
-										accept="image/*"
-										onChange={handleImageUpload}
-										className="w-full p-2 bg-foreground/10 border border-border/20 rounded"
-									/>
+									<div className="relative group focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background rounded-lg transition-all duration-200">
+										<label
+											htmlFor="admin-image-upload"
+											className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border/20 bg-foreground/5 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 hover:border-border/40"
+										>
+											<span className="truncate">Choose a file to upload</span>
+										</label>
+										<input
+											id="admin-image-upload"
+											type="file"
+											accept="image/*"
+											onChange={handleImageUpload}
+											className="sr-only"
+										/>
+									</div>
 								</div>
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Recent Activity</h3>

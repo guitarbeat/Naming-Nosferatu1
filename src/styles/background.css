@@ -118,8 +118,6 @@
 	position: fixed;
 	inset: 0;
 	width: 100%;
-	height: 100vh;
-	height: 100dvh;
 	z-index: var(--z-1);
 	transition: opacity 0.8s ease-in-out;
 	pointer-events: none;
@@ -133,8 +131,8 @@
 	opacity: var(--pw-fx-magic-opacity);
 }
 
-#magicContainer canvas,
-.magic-container canvas {
+.magic-container canvas,
+#magicContainer canvas {
 	display: block;
 	width: 100%;
 	height: 100%;
@@ -160,8 +158,6 @@
 .app-frame {
 	position: fixed;
 	inset: 0;
-	height: 100vh;
-	height: 100dvh;
 	box-sizing: border-box;
 	border: var(--pw-frame-border-width) solid
 		rgb(var(--pw-frame-color-rgb) / var(--pw-frame-color-alpha));

@@ -1,25 +1,14 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-	type KeyboardEvent,
-	memo,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "@/shared/components/layout/Button";
 import { ErrorComponent } from "@/shared/components/layout/Feedback";
-import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 import { getRandomCatImage, getVisibleNames } from "@/shared/lib/basic";
 import { CAT_IMAGES } from "@/shared/lib/constants";
 import {
-	ChevronDown,
+	Clock,
 	Gamepad2,
-	Layers,
 	LogOut,
+	Medal,
 	Music,
 	PawPrint,
 	SkipBack,
@@ -28,16 +17,32 @@ import {
 	Undo2,
 	Volume2,
 	VolumeX,
+	X,
 } from "@/shared/lib/icons";
 import type { TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
+import { BracketTree } from "./components/BracketTree";
 import { MatchSideCard } from "./components/MatchSideCard";
 import { TournamentComplete } from "./components/TournamentComplete";
 import { useAudioManager } from "./hooks";
 import { useTournamentState } from "./hooks/useTournamentState";
-import { getHeatLevel } from "./utils/heat";
+import {
+	getFlameCount,
+	getHeatLevel,
+	getHeatTextClasses,
+	type HeatLevel,
+	STREAK_THRESHOLDS,
+} from "./utils/heat";
 import { extractMatchData, getMatchSideId } from "./utils/matchHelpers";
 import { useTimedState } from "./utils/useTimedState";
+
+interface StreakBurst {
+	key: number;
+	side: "left" | "right";
+	winnerName: string;
+	streak: number;
+	heatLevel: HeatLevel;
+}
 
 function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) {
 	const navigate = useNavigate();
@@ -62,31 +67,36 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		canUndo,
 		handleQuit,
 		progress,
+		etaMinutes = 0,
 		handleVoteWithAnimation,
 		isVoting,
 		matchHistory,
 	} = tournament;
 
 	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(null);
-	const [isUtilityPanelOpen, setIsUtilityPanelOpen] = useState(false);
 	const voteAnnouncement = useTimedState<string | null>(null);
 	const roundAnnouncement = useTimedState<number | null>(null);
+	const streakBurst = useTimedState<StreakBurst | null>(null);
 	const previousRoundRef = useRef(roundNumber);
-	const winnerSequenceShownRef = useRef(false);
-	const [showWinnerSequence, setShowWinnerSequence] = useState(false);
 
 	// Calculate winning streaks
 	const calculateWinStreak = useCallback(
 		(contestantId: string | number | null | undefined) => {
-			if (!contestantId || matchHistory.length === 0) return 0;
+			if (!contestantId || matchHistory.length === 0) {
+				return 0;
+			}
 			const targetId = String(contestantId);
 			let streak = 0;
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
-				if (!record) continue;
+				if (!record) {
+					continue;
+				}
 				const leftId = getMatchSideId(record.match, "left");
 				const rightId = getMatchSideId(record.match, "right");
-				if (leftId !== targetId && rightId !== targetId) continue;
+				if (leftId !== targetId && rightId !== targetId) {
+					continue;
+				}
 				if (record.winner === targetId) {
 					streak++;
 				} else {
@@ -112,7 +122,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	// Vote adapter for external onVote callback
 	const handleVoteAdapter = useCallback(
 		(winnerId: string, _loserId: string) => {
-			if (!onVote || !currentMatch) return;
+			if (!onVote || !currentMatch) {
+				return;
+			}
 			const sideData = (side: "left" | "right") => {
 				const p = currentMatch[side];
 				const id = typeof p === "object" ? String(p.id) : String(p);
@@ -156,21 +168,6 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		}
 	}, [isComplete, ratings, onComplete, idToName, audioManager]);
 
-	useLayoutEffect(() => {
-		if (!isComplete) {
-			winnerSequenceShownRef.current = false;
-			setShowWinnerSequence(false);
-			return;
-		}
-
-		if (winnerSequenceShownRef.current) {
-			return;
-		}
-
-		winnerSequenceShownRef.current = true;
-		setShowWinnerSequence(true);
-	}, [isComplete]);
-
 	const showCatPictures = useAppStore((state) => state.ui.showCatPictures);
 	const setCatPictures = useAppStore((state) => state.uiActions.setCatPictures);
 
@@ -182,12 +179,11 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	useEffect(() => {
 		if (!currentMatch) {
 			setSelectedSide(null);
-			setIsUtilityPanelOpen(false);
+			streakBurst.set(null);
 			return;
 		}
 		setSelectedSide(null);
-		setIsUtilityPanelOpen(false);
-	}, [currentMatch]);
+	}, [currentMatch, streakBurst.set]);
 
 	// Round change announcements
 	useEffect(() => {
@@ -204,7 +200,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 	const handleVoteForSide = useCallback(
 		(side: "left" | "right") => {
-			if (isVoting || !matchData) return;
+			if (isVoting || !matchData) {
+				return;
+			}
 			audioManager.primeAudioExperience();
 
 			const winnerId = side === "left" ? matchData.leftId : matchData.rightId;
@@ -214,14 +212,25 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			const heatLevel = getHeatLevel(expectedStreak);
 
 			if (heatLevel) {
+				streakBurst.setTimed(
+					{
+						key: Date.now(),
+						side,
+						winnerName,
+						streak: expectedStreak,
+						heatLevel,
+					},
+					prefersReducedMotion ? 280 : 950,
+				);
 				audioManager.playStreakSound(expectedStreak);
 			}
 
-			setIsUtilityPanelOpen(false);
 			setSelectedSide(side);
 			voteAnnouncement.setTimed(winnerName, prefersReducedMotion ? 250 : 900);
 			handleVoteWithAnimation(winnerId, loserId);
-			if (onVote) handleVoteAdapter(winnerId, loserId);
+			if (onVote) {
+				handleVoteAdapter(winnerId, loserId);
+			}
 		},
 		[
 			isVoting,
@@ -229,6 +238,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			audioManager,
 			leftStreak,
 			rightStreak,
+			streakBurst,
 			prefersReducedMotion,
 			voteAnnouncement,
 			handleVoteWithAnimation,
@@ -255,37 +265,21 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const currentMatchKey = matchData
 		? `${roundNumber}-${currentMatchNumber}-${matchData.leftId}-${matchData.rightId}`
 		: `${roundNumber}-${currentMatchNumber}`;
-	const progressPercent = totalMatches
-		? Math.round(Math.max(0, Math.min(100, progress || (currentMatchNumber / totalMatches) * 100)))
-		: 0;
 
 	const quitTournament = useCallback(() => {
 		handleQuit();
 		tournamentActions.resetTournament();
 		navigate("/");
 	}, [handleQuit, tournamentActions, navigate]);
-	const handleWinnerSequenceComplete = useCallback(() => {
-		setShowWinnerSequence(false);
-	}, []);
 
 	// Completion screen
 	if (isComplete) {
 		return (
-			<>
-				<TournamentComplete
-					totalMatches={totalMatches}
-					participantCount={visibleNames.length}
-					onNewTournament={quitTournament}
-				/>
-				{showWinnerSequence && (
-					<LoadingSequence
-						tone="victory"
-						title="A Victor Emerges"
-						subtitle="Sealing the bracket before the final analysis."
-						onComplete={handleWinnerSequenceComplete}
-					/>
-				)}
-			</>
+			<TournamentComplete
+				totalMatches={totalMatches}
+				participantCount={visibleNames.length}
+				onNewTournament={quitTournament}
+			/>
 		);
 	}
 
@@ -297,199 +291,247 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		);
 	}
 
-	const utilityControls = [
-		{
-			action: audioManager.handleToggleMute,
-			icon: audioManager.isMuted ? VolumeX : Volume2,
-			label: audioManager.isMuted ? "Unmute sound" : "Mute sound",
-		},
-		{
-			action: audioManager.handlePreviousTrack,
-			icon: SkipBack,
-			label: "Previous track",
-		},
-		{
-			action: audioManager.toggleBackgroundMusic,
-			icon: Music,
-			label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music",
-		},
-		{
-			action: audioManager.handleNextTrack,
-			icon: SkipForward,
-			label: "Next track",
-		},
-		{
-			action: () => setCatPictures(!showCatPictures),
-			icon: PawPrint,
-			label: showCatPictures ? "Hide cat pictures" : "Show cat pictures",
-		},
-	] as const;
-
-	const activeStatus = voteAnnouncement.value
-		? {
-				key: `vote-${currentMatchKey}-${voteAnnouncement.value}`,
-				eyebrow: "Choice locked",
-				title: `${voteAnnouncement.value} advances`,
-				detail: "Preparing the next matchup.",
-				icon: Trophy,
-				toneClass:
-					"border-emerald-400/25 bg-emerald-500/[0.08] text-emerald-50 shadow-[0_12px_32px_rgba(16,185,129,0.18)]",
-			}
-		: roundAnnouncement.value !== null
-			? {
-					key: `round-${roundAnnouncement.value}`,
-					eyebrow: `Round ${roundAnnouncement.value}`,
-					title: `${bracketStage} matchups ready`,
-					detail: "Fresh pairings are on deck.",
-					icon: Gamepad2,
-					toneClass:
-						"border-primary/25 bg-primary/[0.08] text-foreground shadow-[0_12px_32px_rgba(166,94,237,0.14)]",
-				}
-			: null;
-	const StatusIcon = activeStatus?.icon;
+	const dominantStreak =
+		leftStreak >= rightStreak
+			? leftStreak >= STREAK_THRESHOLDS.warm
+				? {
+						name: matchData.leftName,
+						streak: leftStreak,
+						heatLevel: leftHeatLevel ?? ("warm" as HeatLevel),
+					}
+				: null
+			: rightStreak >= STREAK_THRESHOLDS.warm
+				? {
+						name: matchData.rightName,
+						streak: rightStreak,
+						heatLevel: rightHeatLevel ?? ("warm" as HeatLevel),
+					}
+				: null;
 
 	return (
 		<div className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col font-display text-foreground selection:bg-primary/30">
-			<header className="px-3 sm:px-4 pt-2 pb-3 flex-shrink-0">
-				<div className="rounded-[1.35rem] border border-border/15 bg-foreground/[0.04] px-3 py-3 shadow-[0_20px_45px_rgba(0,0,0,0.12)] backdrop-blur-md">
-					<div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-						<div className="shrink-0 inline-flex items-center gap-2 rounded-full border border-border/15 bg-foreground/[0.05] px-3 py-2">
-							<Gamepad2 className="size-3.5 text-primary" />
-							<div className="flex flex-col leading-none">
-								<span className="text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-									{bracketStage}
-								</span>
-								<span className="text-xs font-semibold text-foreground/90">
-									R{roundNumber}/{totalRounds}
-									{tournamentMode === "2v2" ? " · 2v2" : ""}
-								</span>
-							</div>
-						</div>
-
-						<div className="min-w-[9rem] flex-1">
-							<div className="mb-1 flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/55">
-								<span>
-									Match {currentMatchNumber} of {totalMatches}
-								</span>
-								<span>{progressPercent}%</span>
-							</div>
-							<div className="h-1.5 min-w-0 overflow-hidden rounded-full bg-foreground/8">
-								<div
-									className="h-full rounded-full bg-primary transition-all duration-500"
-									style={{ width: `${progressPercent}%` }}
-								/>
-							</div>
-						</div>
-
-						<div className="ml-auto flex items-center gap-1.5">
-							<Button
-								type="button"
-								onClick={() => handleUndo()}
-								variant="ghost"
-								size="icon"
-								iconOnly={true}
-								shape="pill"
-								className={`size-9 ${
-									canUndo
-										? "border-primary/20 bg-primary/10 text-primary hover:bg-primary/14 hover:text-primary"
-										: "border-border/10 bg-foreground/[0.03] text-foreground/35"
-								}`}
-								aria-label="Undo last vote"
-								disabled={!canUndo}
-							>
-								<Undo2 className="size-3.5" />
-							</Button>
-							<Button
-								type="button"
-								onClick={() => setIsUtilityPanelOpen((open) => !open)}
-								variant="ghost"
-								presentation="chip"
-								shape="pill"
-								className="border border-border/15 bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.08] hover:text-foreground"
-								aria-label={
-									isUtilityPanelOpen ? "Hide tournament utilities" : "Show tournament utilities"
-								}
-								aria-expanded={isUtilityPanelOpen}
-							>
-								<Layers className="size-3.5" />
-								<span className="hidden sm:inline">Tools</span>
-								<ChevronDown
-									className={`size-3 transition-transform ${
-										isUtilityPanelOpen ? "rotate-180" : ""
-									}`}
-								/>
-							</Button>
-							<Button
-								type="button"
-								onClick={quitTournament}
-								variant="ghost"
-								size="icon"
-								iconOnly={true}
-								shape="pill"
-								className="size-9 border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/14 hover:text-destructive"
-								aria-label="Quit tournament"
-							>
-								<LogOut className="size-3.5" />
-							</Button>
-						</div>
+			<header className="px-3 sm:px-4 pt-2 pb-1 flex-shrink-0 space-y-1.5">
+				{/* Row 1: Round info, progress bar, match count, controls */}
+				<div className="flex items-center gap-2 sm:gap-3">
+					<div className="shrink-0 px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-foreground/10 backdrop-blur-md border border-border/20">
+						<Gamepad2 className="text-primary size-3" />
+						<span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase text-foreground/90 whitespace-nowrap">
+							R{roundNumber}/{totalRounds} · {bracketStage}
+						</span>
+						<span className="text-[10px] sm:text-xs text-foreground/50">·</span>
+						<span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase text-foreground/70">
+							{tournamentMode === "2v2" ? "2v2" : "1v1"}
+						</span>
 					</div>
 
-					{isUtilityPanelOpen && (
-						<div className="mt-3 flex justify-end" data-testid="tournament-utilities">
-							<div className="flex max-w-full flex-wrap justify-end gap-2 rounded-[1rem] border border-border/12 bg-foreground/[0.03] p-2">
-								{utilityControls.map(({ action, icon: Icon, label }) => (
-									<Button
-										key={label}
-										type="button"
-										onClick={action}
-										variant="ghost"
-										presentation="chip"
-										shape="pill"
-										className="border border-border/12 bg-background/40 text-foreground/75 hover:bg-background/65 hover:text-foreground"
-										aria-label={label}
-										startIcon={<Icon className="size-3.5" />}
-									>
-										<span>{label}</span>
-									</Button>
-								))}
-							</div>
-						</div>
+					<div className="flex-1 h-1.5 bg-foreground/5 rounded-full overflow-hidden min-w-0">
+						<div
+							className={
+								"h-full rounded-full transition-all duration-500 bg-primary shadow-[0_0_10px_#a65eed]"
+							}
+							style={{
+								width: `${progress || (currentMatchNumber / totalMatches) * 100}%`,
+							}}
+						/>
+					</div>
+
+					<div className="shrink-0 flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-foreground/70">
+						<Medal className="text-accent size-3.5" />
+						<span>
+							{currentMatchNumber}/{totalMatches}
+						</span>
+						{etaMinutes > 0 && (
+							<>
+								<Clock className="size-3 text-muted-foreground" />
+								<span className="text-muted-foreground">~{etaMinutes}m</span>
+							</>
+						)}
+					</div>
+
+					<div className="shrink-0 flex items-center gap-1">
+						{(
+							[
+								{
+									action: audioManager.handleToggleMute,
+									icon: audioManager.isMuted ? VolumeX : Volume2,
+									label: audioManager.isMuted ? "Unmute" : "Mute",
+								},
+								{
+									action: audioManager.handlePreviousTrack,
+									icon: SkipBack,
+									label: "Previous track",
+								},
+								{
+									action: audioManager.toggleBackgroundMusic,
+									icon: Music,
+									label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music",
+									active: audioManager.backgroundMusicEnabled,
+								},
+								{
+									action: audioManager.handleNextTrack,
+									icon: SkipForward,
+									label: "Next track",
+								},
+								{
+									action: () => setCatPictures(!showCatPictures),
+									icon: PawPrint,
+									label: showCatPictures ? "Names only" : "Show cats",
+									active: showCatPictures,
+								},
+							] as const
+						).map(({ action, icon: Icon, label, active }) => (
+							<button
+								key={label}
+								type="button"
+								onClick={action}
+								className={`size-8 flex items-center justify-center rounded-lg transition-colors ${
+									active
+										? "bg-primary/20 text-primary"
+										: "bg-foreground/5 text-muted-foreground hover:text-foreground"
+								}`}
+								aria-label={label}
+							>
+								<Icon className="size-3" />
+							</button>
+						))}
+						{handleQuit && (
+							<button
+								type="button"
+								onClick={handleQuit}
+								className="size-8 flex items-center justify-center rounded-lg bg-destructive/20 text-destructive hover:text-destructive/80 transition-colors"
+								aria-label="Quit tournament"
+							>
+								<X className="size-3.5" />
+							</button>
+						)}
+					</div>
+				</div>
+
+				{/* Row 2: Bracket path + streak (hidden on mobile) */}
+				<div className="hidden sm:flex items-center justify-between gap-2">
+					<BracketTree round={roundNumber} totalRounds={totalRounds} />
+					{dominantStreak && (
+						<span
+							className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+						>
+							🔥 {dominantStreak.name} x{dominantStreak.streak}
+						</span>
 					)}
 				</div>
 			</header>
 
 			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
+				{/* Animated blob backgrounds */}
+				<div className="absolute inset-0 overflow-hidden pointer-events-none">
+					<div className="absolute top-0 left-0 w-32 h-32 bg-primary/20 rounded-full animate-blob animation-delay-2000" />
+					<div className="absolute top-1/4 right-0 w-24 h-24 bg-stardust/20 rounded-full animate-blob" />
+					<div className="absolute bottom-1/4 left-1/4 w-28 h-28 bg-primary/15 rounded-full animate-blob animation-delay-4000" />
+					<div className="absolute bottom-0 right-1/3 w-36 h-36 bg-stardust/15 rounded-full animate-blob animation-delay-2000" />
+				</div>
+
 				<div className="sr-only" aria-live="polite">
 					{roundAnnouncement.value !== null && `Round ${roundAnnouncement.value} begins.`}
 					{voteAnnouncement.value && `${voteAnnouncement.value} advances.`}
+					{streakBurst.value &&
+						`${streakBurst.value.winnerName} is on a ${streakBurst.value.streak} win streak.`}
 				</div>
 
-				<AnimatePresence mode="wait" initial={false}>
-					{activeStatus && (
+				{/* Vote announcement overlay */}
+				<AnimatePresence>
+					{voteAnnouncement.value && (
 						<motion.div
-							key={activeStatus.key}
-							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.98 }}
+							key={`${voteAnnouncement.value}-${currentMatchKey}`}
+							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -16, scale: 0.95 }}
 							animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.99 }}
-							transition={{ duration: prefersReducedMotion ? 0.01 : 0.22 }}
-							className="pointer-events-none absolute top-2 left-1/2 z-20 w-[calc(100%-1rem)] max-w-md -translate-x-1/2 px-2"
+							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -20, scale: 0.98 }}
+							transition={{ duration: prefersReducedMotion ? 0.01 : 0.28 }}
+							className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1.5rem)] sm:w-auto max-w-full"
 						>
-							<div
-								className={`rounded-[1.1rem] border px-4 py-3 backdrop-blur-xl ${activeStatus.toneClass}`}
-							>
-								<div className="flex items-start gap-3">
-									{StatusIcon ? <StatusIcon className="mt-0.5 size-4 shrink-0" /> : null}
-									<div className="min-w-0">
-										<p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
-											{activeStatus.eyebrow}
-										</p>
-										<p className="truncate text-sm font-semibold sm:text-base">
-											{activeStatus.title}
-										</p>
-										<p className="text-xs opacity-70">{activeStatus.detail}</p>
-									</div>
+							<div className="rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 sm:px-4 py-2 backdrop-blur-md shadow-[0_0_40px_rgba(16,185,129,0.35)]">
+								<div className="flex items-center gap-2 text-emerald-100">
+									<Trophy className="text-emerald-300 size-4" />
+									<span className="text-xs sm:text-sm font-bold tracking-wide truncate">
+										{voteAnnouncement.value} advances
+									</span>
 								</div>
 							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Streak burst overlay */}
+				<AnimatePresence>
+					{streakBurst.value && (
+						<motion.div
+							key={`streak-burst-${streakBurst.value.key}`}
+							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.94 }}
+							animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 1.03 }}
+							transition={{ duration: prefersReducedMotion ? 0.01 : 0.28 }}
+							className={`pointer-events-none absolute z-30 top-[20%] ${
+								streakBurst.value.side === "left"
+									? "left-3 sm:left-6"
+									: "right-3 sm:right-6 text-right"
+							}`}
+						>
+							<div
+								className={`rounded-2xl border px-4 py-3 backdrop-blur-lg shadow-[0_0_40px_rgba(249,115,22,0.35)] ${getHeatTextClasses(streakBurst.value.heatLevel)}`}
+							>
+								<p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] opacity-80">
+									Streak Ignited
+								</p>
+								<p className="text-base sm:text-lg font-black tracking-tight">
+									{streakBurst.value.winnerName} x{streakBurst.value.streak}
+								</p>
+								<div className="flex gap-1 mt-1">
+									{Array.from({
+										length: getFlameCount(streakBurst.value.streak, 9),
+									}).map((_, i) => (
+										<span
+											key={`streak-flame-${streakBurst.value?.key}-${i}`}
+											className="text-sm sm:text-base animate-flame"
+											style={{ animationDelay: `${i * 80}ms` }}
+										>
+											🔥
+										</span>
+									))}
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Round announcement overlay */}
+				<AnimatePresence>
+					{roundAnnouncement.value !== null && (
+						<motion.div
+							key={`round-announcement-${roundAnnouncement.value}`}
+							initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+							animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.02 }}
+							transition={{ duration: prefersReducedMotion ? 0.01 : 0.35 }}
+							className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4"
+						>
+							<motion.div
+								initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0.85, y: 8 }}
+								animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+								exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0.7, y: -6 }}
+								transition={{ duration: prefersReducedMotion ? 0.01 : 0.3 }}
+								className="relative overflow-hidden rounded-2xl border border-purple-300/40 bg-slate-900/80 px-5 sm:px-8 py-5 sm:py-6 text-center shadow-[0_0_80px_rgba(168,85,247,0.35)] backdrop-blur-xl"
+							>
+								<div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-fuchsia-500/10 to-blue-500/20" />
+								<div className="relative">
+									<p className="text-[11px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-purple-200/70 mb-2">
+										Next Stage
+									</p>
+									<p className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+										Round {roundAnnouncement.value}
+									</p>
+									<p className="text-xs sm:text-sm text-purple-100/80 mt-1">
+										New head-to-head matchups ready
+									</p>
+								</div>
+							</motion.div>
 						</motion.div>
 					)}
 				</AnimatePresence>
@@ -528,9 +570,37 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						/>
 
 						{/* VS Indicator */}
-						<div className="flex flex-row sm:flex-col items-center justify-center gap-3 py-1 w-full sm:w-20">
-							<div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border border-border/20 bg-foreground/[0.04] backdrop-blur-md flex-shrink-0">
+						<div className="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 py-1 w-full sm:w-20">
+							<div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-border/30 bg-primary/20 backdrop-blur-md shadow-lg flex-shrink-0">
 								<span className="font-bold text-sm sm:text-2xl italic tracking-tighter">VS</span>
+							</div>
+							{dominantStreak && (
+								<div
+									className={`rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-black tracking-wider uppercase ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+								>
+									🔥 x{dominantStreak.streak}
+								</div>
+							)}
+							<div className="flex flex-row sm:flex-col gap-1.5 w-auto sm:w-full">
+								<button
+									type="button"
+									onClick={() => handleUndo()}
+									className={`glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-primary/20 transition-colors ${
+										canUndo ? "cursor-pointer hover:bg-white/5" : "cursor-not-allowed opacity-40"
+									}`}
+									aria-label="Undo last vote"
+									disabled={!canUndo}
+								>
+									<Undo2 className="size-3.5 text-primary" />
+								</button>
+								<button
+									type="button"
+									onClick={quitTournament}
+									className="glass-panel py-1.5 px-3 sm:px-2 rounded-full flex items-center justify-center border border-destructive/20 cursor-pointer hover:bg-destructive/10 transition-colors"
+									aria-label="Quit tournament"
+								>
+									<LogOut className="size-3.5 text-destructive" />
+								</button>
 							</div>
 						</div>
 
@@ -549,10 +619,14 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							pronunciation={matchData.rightPronunciation}
 							onKeyDown={(e) => handleKeyDown(e, "right")}
 							onVote={() => handleVoteForSide("right")}
+							animationDelay="2s"
 						/>
 					</motion.div>
 				</AnimatePresence>
 			</main>
+
+			<div className="absolute top-[-10%] left-[-10%] w-40 h-40 sm:size-64 bg-primary/10 rounded-full blur-[100px] -z-10" />
+			<div className="absolute bottom-[-10%] right-[-10%] w-40 h-40 sm:size-64 bg-stardust/10 rounded-full blur-[100px] -z-10" />
 		</div>
 	);
 }

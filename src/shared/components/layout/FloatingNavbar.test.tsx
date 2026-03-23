@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FloatingNavbar } from "./FloatingNavbar";
 
 const setSwipeModeMock = vi.fn();
-const startTournamentMock = vi.fn();
+const setNamesMock = vi.fn();
 
 const mockStore = {
 	tournament: {
@@ -15,7 +15,7 @@ const mockStore = {
 		isComplete: false,
 	},
 	tournamentActions: {
-		startTournament: startTournamentMock,
+		setNames: setNamesMock,
 	},
 	user: {
 		isLoggedIn: false,
@@ -71,43 +71,25 @@ function createMatchMedia(matches = false) {
 	}));
 }
 
-function createSection(id: string, top: number) {
-	const section = document.createElement("section");
-	const scrollIntoView = vi.fn();
-
-	section.id = id;
-	section.scrollIntoView = scrollIntoView;
-	Object.defineProperty(section, "getBoundingClientRect", {
-		configurable: true,
-		value: () => ({
-			top,
-			bottom: top + 280,
-			left: 0,
-			right: 1024,
-			width: 1024,
-			height: 280,
-			x: 0,
-			y: top,
-			toJSON: () => ({}),
-		}),
-	});
-
-	document.body.appendChild(section);
-	return { section, scrollIntoView };
-}
-
-function mountSections(activeSection: "pick" | "suggest" | "profile" = "pick") {
-	const topMap = {
-		pick: { pick: 32, suggest: 520, profile: 920 },
-		suggest: { pick: -480, suggest: 40, profile: 520 },
-		profile: { pick: -920, suggest: -460, profile: 36 },
-	}[activeSection];
-
-	return {
-		pick: createSection("pick", topMap.pick),
-		suggest: createSection("suggest", topMap.suggest),
-		profile: createSection("profile", topMap.profile),
-	};
+function mountSections(topById: Record<string, number>) {
+	for (const [id, top] of Object.entries(topById)) {
+		const section = document.createElement("section");
+		section.id = id;
+		Object.defineProperty(section, "getBoundingClientRect", {
+			value: () => ({
+				top,
+				bottom: top + 120,
+				left: 0,
+				right: 200,
+				width: 200,
+				height: 120,
+				x: 0,
+				y: top,
+				toJSON: () => ({}),
+			}),
+		});
+		document.body.append(section);
+	}
 }
 
 describe("FloatingNavbar", () => {
@@ -115,7 +97,6 @@ describe("FloatingNavbar", () => {
 		mockStore.tournament.selectedNames = [];
 		mockStore.tournament.names = null;
 		mockStore.tournament.isComplete = false;
-		startTournamentMock.mockReset();
 		mockStore.user.isLoggedIn = false;
 		mockStore.user.name = "";
 		mockStore.user.avatarUrl = "";
@@ -123,6 +104,7 @@ describe("FloatingNavbar", () => {
 		mockStore.ui.isSwipeMode = false;
 
 		setSwipeModeMock.mockReset();
+		setNamesMock.mockReset();
 
 		Object.defineProperty(window, "matchMedia", {
 			writable: true,
@@ -131,11 +113,6 @@ describe("FloatingNavbar", () => {
 		Object.defineProperty(window, "scrollTo", {
 			writable: true,
 			value: vi.fn(),
-		});
-		Object.defineProperty(window, "innerHeight", {
-			writable: true,
-			configurable: true,
-			value: 800,
 		});
 
 		vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
@@ -151,8 +128,8 @@ describe("FloatingNavbar", () => {
 		document.body.innerHTML = "";
 	});
 
-	it("renders home navigation items and marks the current visible section", () => {
-		mountSections("suggest");
+	it("renders home navigation items and tracks the active section", () => {
+		mountSections({ pick: 220, suggest: 24, profile: 520 });
 
 		render(
 			<MemoryRouter initialEntries={["/"]}>
@@ -160,36 +137,18 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByRole("button", { name: "Pick Names" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Analyze" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Suggest" })).toHaveAttribute(
-			"aria-current",
-			"location",
-		);
-		expect(screen.getByRole("button", { name: "Profile" })).toBeInTheDocument();
-	}, 10000);
-
-	it("surfaces the ready tournament action without dropping the nav", () => {
-		mockStore.tournament.selectedNames = ["Luna", "Fig", "Miso"];
-		mountSections("pick");
-
-		render(
-			<MemoryRouter initialEntries={["/"]}>
-				<FloatingNavbar />
-			</MemoryRouter>,
-		);
-
-		const pickButton = screen.getByRole("button", { name: "Start (3)" });
+		const pickButton = screen.getByText("Pick Names").closest("button");
+		const suggestButton = screen.getByText("Suggest").closest("button");
+		const profileButton = screen.getByText("Profile").closest("button");
 
 		expect(pickButton).toBeInTheDocument();
-		expect(pickButton).toHaveClass("floating-navbar__item--accent");
-
-		fireEvent.click(pickButton);
-		expect(startTournamentMock).toHaveBeenCalledWith(["Luna", "Fig", "Miso"]);
+		expect(suggestButton).toHaveAttribute("aria-current", "location");
+		expect(profileButton).toBeInTheDocument();
 	});
 
-	it("scrolls to the requested home section instead of switching hidden panels", () => {
-		const sections = mountSections("pick");
+	it("promotes the first item to a highlighted start action when enough names are selected", () => {
+		mountSections({ pick: 0, suggest: 200, profile: 400 });
+		mockStore.tournament.selectedNames = ["Luna", "Fig", "Miso"];
 
 		render(
 			<MemoryRouter initialEntries={["/"]}>
@@ -197,11 +156,17 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Suggest" }));
-		expect(sections.suggest.scrollIntoView).toHaveBeenCalled();
-	});
+		const startButton = screen.getByText("Start (3)").closest("button");
+
+		expect(startButton).toBeInTheDocument();
+		expect(startButton).toHaveClass("floating-navbar__item--accent");
+		expect(screen.queryByRole("button", { name: "Pick Names" })).not.toBeInTheDocument();
+	}, 20000);
 
 	it("shows analyze as the current destination on the analysis route", () => {
+		mockStore.tournament.isComplete = true;
+		mockStore.tournament.names = ["Luna", "Fig"];
+
 		render(
 			<MemoryRouter initialEntries={["/analysis"]}>
 				<FloatingNavbar />
@@ -215,8 +180,8 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("uses pressed semantics for the layout mode chip without treating it as the current destination", () => {
+		mountSections({ pick: 0, suggest: 200, profile: 400 });
 		mockStore.ui.isSwipeMode = true;
-		mountSections("pick");
 
 		render(
 			<MemoryRouter initialEntries={["/"]}>
@@ -234,10 +199,10 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("renders the logged-in avatar when available", () => {
+		mountSections({ pick: 0, suggest: 200, profile: 400 });
 		mockStore.user.isLoggedIn = true;
 		mockStore.user.name = "Avery Admin";
 		mockStore.user.avatarUrl = "https://example.com/avatar.png";
-		mountSections("pick");
 
 		render(
 			<MemoryRouter initialEntries={["/"]}>
@@ -249,10 +214,10 @@ describe("FloatingNavbar", () => {
 	});
 
 	it("keeps the admin profile icon treatment when no avatar is present", () => {
+		mountSections({ pick: 0, suggest: 200, profile: 24 });
 		mockStore.user.isLoggedIn = true;
 		mockStore.user.name = "Avery Admin";
 		mockStore.user.isAdmin = true;
-		mountSections("pick");
 
 		render(
 			<MemoryRouter initialEntries={["/"]}>

@@ -83,22 +83,10 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 	const namesKey = useMemo(() => createNamesKey(names), [names]);
 	const tournamentId = useMemo(() => createTournamentId(names, userName), [names, userName]);
 
-	// WebSocket integration with error boundaries
-	const webSocket = useMemo(() => {
-		try {
-			return useWebSocket({
-				url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
-				autoConnect: true,
-			});
-		} catch (error) {
-			console.warn("WebSocket initialization failed, continuing without real-time updates:", error);
-			return {
-				subscribeToTournament: () => () => {},
-				subscribeToMatches: () => () => {},
-				subscribeToUserActivity: () => () => {},
-			};
-		}
-	}, []);
+	const webSocket = useWebSocket({
+		url: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080",
+		autoConnect: true,
+	});
 
 	const defaultPersistentState = useMemo(
 		() => createDefaultPersistentState(userName || "anonymous"),
@@ -147,8 +135,12 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 			const timeouts = (window as any).__tournamentTimeouts || [];
 			const intervals = (window as any).__tournamentIntervals || [];
 
-			timeouts.forEach((timeoutId: number) => clearTimeout(timeoutId));
-			intervals.forEach((intervalId: number) => clearInterval(intervalId));
+			timeouts.forEach((timeoutId: number) => {
+				clearTimeout(timeoutId);
+			});
+			intervals.forEach((intervalId: number) => {
+				clearInterval(intervalId);
+			});
 
 			// Clear the arrays
 			(window as any).__tournamentTimeouts = [];
@@ -261,7 +253,23 @@ export function useTournamentState(names: NameItem[], userName?: string): UseTou
 
 		// Use requestAnimationFrame to ensure smooth initialization
 		requestAnimationFrame(initializeTournament);
-	}, [namesKey, names.length, tournamentMode]); // Reduced dependency array
+	}, [
+		namesKey,
+		names.length,
+		tournamentMode,
+		persistentState.bracketEntrants.filter,
+		persistentState.bracketEntrants,
+		persistentState.currentRound,
+		persistentState.matchHistory,
+		persistentState.mode,
+		persistentState.namesKey,
+		persistentState.ratings,
+		persistentState.teams,
+		persistentState.currentMatch,
+		updatePersistentState,
+		names.map,
+		names,
+	]); // Reduced dependency array
 
 	const idToNameMap = useMemo(() => createIdToNameMap(names), [names]);
 	const teamsById = useMemo(() => createTeamsById(persistentState.teams), [persistentState.teams]);
