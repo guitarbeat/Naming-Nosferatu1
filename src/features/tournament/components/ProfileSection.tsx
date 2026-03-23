@@ -103,7 +103,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 				{/* Content Section */}
 				<div className="flex-1 w-full">
 					{isEditing ? (
-						<div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+						<div className="space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 							<div className="space-y-2">
 								<label className="text-sm font-medium text-foreground/80 block">Your Name</label>
 								<div className="relative">
