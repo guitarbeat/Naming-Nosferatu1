@@ -419,7 +419,7 @@ export function MagicMoire({ theme, onError }: MagicMoireProps) {
 			}
 			cleanupCanvas();
 		};
-	}, [onError]);
+	}, [onError, theme]);
 
 	return (
 		<div

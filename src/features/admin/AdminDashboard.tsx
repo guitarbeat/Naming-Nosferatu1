@@ -351,7 +351,6 @@ export function AdminDashboard() {
 						key={tab.id}
 						type="button"
 						onClick={() => handleTabChange(tab.id)}
-						type="button"
 						variant={activeTab === tab.id ? "secondary" : "ghost"}
 						presentation="chip"
 						shape="pill"

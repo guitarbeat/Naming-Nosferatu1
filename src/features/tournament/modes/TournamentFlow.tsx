@@ -32,32 +32,26 @@ export default function TournamentFlow() {
 				.then(async (result) => {
 					if (!result?.success) {
 						// Save failed (e.g. offline) — enqueue for later sync
-						const records = Object.entries(ratingsSnapshot).map(
-							([nameId, data]) => ({
-								name_id: nameId,
-								rating: data.rating,
-								wins: data.wins,
-								losses: data.losses,
-							}),
-						);
+						const records = Object.entries(ratingsSnapshot).map(([nameId, data]) => ({
+							name_id: nameId,
+							rating: data.rating,
+							wins: data.wins,
+							losses: data.losses,
+						}));
 						await enqueueRatingsMutation(records);
 						console.warn("Ratings save failed; queued for offline sync");
 					}
 				})
 				.catch(async (_error) => {
 					// Network error — enqueue for later sync
-					const records = Object.entries(ratingsSnapshot).map(
-						([nameId, data]) => ({
-							name_id: nameId,
-							rating: data.rating,
-							wins: data.wins,
-							losses: data.losses,
-						}),
-					);
+					const records = Object.entries(ratingsSnapshot).map(([nameId, data]) => ({
+						name_id: nameId,
+						rating: data.rating,
+						wins: data.wins,
+						losses: data.losses,
+					}));
 					await enqueueRatingsMutation(records);
-					console.warn(
-						"Tournament ratings save failed; queued for offline sync",
-					);
+					console.warn("Tournament ratings save failed; queued for offline sync");
 				});
 		}
 	}, [tournament.isComplete, tournament.ratings, user.name]);
@@ -84,8 +78,8 @@ export default function TournamentFlow() {
 							</div>
 							<p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10">
 								Your personal rankings have been updated. Head over to the{" "}
-								<strong className="text-primary">Analyze</strong> section to see
-								the full breakdown and compare results!
+								<strong className="text-primary">Analyze</strong> section to see the full breakdown
+								and compare results!
 							</p>
 							<div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
 								<button
