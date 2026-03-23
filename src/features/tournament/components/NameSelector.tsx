@@ -863,10 +863,10 @@ export function NameSelector() {
 
 	return (
 		<div className="mx-auto w-full">
-			<div className="space-y-6 mobile-nav-safe-bottom">
+			<div className="space-y-4 sm:space-y-6 mobile-nav-safe-bottom">
 				{/* Current Names - Prominent Display */}
 				{lockedInNames.length > 0 && (
-					<div className="flex flex-col items-center gap-2 px-4">
+					<div className="flex flex-col items-center gap-1.5 sm:gap-2 px-2 sm:px-4">
 						<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 							My cat is named
 						</span>
@@ -878,9 +878,9 @@ export function NameSelector() {
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.05 }}
 									whileHover={{ y: -1 }}
-									className="group relative px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-b from-warning/15 to-warning/5 border border-warning/25 rounded-md"
+									className="group relative px-2.5 py-1 sm:px-4 sm:py-2 bg-gradient-to-b from-warning/15 to-warning/5 border border-warning/25 rounded-md"
 								>
-									<span className="text-foreground font-medium text-sm">
+									<span className="text-foreground font-medium text-xs sm:text-sm">
 										{nameItem.name}
 									</span>
 									{(nameItem.description || nameItem.pronunciation) && (
@@ -911,15 +911,31 @@ export function NameSelector() {
 					</div>
 				)}
 
-				{/* Selection Controls - Enhanced Design */}
-				<div className="relative px-4 py-2">
-					{/* Progress Bar */}
-					<div className="mb-4">
-						<div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-							<span className="font-medium">Selection Progress</span>
-							<span className="tabular-nums font-mono">{selectedAvailableCount}/{availableNames.length}</span>
+				{/* Selection Controls + Mode Toggle (inline on mobile) */}
+				<div className="relative px-2 sm:px-4 py-2">
+					{/* Progress Bar - compact on mobile */}
+					<div className="mb-3 sm:mb-4">
+						<div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2">
+							<span className="font-medium">
+								{selectedAvailableCount} selected
+							</span>
+							<div className="flex items-center gap-2">
+								{/* Mode toggle inline on mobile */}
+								<button
+									type="button"
+									onClick={() => {
+										const { setSwipeMode } = useAppStore.getState().uiActions;
+										setSwipeMode(!isSwipeMode);
+									}}
+									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border/20 bg-foreground/5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+									aria-label={isSwipeMode ? "Switch to grid mode" : "Switch to swipe mode"}
+								>
+									{isSwipeMode ? "Swipe" : "Grid"}
+								</button>
+								<span className="tabular-nums font-mono">{selectedAvailableCount}/{availableNames.length}</span>
+							</div>
 						</div>
-						<div className="w-full h-2 bg-border/20 rounded-full overflow-hidden">
+						<div className="w-full h-1.5 sm:h-2 bg-border/20 rounded-full overflow-hidden">
 							<motion.div
 								className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
 								initial={{ width: 0 }}
@@ -928,8 +944,8 @@ export function NameSelector() {
 							/>
 						</div>
 						{selectedHiddenCount > 0 && (
-							<div className="mt-2 text-center">
-								<span className="inline-flex items-center gap-1 px-2 py-1 bg-warning/10 text-warning/80 rounded-full text-[10px] font-medium">
+							<div className="mt-1.5 text-center">
+								<span className="inline-flex items-center gap-1 px-2 py-0.5 bg-warning/10 text-warning/80 rounded-full text-[10px] font-medium">
 									<EyeOff size={10} />
 									{selectedHiddenCount} hidden selected
 								</span>
@@ -937,7 +953,7 @@ export function NameSelector() {
 						)}
 					</div>
 
-					{/* Action Buttons - Enhanced Layout */}
+					{/* Action Buttons - stacked on very small screens */}
 					<div className="flex items-center justify-center">
 						{isSwipeMode && swipeHistory.length > 0 ? (
 							<div className="flex items-center gap-3">
@@ -947,34 +963,34 @@ export function NameSelector() {
 								</Button>
 							</div>
 						) : (
-							<div className="inline-flex items-center gap-2 p-1 bg-background/50 backdrop-blur-sm rounded-xl border border-border/20 shadow-sm">
+							<div className="inline-flex flex-wrap items-center justify-center gap-1 sm:gap-0 p-1 bg-background/50 backdrop-blur-sm rounded-xl border border-border/20 shadow-sm">
 								<Button
 									variant="ghost"
 									size="sm"
 									onClick={handleSelectAllAvailable}
 									disabled={!canSelectAllAvailable}
-									className="gap-2 h-8 px-3 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-accent/50 transition-colors"
+									className="gap-1.5 h-8 px-2.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 hover:bg-accent/50 transition-colors"
 								>
 									<CheckCircle size={14} />
 									All
 								</Button>
-								<div className="w-px h-4 bg-border/30" />
+								<div className="hidden sm:block w-px h-4 bg-border/30" />
 								<Button 
 									variant="ghost" 
 									size="sm" 
 									onClick={handleSelectRandomAvailable} 
-									className="gap-2 h-8 px-3 rounded-lg text-sm font-medium hover:bg-accent/50 transition-colors"
+									className="gap-1.5 h-8 px-2.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium hover:bg-accent/50 transition-colors"
 								>
 									<Shuffle size={14} />
 									Random
 								</Button>
-								<div className="w-px h-4 bg-border/30" />
+								<div className="hidden sm:block w-px h-4 bg-border/30" />
 								<Button
 									variant="ghost"
 									size="sm"
 									onClick={handleClearSelection}
 									disabled={!hasAnySelection}
-									className="gap-2 h-8 px-3 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-accent/50 transition-colors"
+									className="gap-1.5 h-8 px-2.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 hover:bg-accent/50 transition-colors"
 								>
 									<X size={14} />
 									Clear
