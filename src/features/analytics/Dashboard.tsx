@@ -301,7 +301,7 @@ export function Dashboard({
 			{siteStats && (
 				<div className="py-2">
 					<h3 className="text-xl font-semibold text-foreground mb-4">Site Statistics</h3>
-					<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Names</p>
 							<p className="text-2xl font-bold text-foreground">{siteStats.totalNames}</p>
