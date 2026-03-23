@@ -44,7 +44,6 @@ This document provides a comprehensive guide for setting up, developing, maintai
 | Command          | Description                                |
 | ---------------- | ------------------------------------------ |
 | `pnpm run dev`   | Start the Vite frontend dev server         |
-| `pnpm run dev:server` | Start the backend API server          |
 | `pnpm run build` | Production build                           |
 | `pnpm run lint`  | Run Biome linting and TypeScript checks    |
 | `pnpm run fix`   | Auto-fix linting issues                    |
@@ -301,22 +300,6 @@ This project uses **Vitest** for testing, with **React Testing Library** for fro
 - **Run tests in watch mode**: `pnpm run test:watch`
 - **Run tests with coverage**: `pnpm run test:coverage`
 
-### Backend Testing
-
-The backend tests are split into two categories:
-
-#### 1. Mock Mode (`server/routes.test.ts`)
-These tests verify API endpoints when the database is unavailable. The server falls back to "mock mode", returning static data.
-
-- **Focus**: Route handling, input validation, fallback logic
-- **Mocking**: `server/db` is mocked to be `null`
-
-#### 2. Database Mode (`server/routes.db.test.ts`)
-These tests verify API endpoints when the database is available, mocking the Drizzle ORM to simulate database interactions.
-
-- **Focus**: Database queries, CRUD operations, business logic
-- **Mocking**: `server/db` provides mocked methods (`insert`, `select`, `update`, `delete`)
-
 ### Frontend Testing
 
 Frontend tests are located alongside components (e.g., `src/app/App.test.tsx`).
@@ -324,14 +307,13 @@ Frontend tests are located alongside components (e.g., `src/app/App.test.tsx`).
 - **Tools**: React Testing Library, Vitest
 - **Mocking**:
   - `@/shared/services/supabase/client`: Mocked to prevent network calls
-  - `@/shared/services/apiClient`: Mocked to simulate API responses
+  - `@/shared/services/supabase/runtime`: Mocked to simulate Supabase availability and RPC responses
   - Complex providers/hooks (`useAuth`, `useAppStore`) mocked to isolate component logic
 
 ### Coverage
 
 We aim for high test coverage in critical paths:
-- Server API routes (`server/routes.ts`)
-- Data validation (`server/validation.ts`)
+- Supabase service adapters and fallbacks
 - Core business logic (`src/services/`)
 
 Run `pnpm run test:coverage` to view the current coverage report.
@@ -393,14 +375,13 @@ src/
 ├── app/                # App entry, providers, deployment/config
 ├── features/           # Domain features (admin, analytics, tournament)
 ├── hooks/              # Reusable React hooks
-├── services/           # API and Supabase runtime/api wrappers
+├── services/           # Supabase runtime wrappers and shared services
 ├── shared/             # Shared components, hooks, utils, types
 ├── store/              # Zustand app store
 ├── styles/             # CSS layers/tokens/effects
 └── types/              # App-level types
 
-server/                 # Express API routes/auth/validation
-shared/                 # Cross-runtime shared schema
+shared/                 # Shared data, helpers, and fallback content
 supabase/               # DB migrations and generated DB types
 docs/                   # Project documentation
 ```

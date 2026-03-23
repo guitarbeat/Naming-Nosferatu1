@@ -92,8 +92,7 @@ supabase/                 # Database
 ├── migrations/           # SQL migrations
 └── types.ts              # Generated types
 
-server/                   # Express API, auth, validation, DB wiring
-shared/                   # Cross-runtime schema shared by server and app
+shared/                   # Shared fallback data and cross-feature utilities
 
 docs/                     # Documentation
 config/                   # Tool configuration
@@ -136,7 +135,7 @@ features/
 shared/
   components/layout/  # Reusable UI primitives
   hooks/             # Cross-feature hooks
-  services/          # Runtime infrastructure (apiClient, errorManager)
+  services/          # Runtime infrastructure (Supabase, error handling)
   lib/               # Pure utilities, constants
   types/             # Shared domain types
 ```
@@ -225,10 +224,9 @@ Shared runtime services are located in `src/shared/services/`, while feature-loc
 | Service | Purpose |
 |---------|---------|
 | `shared/services/errorManager.ts` | Centralized error handling with retry logic |
-| `shared/services/apiClient.ts` | Shared HTTP client utilities |
 | `shared/services/supabase/client.ts` | Re-exports runtime/api modules |
 | `shared/services/supabase/runtime.ts` | Supabase runtime and wrappers (`withSupabase`) |
-| `shared/services/supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `statsAPI`) |
+| `shared/services/supabase/api.ts` | Domain APIs (`coreAPI`, `hiddenNamesAPI`, `imagesAPI`, `statsAPI`, `ratingsAPI`) |
 | `features/analytics/services/analyticsService.ts` | Analytics endpoint wrappers used by dashboard flows |
 | `features/tournament/services/tournament.ts` | Elo, team generation, and bracket helpers |
 

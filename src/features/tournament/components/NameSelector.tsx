@@ -39,7 +39,6 @@ import {
 	X,
 	ZoomIn,
 } from "@/shared/lib/icons";
-import { api } from "@/shared/services/apiClient";
 import { coreAPI, hiddenNamesAPI, isUsingFallbackData } from "@/shared/services/supabase/api";
 import { resolveSupabaseClient } from "@/shared/services/supabase/client";
 import { withSupabase } from "@/shared/services/supabase/runtime";
@@ -304,22 +303,13 @@ export function NameSelector() {
 				}
 
 				const fetchedNames = await coreAPI.getTrendingNames(true); // Include hidden names for everyone
-				if (fetchedNames.length === 0) {
-					try {
-						await api.get<unknown[]>("/names?includeHidden=true");
-					} catch (probeError) {
-						const hasSupabaseFallback =
-							Boolean(import.meta.env.VITE_SUPABASE_URL) &&
-							Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-						if (!hasSupabaseFallback) {
-							throw new Error(
-								"Could not load cards from backend. `/api/names` is unreachable and Supabase fallback is not configured.",
-							);
-						}
-
-						console.warn("Backend probe failed but Supabase fallback is configured:", probeError);
-					}
+				if (
+					fetchedNames.length === 0 &&
+					(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)
+				) {
+					throw new Error(
+						"Could not load cards because Supabase is not configured for this environment.",
+					);
 				}
 				setNames(fetchedNames);
 				setCachedData(fetchedNames, true);
