@@ -171,7 +171,7 @@ export function NameSuggestionInner() {
 						</div>
 
 						{/* Description Textarea */}
-						<div className="space-y-3">
+						<div className="space-y-2 sm:space-y-3">
 							<div className="flex items-center justify-between gap-2">
 								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
 									<span className="w-2 h-2 bg-accent rounded-full" />
