@@ -57,7 +57,6 @@ class WebSocketService {
 				this.ws = new WebSocket(this.url);
 
 				this.ws.onopen = () => {
-					console.log("WebSocket connected");
 					this.isConnecting = false;
 					this.reconnectAttempts = 0;
 					resolve();
@@ -73,7 +72,6 @@ class WebSocketService {
 				};
 
 				this.ws.onclose = (event) => {
-					console.log("WebSocket disconnected:", event.code, event.reason);
 					this.ws = null;
 
 					// Attempt to reconnect if not a clean close
