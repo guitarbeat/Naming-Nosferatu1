@@ -19,7 +19,6 @@ import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/com
 import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
 import { useOfflineSync } from "@/shared/hooks";
-import { Lightbulb, Trophy, User } from "@/shared/lib/icons";
 import {
         cleanupPerformanceMonitoring,
         initializePerformanceMonitoring,
@@ -115,11 +114,32 @@ function App() {
         );
 }
 
+function TheatricalDivider() {
+        return (
+                <div className="flex w-full max-w-lg mx-auto items-center justify-center gap-4 opacity-50 -mt-4">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-violet-500/50" />
+                        <span className="text-violet-500 text-xs" aria-hidden="true">
+                                ◆
+                        </span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-violet-500/50" />
+                </div>
+        );
+}
+
 function HomeContent() {
         const { login } = useAuth();
 
         return (
                 <>
+                        {/* Match-card top banner */}
+                        <div className="w-full border-b border-white/5">
+                                <div className="mx-auto max-w-4xl px-4 py-2 flex justify-center">
+                                        <span className="text-[10px] tracking-[0.2em] font-mono text-muted-foreground/60 uppercase select-none">
+                                                Naming Nosferatu / Tournament Bracket
+                                        </span>
+                                </div>
+                        </div>
+
                         <Section
                                 id="pick"
                                 variant="minimal"
@@ -127,13 +147,21 @@ function HomeContent() {
                                 maxWidth="full"
                                 className="app-home-section app-home-section--pick"
                         >
-                                <div className="mx-auto max-w-4xl">
-                                        <SectionHeading icon={Trophy} title="Pick Names" subtitle="Select 2 or more contenders to begin a tournament bracket" />
+                                <div className="mx-auto max-w-4xl w-full">
+                                        <SectionHeading
+                                                variant="matchcard"
+                                                isHero
+                                                eyebrow="● Main Event ●"
+                                                title="Name The Beast"
+                                                subtitle="Select 2 or more contenders to begin the tournament bracket"
+                                        />
                                 </div>
                                 <Suspense fallback={<Loading variant="skeleton" height={400} />}>
                                         <TournamentFlow />
                                 </Suspense>
                         </Section>
+
+                        <TheatricalDivider />
 
                         <Section
                                 id="suggest"
@@ -144,12 +172,14 @@ function HomeContent() {
                                 className="app-home-section"
                         >
                                 <SectionHeading
-                                        icon={Lightbulb}
-                                        title="Suggest a Name"
-                                        subtitle="Got a great cat name? Share it with the community"
+                                        variant="matchcard"
+                                        eyebrow="— Undercard —"
+                                        title="Submit a Contender"
                                 />
                                 <NameSuggestionInner />
                         </Section>
+
+                        <TheatricalDivider />
 
                         <Section
                                 id="profile"
@@ -160,9 +190,9 @@ function HomeContent() {
                                 className="app-home-section app-home-section--tail"
                         >
                                 <SectionHeading
-                                        icon={User}
-                                        title="Your Profile"
-                                        subtitle="Track your rankings and tournament history"
+                                        variant="matchcard"
+                                        eyebrow="— Corner Stats —"
+                                        title="Your Record"
                                 />
                                 <ProfileInner onLogin={(name) => login({ name })} />
                         </Section>

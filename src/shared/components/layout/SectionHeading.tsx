@@ -6,7 +6,7 @@
  *     bold gradient title, and optional gradient rules (for the hero/main-event section)
  */
 
-import type { ElementType, ReactNode } from "react";
+import type { ElementType } from "react";
 import { cn } from "@/shared/lib/basic";
 
 interface SectionHeadingProps {
@@ -14,7 +14,6 @@ interface SectionHeadingProps {
         title: string;
         subtitle?: string;
         className?: string;
-        children?: ReactNode;
         variant?: "default" | "matchcard";
         eyebrow?: string;
         isHero?: boolean;
