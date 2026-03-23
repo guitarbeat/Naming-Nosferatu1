@@ -7,13 +7,7 @@
  * @returns {JSX.Element} The complete application UI
  */
 
-import {
-	Suspense,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
@@ -21,13 +15,7 @@ import { NameSuggestionInner } from "@/features/tournament/components/NameSugges
 import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
-import {
-	AppLayout,
-	Button,
-	ErrorBoundary,
-	Loading,
-	Section,
-} from "@/shared/components";
+import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { CatNameHero } from "@/shared/components/layout/CatNameHero";
 import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
@@ -47,8 +35,7 @@ const AdminDashboardLazy = routeComponents.AdminDashboardLazy;
 function App() {
 	const { user: authUser, isLoading } = useAuth();
 	const isInitialized = !isLoading;
-	const [hasCompletedBootSequence, setHasCompletedBootSequence] =
-		useState(false);
+	const [hasCompletedBootSequence, setHasCompletedBootSequence] = useState(false);
 	const { userActions } = useAppStore();
 	const location = useLocation();
 	const { pathname } = location;
@@ -187,11 +174,7 @@ function HomeContent() {
 				centered={true}
 				className="app-home-section"
 			>
-				<SectionHeading
-					variant="matchcard"
-					eyebrow="— Undercard —"
-					title="Submit a Contender"
-				/>
+				<SectionHeading variant="matchcard" eyebrow="— Undercard —" title="Submit a Contender" />
 				<NameSuggestionInner />
 			</Section>
 
@@ -205,11 +188,7 @@ function HomeContent() {
 				centered={true}
 				className="app-home-section app-home-section--tail"
 			>
-				<SectionHeading
-					variant="matchcard"
-					eyebrow="— Corner Stats —"
-					title="Your Record"
-				/>
+				<SectionHeading variant="matchcard" eyebrow="— Corner Stats —" title="Your Record" />
 				<ProfileInner onLogin={(name) => login({ name })} />
 			</Section>
 		</>
@@ -225,12 +204,7 @@ function TournamentContent() {
 	});
 
 	return (
-		<Section
-			id="tournament"
-			variant="minimal"
-			padding="compact"
-			maxWidth="full"
-		>
+		<Section id="tournament" variant="minimal" padding="compact" maxWidth="full">
 			<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 				{tournament.names && tournament.names.length > 0 ? (
 					<Tournament
@@ -244,8 +218,7 @@ function TournamentContent() {
 							No contenders yet
 						</h2>
 						<p className="text-muted-foreground text-pretty">
-							Choose at least two names in the picker to start your tournament
-							bracket.
+							Choose at least two names in the picker to start your tournament bracket.
 						</p>
 						<div className="flex flex-wrap items-center justify-center gap-3">
 							<Button variant="glass" onClick={() => navigate("/")}>
@@ -301,18 +274,10 @@ function AdminContent() {
 
 	if (!user.isAdmin) {
 		return (
-			<Section
-				id="admin"
-				variant="minimal"
-				padding="comfortable"
-				maxWidth="md"
-				centered={true}
-			>
+			<Section id="admin" variant="minimal" padding="comfortable" maxWidth="md" centered={true}>
 				<div className="flex flex-col items-center gap-4 py-10 text-center">
 					<h2 className="text-3xl font-bold text-destructive">Access Denied</h2>
-					<p className="text-muted-foreground">
-						Admin access required to view this page.
-					</p>
+					<p className="text-muted-foreground">Admin access required to view this page.</p>
 				</div>
 			</Section>
 		);

@@ -6,11 +6,7 @@
  * It handles user authentication, registration, and role management through Supabase.
  */
 
-import type {
-	AuthAdapter,
-	AuthUser,
-	LoginCredentials,
-} from "@/app/providers/Providers";
+import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 import {
 	clearUserStorage,
@@ -27,10 +23,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 	return Promise.race([
 		promise,
 		new Promise<never>((_, reject) =>
-			setTimeout(
-				() => reject(new Error(`Auth check timed out after ${ms}ms`)),
-				ms,
-			),
+			setTimeout(() => reject(new Error(`Auth check timed out after ${ms}ms`)), ms),
 		),
 	]);
 }
@@ -61,10 +54,7 @@ export const supabaseAuthAdapter: AuthAdapter = {
 		}
 
 		try {
-			const client = await withTimeout(
-				resolveSupabaseClient(),
-				AUTH_TIMEOUT_MS,
-			);
+			const client = await withTimeout(resolveSupabaseClient(), AUTH_TIMEOUT_MS);
 			if (!client) {
 				return getLocalStorageUser();
 			}
@@ -78,10 +68,9 @@ export const supabaseAuthAdapter: AuthAdapter = {
 				return getLocalStorageUser();
 			}
 
-			const isAdmin = await withTimeout(
-				this.checkAdminStatus(user.id),
-				AUTH_TIMEOUT_MS,
-			).catch(() => false);
+			const isAdmin = await withTimeout(this.checkAdminStatus(user.id), AUTH_TIMEOUT_MS).catch(
+				() => false,
+			);
 
 			return {
 				id: user.id,
@@ -91,10 +80,7 @@ export const supabaseAuthAdapter: AuthAdapter = {
 				role: isAdmin ? "admin" : "user",
 			};
 		} catch (error) {
-			console.warn(
-				"Auth check failed or timed out, using local fallback:",
-				error,
-			);
+			console.warn("Auth check failed or timed out, using local fallback:", error);
 			return getLocalStorageUser();
 		}
 	},
@@ -129,10 +115,7 @@ export const supabaseAuthAdapter: AuthAdapter = {
 
 			// Store user info in localStorage for compatibility
 			if (data.user) {
-				setStorageString(
-					STORAGE_KEYS.USER,
-					data.user.user_metadata?.user_name || name.trim(),
-				);
+				setStorageString(STORAGE_KEYS.USER, data.user.user_metadata?.user_name || name.trim());
 				setStorageString(STORAGE_KEYS.USER_ID, data.user.id);
 			}
 
@@ -147,9 +130,7 @@ export const supabaseAuthAdapter: AuthAdapter = {
 	 * Register new user with Supabase Auth
 	 */
 	async register(): Promise<void> {
-		throw new Error(
-			"Registration not implemented. Please use Supabase Auth directly.",
-		);
+		throw new Error("Registration not implemented. Please use Supabase Auth directly.");
 	},
 
 	/**
