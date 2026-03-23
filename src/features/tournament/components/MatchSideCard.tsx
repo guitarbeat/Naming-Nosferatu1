@@ -6,11 +6,11 @@
 import type { KeyboardEvent } from "react";
 import CatImage from "@/shared/components/layout/CatImage";
 import {
-	type HeatLevel,
-	STREAK_THRESHOLDS,
 	getFlameCount,
 	getHeatCardClasses,
 	getHeatGradientClasses,
+	type HeatLevel,
+	STREAK_THRESHOLDS,
 } from "../utils/heat";
 
 export interface MatchSideCardProps {
@@ -145,7 +145,9 @@ export function MatchSideCard({
 									className="text-lg sm:text-2xl animate-pulse"
 								/>
 							)}
-							<h3 className={`font-whimsical text-2xl sm:text-3xl text-foreground tracking-wide break-words drop-shadow-md leading-tight ${isRight ? "text-left sm:text-right" : ""}`}>
+							<h3
+								className={`font-whimsical text-2xl sm:text-3xl text-foreground tracking-wide break-words drop-shadow-md leading-tight ${isRight ? "text-left sm:text-right" : ""}`}
+							>
 								{name}
 							</h3>
 							{!isRight && showStreak && (
@@ -159,7 +161,9 @@ export function MatchSideCard({
 							)}
 						</div>
 						{pronunciation && (
-							<span className={`${pronunciationPad} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}>
+							<span
+								className={`${pronunciationPad} text-amber-400 text-lg sm:text-xl font-bold italic opacity-90`}
+							>
 								[{pronunciation}]
 							</span>
 						)}
@@ -175,7 +179,9 @@ export function MatchSideCard({
 								))}
 							</div>
 						) : description ? (
-							<p className={`text-xs sm:text-sm text-foreground/90 italic line-clamp-2 mt-1 drop-shadow-sm ${textAlign}`}>
+							<p
+								className={`text-xs sm:text-sm text-foreground/90 italic line-clamp-2 mt-1 drop-shadow-sm ${textAlign}`}
+							>
 								{description}
 							</p>
 						) : null}

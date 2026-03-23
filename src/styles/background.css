@@ -1,12 +1,19 @@
 /**
  * @file background.css
- * @description Cat background effects: gradient, moiré, blur, vignette, stars
+ * @description Application shell effects: ambient background, magicContainer moire, frame
  */
+
+.app-visual-effects {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-background-shell);
+	overflow: hidden;
+	pointer-events: none;
+}
 
 .cat-background {
 	position: fixed;
 	inset: 0;
-	z-index: var(--z-negative);
 	overflow: hidden;
 	pointer-events: none;
 	background: var(--color-neutral-900);
@@ -15,6 +22,7 @@
 .cat-background__gradient {
 	position: absolute;
 	inset: 0;
+	z-index: var(--z-0);
 	background:
 		radial-gradient(
 			circle at 50% 120%,
@@ -45,6 +53,7 @@
 .cat-background__moire {
 	position: absolute;
 	inset: -12%;
+	z-index: var(--z-1);
 	background-image:
 		repeating-radial-gradient(
 			circle at 50% 50%,
@@ -66,6 +75,7 @@
 .cat-background__soft-blur {
 	position: absolute;
 	inset: -16%;
+	z-index: 2;
 	background:
 		radial-gradient(
 			circle at 30% 18%,
@@ -92,6 +102,7 @@
 .cat-background__vignette {
 	position: absolute;
 	inset: 0;
+	z-index: 3;
 	background: radial-gradient(
 		circle at center,
 		transparent var(--pw-fx-vignette-inner-stop),
@@ -100,6 +111,68 @@
 		rgb(var(--pw-fx-vignette-outer-rgb) / var(--pw-fx-vignette-outer-alpha))
 			var(--pw-fx-vignette-outer-stop)
 	);
+}
+
+#magicContainer,
+.magic-container {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100dvh;
+	z-index: var(--z-1);
+	opacity: 0;
+	transition: opacity 0.8s ease-in-out;
+	pointer-events: none;
+}
+
+.magic-container--visible {
+	opacity: var(--pw-fx-magic-opacity);
+}
+
+.magic-container canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+#magicContainer canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.app-frame-shell {
+	position: relative;
+}
+
+.app-frame-shell__content {
+	position: relative;
+	z-index: var(--z-content);
+}
+
+.app-main-shell {
+	z-index: var(--z-content);
+}
+
+.app-frame {
+	position: fixed;
+	inset: 0;
+	height: 100dvh;
+	box-sizing: border-box;
+	border: var(--pw-frame-border-width) solid
+		rgb(var(--pw-frame-color-rgb) / var(--pw-frame-color-alpha));
+	mix-blend-mode: difference;
+	user-select: none;
+	z-index: var(--z-frame);
+}
+
+.app-frame::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	margin: calc(var(--pw-frame-border-width) * -1);
+	border: inherit;
+	border-radius: var(--pw-frame-border-radius);
 }
 
 @keyframes moire-drift {
@@ -131,17 +204,25 @@
 		background-attachment: scroll;
 	}
 
+	.magic-container--visible {
+		opacity: var(--pw-fx-magic-opacity-mobile);
+	}
+
 	.cat-background__moire {
-		opacity: calc(var(--pw-fx-moire-opacity-mobile) * 0.5);
+		opacity: var(--pw-fx-moire-opacity-mobile);
 	}
 
 	.cat-background__soft-blur {
-		opacity: calc(var(--pw-fx-blur-opacity-mobile) * 0.6);
+		opacity: var(--pw-fx-blur-opacity-mobile);
 		filter: blur(var(--pw-fx-blur-radius-mobile)) saturate(var(--pw-fx-blur-saturation-mobile));
 	}
 
-	.cat-background__vignette {
-		opacity: 0.6;
+	.app-frame {
+		border-width: 5px;
+	}
+
+	.app-frame::after {
+		border-radius: 16px;
 	}
 }
 
@@ -154,6 +235,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.magic-container {
+		transition: none;
+	}
+
 	.cat-background__moire,
 	.cat-background__soft-blur {
 		animation: none;

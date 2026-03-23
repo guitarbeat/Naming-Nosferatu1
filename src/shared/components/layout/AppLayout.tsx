@@ -3,6 +3,7 @@
  * @description Main application layout component with floating primary nav
  */
 
+import { AppVisualEffects } from "@/shared/components/layout/AppVisualEffects";
 import { ScrollToTopButton } from "@/shared/components/layout/Button";
 import {
 	ErrorBoundary,
@@ -11,6 +12,7 @@ import {
 	OfflineIndicator,
 } from "@/shared/components/layout/Feedback";
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
+import { FrameEffect } from "@/shared/components/layout/FrameEffect";
 import useAppStore from "@/store/appStore";
 
 interface AppLayoutProps {

@@ -4,8 +4,8 @@
  * Uses the shared useNameSuggestion hook for consistent submission logic.
  */
 
-import { useCallback, useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
@@ -46,8 +46,8 @@ export function NameSuggestionInner() {
 	return (
 		<form onSubmit={handleLocalSubmit} className="w-full max-w-4xl mx-auto">
 			<div className="relative">
-				{/* Enhanced Background Elements - hidden on mobile for clarity */}
-				<div className="absolute inset-0 overflow-hidden rounded-3xl hidden sm:block">
+				{/* Enhanced Background Elements */}
+				<div className="absolute inset-0 overflow-hidden rounded-3xl">
 					<motion.div
 						initial={{ opacity: 0, scale: 0.8 }}
 						animate={{ opacity: 0.6, scale: 1 }}
@@ -60,62 +60,73 @@ export function NameSuggestionInner() {
 						transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
 						className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full blur-3xl"
 					/>
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 0.3 }}
+						transition={{ duration: 1, delay: 0.4 }}
+						className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-chart-1/10 via-chart-2/10 to-chart-3/10 rounded-full blur-3xl"
+					/>
 				</div>
 
 				{/* Main Content Container */}
-				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-border/20 shadow-2xl p-4 sm:p-8 md:p-12">
-					
-					{/* Header - compact on mobile */}
+				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-3xl border border-border/20 shadow-2xl p-8 sm:p-12">
+					{/* Animated Header */}
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: "easeOut" }}
-						className="text-center mb-6 sm:mb-12"
+						className="text-center mb-12"
 					>
 						<motion.div
 							initial={{ scale: 0 }}
 							animate={{ scale: 1 }}
 							transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 25 }}
-							className="inline-flex mx-auto items-center gap-2 sm:gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 px-4 sm:px-6 py-2 sm:py-3 mb-3 sm:mb-6"
+							className="inline-flex mx-auto items-center gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 px-6 py-3 mb-6"
 						>
-							<Lightbulb size={16} className="text-primary sm:hidden" />
 							<motion.div
 								animate={{ rotate: [0, 10, -10, 0] }}
 								transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-								className="hidden sm:block"
 							>
 								<Lightbulb size={20} className="text-primary" />
 							</motion.div>
-							<span className="text-xs sm:text-sm font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+							<span className="text-sm font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 								Submit A Name
 							</span>
+							<motion.div
+								initial={{ opacity: 0, scale: 0 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ delay: 0.5, type: "spring", stiffness: 600, damping: 20 }}
+							>
+								<PartyPopper size={16} className="text-accent" />
+							</motion.div>
 						</motion.div>
-						
+
 						<motion.h1
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.3, duration: 0.6 }}
-							className="text-2xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent mb-3 sm:mb-6"
+							className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent mb-6"
 						>
-							Drop Your Best Cat Name
+							Drop Your Best Cat Name Idea
 						</motion.h1>
-						
+
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4, duration: 0.6 }}
-							className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+							className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
 						>
-							Share your creative name with the community
+							Share your creative cat name with the community. Great suggestions help everyone
+							discover fun new options and make the tournament more exciting!
 						</motion.p>
 					</motion.div>
 
-					{/* Progress Indicator - hidden on mobile */}
+					{/* Progress Indicator */}
 					<motion.div
 						initial={{ opacity: 0, width: 0 }}
 						animate={{ opacity: 1, width: "100%" }}
 						transition={{ delay: 0.5, duration: 0.8 }}
-						className="mb-6 sm:mb-8 hidden sm:block"
+						className="mb-8"
 					>
 						<div className="flex items-center justify-between mb-2">
 							<span className="text-sm font-medium text-foreground/70">Form Progress</span>
@@ -136,11 +147,14 @@ export function NameSuggestionInner() {
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.6, duration: 0.6 }}
-						className="space-y-5 sm:space-y-8"
+						className="space-y-8"
 					>
 						{/* Name Input */}
-						<div className="space-y-2 sm:space-y-3">
-							<label htmlFor="suggest-name" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+						<div className="space-y-3">
+							<label
+								htmlFor="suggest-name"
+								className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+							>
 								<span className="w-2 h-2 bg-primary rounded-full" />
 								Name suggestion
 								<span className="text-destructive">*</span>
@@ -163,7 +177,7 @@ export function NameSuggestionInner() {
 									value={values.name}
 									onChange={(e) => handleChange("name", e.target.value)}
 									placeholder="e.g. Count Whiskula, Sir Paws-a-lot, Meow-zart"
-									className="w-full h-12 sm:h-16 px-4 sm:px-6 text-base sm:text-lg font-semibold bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl backdrop-blur-sm transition-all duration-300"
+									className="w-full h-16 px-6 text-lg font-semibold bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl backdrop-blur-sm transition-all duration-300"
 									disabled={isSubmitting}
 									maxLength={50}
 								/>
@@ -171,9 +185,12 @@ export function NameSuggestionInner() {
 						</div>
 
 						{/* Description Textarea */}
-						<div className="space-y-2 sm:space-y-3">
+						<div className="space-y-3">
 							<div className="flex items-center justify-between gap-2">
-								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+								<label
+									htmlFor="suggest-description"
+									className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+								>
 									<span className="w-2 h-2 bg-accent rounded-full" />
 									Why this name?
 									<span className="text-destructive">*</span>
@@ -195,9 +212,9 @@ export function NameSuggestionInner() {
 									id="suggest-description"
 									value={values.description}
 									onChange={(e) => handleChange("description", e.target.value)}
-								placeholder="Why is this name special?"
-								rows={3}
-								className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
+									placeholder="Share the meaning, story, or personality fit... What makes this name perfect for a cat? Is it funny, elegant, mysterious, or playful?"
+									rows={5}
+									className="w-full px-6 py-4 text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
 									disabled={isSubmitting}
 									maxLength={500}
 									showCount={false}
@@ -255,7 +272,7 @@ export function NameSuggestionInner() {
 								</div>
 							</motion.div>
 						)}
-						
+
 						{successMessage && (
 							<motion.div
 								initial={{ opacity: 0, y: -10, scale: 0.95 }}

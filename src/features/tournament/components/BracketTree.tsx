@@ -11,16 +11,28 @@ interface BracketTreeProps {
 }
 
 function getRoundCaption(stageRound: number, totalRounds: number): string {
-	if (stageRound === totalRounds) return "Final";
-	if (stageRound === totalRounds - 1) return "Semi";
-	if (stageRound === totalRounds - 2) return "Quarter";
+	if (stageRound === totalRounds) {
+		return "Final";
+	}
+	if (stageRound === totalRounds - 1) {
+		return "Semi";
+	}
+	if (stageRound === totalRounds - 2) {
+		return "Quarter";
+	}
 	return `R${stageRound}`;
 }
 
 function getStageFlavor(round: number, totalRounds: number): string {
-	if (round >= totalRounds) return "Crown Fight";
-	if (totalRounds - round === 1) return "Final Four Chaos";
-	if (round <= 2) return "Chaos Ladder";
+	if (round >= totalRounds) {
+		return "Crown Fight";
+	}
+	if (totalRounds - round === 1) {
+		return "Final Four Chaos";
+	}
+	if (round <= 2) {
+		return "Chaos Ladder";
+	}
 	return "Bracket Grind";
 }
 
@@ -49,7 +61,9 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 
 					return (
 						<div key={`bracket-round-${stageRound}`} className="flex items-center gap-1">
-							<div className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}>
+							<div
+								className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}
+							>
 								{getRoundCaption(stageRound, totalRounds)}
 								{isActive ? " ✦" : ""}
 							</div>

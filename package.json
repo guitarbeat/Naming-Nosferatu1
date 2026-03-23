@@ -1,162 +1,163 @@
 {
-  "name": "name-nosferatu",
-  "version": "1.0.2",
-  "description": "A React application for managing cat names and related data",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/guitarbeat/name-nosferatu.git"
-  },
-  "bugs": {
-    "url": "https://github.com/guitarbeat/name-nosferatu/issues"
-  },
-  "keywords": [
-    "react",
-    "cats",
-    "names",
-    "management",
-    "tournament",
-    "voting",
-    "supabase",
-    "vite"
-  ],
-  "author": {
-    "name": "Aaron",
-    "email": "aaron@example.com"
-  },
-  "license": "MIT",
-  "engines": {
-    "node": ">=20.19.0",
-    "pnpm": ">=10.26.0"
-  },
-  "scripts": {
-    "dev": "concurrently \"tsx server/index.ts\" \"vite --config config/vite.config.ts --port 5000 --host 0.0.0.0\"",
-    "dev:server": "tsx server/index.ts",
-    "dev:client": "vite --port 5000 --host 0.0.0.0",
-    "build": "vite build --config config/vite.config.ts",
-    "build:dev": "vite build --config config/vite.config.ts --mode development",
-    "preview": "vite preview --config config/vite.config.ts",
-    "db:push": "drizzle-kit push",
-    "lint": "pnpm run check:maintenance && pnpm run lint:full && pnpm run lint:types",
-    "lint:full": "biome check --config-path config/biome.json src server",
-    "lint:types": "tsc --project config/tsconfig.json --noEmit",
-    "check:maintenance": "node scripts/maintenance/check-maintenance.mjs",
-    "lint:fix": "biome check --config-path config/biome.json --write src server",
-    "format": "biome format --write --config-path config/biome.json src server",
-    "fix": "pnpm run lint:fix",
-    "check": "pnpm run lint && pnpm run check:deps",
-    "check:deps": "cross-env DATABASE_URL=postgres://user:pass@localhost:5432/db knip --config config/knip.json --dependencies --no-config-hints",
-    "check:deps:fix": "knip --config config/knip.json --fix",
-    "clean": "rm -rf build dist node_modules/.vite",
-    "test": "vitest --run --config config/vitest.config.ts",
-    "test:watch": "vitest --config config/vitest.config.ts",
-    "test:coverage": "vitest --coverage --config config/vitest.config.ts"
-  },
-  "dependencies": {
-    "@capacitor/cli": "8.2.0",
-    "@hello-pangea/dnd": "^18.0.1",
-    "@heroui/react": "^2.8.10",
-    "@sentry/react": "^8.45.0",
-    "@supabase/supabase-js": "^2.99.3",
-    "@tanstack/react-query": "^5.90.21",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/pg": "^8.16.0",
-    "@vercel/analytics": "^2.0.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "2.1.1",
-    "cors": "^2.8.6",
-    "drizzle-kit": "^0.31.9",
-    "drizzle-orm": "^0.45.1",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.3.1",
-    "framer-motion": "^12.35.2",
-    "lucide-react": "^0.577.0",
-    "multer": "1.4.5-lts.2",
-    "pg": "^8.20.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.0",
-    "tailwind-merge": "3.5.0",
-    "zod": "^4.3.6",
-    "zustand": "^5.0.11"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.4.6",
-    "@tailwindcss/vite": "4.2.1",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@types/multer": "^2.1.0",
-    "@types/node": "^25.4.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@types/react-window": "^2.0.0",
-    "@types/supertest": "^7.2.0",
-    "@vitejs/plugin-react": "^5.1.4",
-    "@vitest/coverage-v8": "^4.0.18",
-    "autoprefixer": "^10.4.24",
-    "concurrently": "^9.1.2",
-    "cross-env": "^10.1.0",
-    "dotenv": "^17.3.1",
-    "fast-check": "^4.6.0",
-    "jsdom": "^28.1.0",
-    "knip": "^5.86.0",
-    "postcss": "^8.5.6",
-    "react-window": "^2.2.7",
-    "supertest": "^7.2.2",
-    "tailwindcss": "4.2.1",
-    "terser": "^5.46.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.18"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all",
-      "not ie 11"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version",
-      "last 1 edge version"
-    ]
-  },
-  "funding": {
-    "type": "individual",
-    "url": "https://github.com/sponsors/guitarbeat"
-  },
-  "files": [
-    "build",
-    "public",
-    "src",
-    "scripts",
-    "*.md",
-    "*.json"
-  ],
-  "volta": {
-    "node": "20.19.6",
-    "pnpm": "10.27.0"
-  },
-  "overrides": {
-    "nth-check": "^2.1.1",
-    "form-data": "^2.5.4",
-    "tough-cookie": "^4.1.3",
-    "fetch-blob": "^3.2.0",
-    "tar": "^7.5.11",
-    "@capacitor/cli>tar": "^7.5.11",
-    "esbuild": "^0.27.3",
-    "@esbuild-kit/core-utils>esbuild": "^0.27.3",
-    "@isaacs/brace-expansion": ">=5.0.1",
-    "tar@<=7.5.2": ">=7.5.3",
-    "tar@<=7.5.3": ">=7.5.4",
-    "undici@<5.29.0": ">=5.29.0",
-    "undici@<6.23.0": ">=6.23.0",
-    "undici@>=4.5.0 <5.28.5": ">=5.28.5",
-    "glob": "13.0.6"
-  }
+	"name": "name-nosferatu",
+	"version": "1.0.2",
+	"description": "A React application for managing cat names and related data",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/guitarbeat/name-nosferatu.git"
+	},
+	"bugs": {
+		"url": "https://github.com/guitarbeat/name-nosferatu/issues"
+	},
+	"keywords": [
+		"react",
+		"cats",
+		"names",
+		"management",
+		"tournament",
+		"voting",
+		"supabase",
+		"vite"
+	],
+	"author": {
+		"name": "Aaron",
+		"email": "aaron@example.com"
+	},
+	"license": "MIT",
+	"engines": {
+		"node": ">=20.19.0",
+		"pnpm": ">=10.26.0"
+	},
+	"scripts": {
+		"dev": "concurrently \"tsx server/index.ts\" \"vite --config config/vite.config.ts --port 5000 --host 0.0.0.0\"",
+		"dev:server": "tsx server/index.ts",
+		"dev:client": "vite --port 5000 --host 0.0.0.0",
+		"build": "vite build --config config/vite.config.ts",
+		"build:dev": "vite build --config config/vite.config.ts --mode development",
+		"preview": "vite preview --config config/vite.config.ts",
+		"release:preview": "pnpm run build && vercel",
+		"release:prod": "pnpm run check && pnpm run test && pnpm run build && vercel --prod",
+		"db:push": "drizzle-kit push",
+		"lint": "pnpm run check:maintenance && pnpm run lint:full && pnpm run lint:types",
+		"lint:full": "biome check --config-path config/biome.json src server",
+		"lint:types": "tsc --project config/tsconfig.json --noEmit",
+		"check:maintenance": "node scripts/maintenance/check-maintenance.mjs",
+		"lint:fix": "biome check --config-path config/biome.json --write src server",
+		"format": "biome format --write --config-path config/biome.json src server",
+		"fix": "pnpm run lint:fix",
+		"check": "pnpm run lint && pnpm run check:deps",
+		"check:deps": "cross-env DATABASE_URL=postgres://user:pass@localhost:5432/db knip --config config/knip.json --dependencies --no-config-hints",
+		"check:deps:fix": "knip --config config/knip.json --fix",
+		"clean": "rm -rf build dist node_modules/.vite",
+		"test": "vitest --run --config config/vitest.config.ts",
+		"test:watch": "vitest --config config/vitest.config.ts",
+		"test:coverage": "vitest --coverage --config config/vitest.config.ts"
+	},
+	"dependencies": {
+		"@capacitor/cli": "8.2.0",
+		"@hello-pangea/dnd": "^18.0.1",
+		"@heroui/react": "^2.8.10",
+		"@sentry/react": "^8.45.0",
+		"@supabase/supabase-js": "^2.99.3",
+		"@tanstack/react-query": "^5.90.21",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/pg": "^8.16.0",
+		"@vercel/analytics": "^2.0.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "2.1.1",
+		"cors": "^2.8.6",
+		"drizzle-kit": "^0.31.9",
+		"drizzle-orm": "^0.45.1",
+		"express": "^5.2.1",
+		"express-rate-limit": "^8.3.1",
+		"framer-motion": "^12.35.2",
+		"lucide-react": "^0.577.0",
+		"multer": "^1.4.5-lts.1",
+		"ogl": "1.0.11",
+		"pg": "^8.20.0",
+		"react": "^19.2.4",
+		"react-dom": "^19.2.4",
+		"react-router-dom": "^7.13.0",
+		"tailwind-merge": "3.5.0",
+		"zod": "^4.3.6",
+		"zustand": "^5.0.11"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.6",
+		"@tailwindcss/vite": "4.2.1",
+		"@testing-library/dom": "^10.4.1",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.2",
+		"@types/multer": "^1.4.12",
+		"@types/node": "^25.4.0",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
+		"@types/supertest": "^7.2.0",
+		"@vitejs/plugin-react": "^5.1.4",
+		"@vitest/coverage-v8": "^4.0.18",
+		"autoprefixer": "^10.4.24",
+		"concurrently": "^9.1.2",
+		"cross-env": "^10.1.0",
+		"dotenv": "^17.3.1",
+		"jsdom": "^28.1.0",
+		"knip": "^5.86.0",
+		"postcss": "^8.5.6",
+		"supertest": "^7.2.2",
+		"tailwindcss": "4.2.1",
+		"terser": "^5.46.0",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3",
+		"vercel": "^50.34.3",
+		"vite": "^7.3.1",
+		"vitest": "^4.0.18"
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all",
+			"not ie 11"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version",
+			"last 1 edge version"
+		]
+	},
+	"funding": {
+		"type": "individual",
+		"url": "https://github.com/sponsors/guitarbeat"
+	},
+	"files": [
+		"build",
+		"public",
+		"src",
+		"scripts",
+		"*.md",
+		"*.json"
+	],
+	"volta": {
+		"node": "20.19.6",
+		"pnpm": "10.27.0"
+	},
+	"overrides": {
+		"nth-check": "^2.1.1",
+		"form-data": "^2.5.4",
+		"tough-cookie": "^4.1.3",
+		"fetch-blob": "^3.2.0",
+		"tar": "^7.5.11",
+		"@capacitor/cli>tar": "^7.5.11",
+		"esbuild": "^0.27.3",
+		"@esbuild-kit/core-utils>esbuild": "^0.27.3",
+		"@isaacs/brace-expansion": ">=5.0.1",
+		"tar@<=7.5.2": ">=7.5.3",
+		"tar@<=7.5.3": ">=7.5.4",
+		"undici@<5.29.0": ">=5.29.0",
+		"undici@<6.23.0": ">=6.23.0",
+		"undici@>=4.5.0 <5.28.5": ">=5.28.5",
+		"glob": "13.0.6"
+	}
 }
