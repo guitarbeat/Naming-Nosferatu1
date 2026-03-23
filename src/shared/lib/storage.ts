@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "./constants";
+
 export function isStorageAvailable(): boolean {
         try {
                 return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -71,29 +73,27 @@ export function writeStorageJson<T>(key: string, value: T): void {
 }
 
 /**
- * Clears all user-identity and session data from localStorage.
+ * Clears all persisted user data from localStorage on logout.
  *
- * Policy:
- *   CLEARED  — user identity / session / per-user data
- *   KEPT     — device preferences (theme, sound, UI layout)
+ * Keys are derived from STORAGE_KEYS to avoid string-drift regressions.
+ * "ratings_fallback" is an app-internal key that is not in STORAGE_KEYS.
  *
- * Call from every logout path so they share a single source of truth.
+ * Call from every logout path (appStore.logout, supabaseAuthAdapter.logout)
+ * so both share a single source of truth for what gets cleared.
  */
 export function clearUserStorage(): void {
-        // Explicit list of keys that belong to the user's session/identity.
-        // Device-preference keys (THEME, SWIPE_MODE, SOUND_*, MUSIC_VOLUME,
-        // EFFECTS_VOLUME, *_COLLAPSED, NAVBAR_COLLAPSED) are intentionally
-        // preserved so the device experience survives account switches.
-        const USER_DATA_KEYS = [
-                "catNamesUser",
-                "catNamesUserId",
-                "catNamesUserAvatar",
-                "tournament-storage",
-                "user-storage",
+        const keysToRemove: string[] = [
+                STORAGE_KEYS.USER,
+                STORAGE_KEYS.USER_ID,
+                STORAGE_KEYS.USER_AVATAR,
+                STORAGE_KEYS.THEME,
+                STORAGE_KEYS.SWIPE_MODE,
+                STORAGE_KEYS.TOURNAMENT,
+                STORAGE_KEYS.USER_STORAGE,
                 "ratings_fallback",
         ];
 
-        for (const key of USER_DATA_KEYS) {
+        for (const key of keysToRemove) {
                 removeStorageItem(key);
         }
 }
