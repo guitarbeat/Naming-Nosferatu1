@@ -301,12 +301,12 @@ export function AdminDashboard() {
 	}
 
 	return (
-		<div className="min-h-screen bg-background text-foreground p-6">
-			<div className="mb-8">
-				<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+		<div className="min-h-screen bg-background text-foreground p-3 sm:p-6">
+			<div className="mb-4 sm:mb-8">
+				<h1 className="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 					Admin Dashboard
 				</h1>
-				<p className="text-muted-foreground">Manage names and monitor site activity</p>
+				<p className="text-sm text-muted-foreground">Manage names and monitor activity</p>
 			</div>
 
 			{stats && (
