@@ -3,6 +3,7 @@
  * @description Main application layout component with floating primary nav
  */
 
+import { useLocation } from "react-router-dom";
 import { AppVisualEffects } from "@/shared/components/layout/AppVisualEffects";
 import { ScrollToTopButton } from "@/shared/components/layout/Button";
 import {
@@ -14,7 +15,6 @@ import {
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
 import { FrameEffect } from "@/shared/components/layout/FrameEffect";
 import useAppStore from "@/store/appStore";
-import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
 	children: React.ReactNode;
@@ -47,7 +47,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 					<main
 						id="main-content"
 						className={`mobile-nav-safe-bottom relative flex min-h-dvh w-full flex-col px-3 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-4 sm:px-6 sm:pb-24 sm:pt-6 md:pt-10 ${
-							!isImmersiveRoute ? "app-main-shell--nav-safe" : ""
+							isImmersiveRoute ? "" : "app-main-shell--nav-safe"
 						}`}
 						tabIndex={-1}
 					>

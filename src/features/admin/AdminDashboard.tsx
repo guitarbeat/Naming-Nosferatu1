@@ -232,13 +232,12 @@ export function AdminDashboard() {
 			};
 
 			try {
-				for (const nameId of selectedNames) {
-					const name = nameById.get(nameId);
-					if (!name) {
-						continue;
-					}
-					await actionHandlers[action](name);
-				}
+				const promises = Array.from(selectedNames)
+					.map((nameId) => nameById.get(nameId))
+					.filter((name): name is NameWithStats => name !== undefined)
+					.map((name) => actionHandlers[action](name));
+
+				await Promise.all(promises);
 				await loadAdminData();
 				setSelectedNames(new Set());
 			} catch (error) {
@@ -351,7 +350,6 @@ export function AdminDashboard() {
 						key={tab.id}
 						type="button"
 						onClick={() => handleTabChange(tab.id)}
-						type="button"
 						variant={activeTab === tab.id ? "secondary" : "ghost"}
 						presentation="chip"
 						shape="pill"
