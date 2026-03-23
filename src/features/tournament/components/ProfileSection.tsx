@@ -82,9 +82,7 @@ export function ProfileInner({ onLogin }: ProfileSectionProps) {
 					<h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 						Join the Council
 					</h2>
-					<p className="text-xs sm:text-sm text-muted-foreground">
-						Enter your name to track your rankings
-					</p>
+					<p className="text-xs sm:text-sm text-muted-foreground">Enter your name to track your rankings</p>
 				</div>
 			)}
 

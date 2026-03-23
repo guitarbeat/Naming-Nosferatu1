@@ -197,11 +197,7 @@
 		right: var(--mobile-safe-spacing-small);
 		bottom: max(
 			4.75rem,
-			calc(
-				var(--mobile-nav-height) +
-				env(safe-area-inset-bottom) +
-				var(--mobile-safe-spacing-small)
-			)
+			calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--mobile-safe-spacing-small))
 		);
 	}
 }

@@ -276,6 +276,7 @@ export function FloatingNavbar() {
 		};
 	}, []);
 
+
 	return (
 		<motion.div
 			className={cn(
@@ -311,7 +312,9 @@ export function FloatingNavbar() {
 								isCurrent={isHomeRoute && activeSection === "pick"}
 								isAccent={selectedCount >= 2 && !isTournamentRoute}
 								showLabel={
-									!isCompactPhone || (isHomeRoute && activeSection === "pick") || isTournamentRoute
+									!isCompactPhone ||
+									(isHomeRoute && activeSection === "pick") ||
+									isTournamentRoute
 								}
 								onClick={() => {
 									if (isTournamentRoute) {
