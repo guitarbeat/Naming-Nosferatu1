@@ -16,46 +16,58 @@ import {
 } from "@/shared/lib/storage";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";
 
+const AUTH_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+        return Promise.race([
+                promise,
+                new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error(`Auth check timed out after ${ms}ms`)), ms),
+                ),
+        ]);
+}
+
+function getLocalStorageUser(): AuthUser | null {
+        const userName = getStorageString(STORAGE_KEYS.USER);
+        const userId = getStorageString(STORAGE_KEYS.USER_ID);
+        if (!userName) {
+                return null;
+        }
+        return {
+                id: userId || userName,
+                name: userName,
+                email: undefined,
+                isAdmin: false,
+                role: "user",
+        };
+}
+
 export const supabaseAuthAdapter: AuthAdapter = {
         /**
-         * Get current user from Supabase auth or localStorage fallback
+         * Get current user from Supabase auth or localStorage fallback.
+         * A 5-second timeout prevents the app from hanging if Supabase is slow.
          */
         async getCurrentUser(): Promise<AuthUser | null> {
                 if (!isStorageAvailable()) {
                         return null;
                 }
 
-                // Try to get current user from Supabase first
                 try {
-                        const client = await resolveSupabaseClient();
+                        const client = await withTimeout(resolveSupabaseClient(), AUTH_TIMEOUT_MS);
                         if (!client) {
-                                // Fallback to localStorage for demo mode
-                                const userName = getStorageString(STORAGE_KEYS.USER);
-                                const userId = getStorageString(STORAGE_KEYS.USER_ID);
-
-                                if (!userName) {
-                                        return null;
-                                }
-
-                                return {
-                                        id: userId || userName,
-                                        name: userName,
-                                        email: undefined,
-                                        isAdmin: false, // Default to false for demo mode
-                                        role: "user",
-                                };
+                                return getLocalStorageUser();
                         }
 
                         const {
                                 data: { user },
-                        } = await client.auth.getUser();
+                        } = await withTimeout(client.auth.getUser(), AUTH_TIMEOUT_MS);
 
                         if (!user) {
-                                return null;
+                                // No Supabase session — fall back to localStorage identity
+                                return getLocalStorageUser();
                         }
 
-                        // Check if user has admin role
-                        const isAdmin = await this.checkAdminStatus(user.id);
+                        const isAdmin = await withTimeout(this.checkAdminStatus(user.id), AUTH_TIMEOUT_MS).catch(() => false);
 
                         return {
                                 id: user.id,
@@ -65,8 +77,8 @@ export const supabaseAuthAdapter: AuthAdapter = {
                                 role: isAdmin ? "admin" : "user",
                         };
                 } catch (error) {
-                        console.error("Error getting current user:", error);
-                        return null;
+                        console.warn("Auth check failed or timed out, using local fallback:", error);
+                        return getLocalStorageUser();
                 }
         },
 
