@@ -383,7 +383,10 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
-			add_app_access_to_user: { Args: { app_name: string }; Returns: undefined };
+			add_app_access_to_user: {
+				Args: { app_name: string };
+				Returns: undefined;
+			};
 			calculate_elo_change: {
 				Args: {
 					current_rating: number;

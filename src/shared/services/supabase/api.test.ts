@@ -69,7 +69,15 @@ describe("Supabase service API", () => {
 		query.eq.mockReturnValue(query);
 		query.order.mockReturnValue(query);
 		query.limit.mockResolvedValue({
-			data: [{ id: "2", name: "Cat 2", avg_rating: 1600, is_hidden: false, is_deleted: false }],
+			data: [
+				{
+					id: "2",
+					name: "Cat 2",
+					avg_rating: 1600,
+					is_hidden: false,
+					is_deleted: false,
+				},
+			],
 			error: null,
 		});
 		const from = vi.fn().mockReturnValue(query);
@@ -102,7 +110,9 @@ describe("Supabase service API", () => {
 
 		const result = await coreAPI.hideName("admin", "123", true);
 
-		expect(rpc).toHaveBeenNthCalledWith(1, "set_user_context", { user_name_param: "admin" });
+		expect(rpc).toHaveBeenNthCalledWith(1, "set_user_context", {
+			user_name_param: "admin",
+		});
 		expect(rpc).toHaveBeenNthCalledWith(
 			2,
 			"toggle_name_visibility",

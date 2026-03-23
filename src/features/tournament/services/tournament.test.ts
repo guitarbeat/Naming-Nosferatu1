@@ -323,8 +323,16 @@ describe("team utilities", () => {
 
 	it("applyTeamMatchElo updates individual ratings for both members", () => {
 		const elo = new EloRating();
-		const leftTeam = { id: "team-1", memberIds: ["1", "2"], memberNames: ["A", "B"] };
-		const rightTeam = { id: "team-2", memberIds: ["3", "4"], memberNames: ["C", "D"] };
+		const leftTeam = {
+			id: "team-1",
+			memberIds: ["1", "2"],
+			memberNames: ["A", "B"],
+		};
+		const rightTeam = {
+			id: "team-2",
+			memberIds: ["3", "4"],
+			memberNames: ["C", "D"],
+		};
 		const initialRatings = { 1: 1500, 2: 1500, 3: 1500, 4: 1500 };
 
 		const updated = applyTeamMatchElo({
@@ -349,8 +357,16 @@ describe("team utilities", () => {
 
 	it("applyTeamMatchElo respects rating clamps", () => {
 		const elo = new EloRating();
-		const leftTeam = { id: "team-1", memberIds: ["1", "2"], memberNames: ["A", "B"] };
-		const rightTeam = { id: "team-2", memberIds: ["3", "4"], memberNames: ["C", "D"] };
+		const leftTeam = {
+			id: "team-1",
+			memberIds: ["1", "2"],
+			memberNames: ["A", "B"],
+		};
+		const rightTeam = {
+			id: "team-2",
+			memberIds: ["3", "4"],
+			memberNames: ["C", "D"],
+		};
 		const initialRatings = {
 			1: ELO_RATING.MAX_RATING - 1,
 			2: ELO_RATING.MAX_RATING - 1,

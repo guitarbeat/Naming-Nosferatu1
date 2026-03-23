@@ -31,7 +31,9 @@ const keyToId: Record<NavSection, string> = {
 
 function useIsMobile() {
 	const [isMobile, setIsMobile] = useState(() =>
-		typeof window !== "undefined" ? window.matchMedia("(max-width: 768px)").matches : false,
+		typeof window !== "undefined"
+			? window.matchMedia("(max-width: 768px)").matches
+			: false,
 	);
 	useEffect(() => {
 		const mql = window.matchMedia("(max-width: 768px)");
@@ -73,7 +75,9 @@ function FloatingNavItem({
 			whileTap={{ scale: 0.97 }}
 			className={cn(
 				"floating-navbar__item",
-				variant === "utility" ? "floating-navbar__item--utility" : "floating-navbar__item--primary",
+				variant === "utility"
+					? "floating-navbar__item--utility"
+					: "floating-navbar__item--primary",
 				isAccent && "floating-navbar__item--accent",
 				className,
 			)}
@@ -126,15 +130,21 @@ export function FloatingNavbar() {
 	const selectedCount = selectedNames?.length || 0;
 	const isTournamentActive = Boolean(tournament.names);
 	const isComplete = tournament.isComplete;
-	const profileLabel = isLoggedIn ? userName?.split(" ")[0] || "Profile" : "Profile";
+	const profileLabel = isLoggedIn
+		? userName?.split(" ")[0] || "Profile"
+		: "Profile";
 	// On mobile, hide utility toggle (it moves into the picker surface)
-	const primaryItemCount = Number(!isTournamentActive || isTournamentRoute) + 1 + 2;
+	const primaryItemCount =
+		Number(!isTournamentActive || isTournamentRoute) + 1 + 2;
 
 	const scrollToSection = (key: NavSection) => {
 		const id = keyToId[key];
 		const target = document.getElementById(id);
 		if (!target) {
-			window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+			window.scrollTo({
+				top: 0,
+				behavior: prefersReducedMotion ? "auto" : "smooth",
+			});
 			return;
 		}
 
@@ -221,10 +231,12 @@ export function FloatingNavbar() {
 
 	useEffect(() => {
 		const compactPhoneQuery = window.matchMedia("(max-width: 420px)");
-		const updateCompactPhone = () => setIsCompactPhone(compactPhoneQuery.matches);
+		const updateCompactPhone = () =>
+			setIsCompactPhone(compactPhoneQuery.matches);
 		updateCompactPhone();
 		compactPhoneQuery.addEventListener("change", updateCompactPhone);
-		return () => compactPhoneQuery.removeEventListener("change", updateCompactPhone);
+		return () =>
+			compactPhoneQuery.removeEventListener("change", updateCompactPhone);
 	}, []);
 
 	useEffect(() => {
@@ -276,12 +288,12 @@ export function FloatingNavbar() {
 		};
 	}, []);
 
-
 	return (
 		<motion.div
 			className={cn(
 				"floating-navbar-frame",
-				!prefersReducedMotion && "transition-transform transition-opacity duration-300",
+				!prefersReducedMotion &&
+					"transition-transform transition-opacity duration-300",
 				prefersReducedMotion && "transition-none",
 				isNavVisible
 					? "translate-y-0 opacity-100"
@@ -297,11 +309,17 @@ export function FloatingNavbar() {
 				<nav aria-label="Primary" className="floating-navbar">
 					<div
 						className="floating-navbar__primary"
-						style={{ gridTemplateColumns: `repeat(${primaryItemCount}, minmax(0, 1fr))` }}
+						style={{
+							gridTemplateColumns: `repeat(${primaryItemCount}, minmax(0, 1fr))`,
+						}}
 					>
 						{(!isTournamentActive || isTournamentRoute) && (
 							<FloatingNavItem
-								icon={selectedCount >= 2 && !isTournamentRoute ? Trophy : CheckCircle}
+								icon={
+									selectedCount >= 2 && !isTournamentRoute
+										? Trophy
+										: CheckCircle
+								}
 								label={
 									isTournamentRoute
 										? "Home"
@@ -340,7 +358,9 @@ export function FloatingNavbar() {
 							icon={Lightbulb}
 							label="Suggest"
 							isCurrent={isHomeRoute && activeSection === "suggest"}
-							showLabel={!isCompactPhone || (isHomeRoute && activeSection === "suggest")}
+							showLabel={
+								!isCompactPhone || (isHomeRoute && activeSection === "suggest")
+							}
 							onClick={() => handleNavClick("suggest")}
 						/>
 
@@ -348,11 +368,17 @@ export function FloatingNavbar() {
 							icon={User}
 							label={profileLabel}
 							isCurrent={isHomeRoute && activeSection === "profile"}
-							showLabel={!isCompactPhone || (isHomeRoute && activeSection === "profile")}
+							showLabel={
+								!isCompactPhone || (isHomeRoute && activeSection === "profile")
+							}
 							onClick={() => handleNavClick("profile")}
 							customIcon={
 								isLoggedIn && avatarUrl ? (
-									<img src={avatarUrl} alt={profileLabel} className="floating-navbar__avatar" />
+									<img
+										src={avatarUrl}
+										alt={profileLabel}
+										className="floating-navbar__avatar"
+									/>
 								) : (
 									<User
 										className={cn(
