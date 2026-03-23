@@ -33,8 +33,12 @@ vi.mock("@/shared/components", () => ({
 	AppLayout: ({ children }: { children: React.ReactNode }) => (
 		<div data-testid="app-layout">{children}</div>
 	),
-	Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
-	ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	Button: ({ children, onClick }: any) => (
+		<button onClick={onClick}>{children}</button>
+	),
+	ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 	Loading: ({ text }: { text: string }) => <div>Loading: {text}</div>,
 	Section: ({ children, id }: { children: React.ReactNode; id: string }) => (
 		<section id={id}>{children}</section>
@@ -75,9 +79,13 @@ vi.mock("@/app/appConfig", () => ({
 		analysisDashboard: "analysisDashboard",
 	},
 	routeComponents: {
-		TournamentFlow: () => <div data-testid="tournament-flow">Tournament Flow</div>,
+		TournamentFlow: () => (
+			<div data-testid="tournament-flow">Tournament Flow</div>
+		),
 		DashboardLazy: () => <div data-testid="dashboard">Dashboard</div>,
-		AdminDashboardLazy: () => <div data-testid="admin-dashboard">Admin Dashboard</div>,
+		AdminDashboardLazy: () => (
+			<div data-testid="admin-dashboard">Admin Dashboard</div>
+		),
 	},
 }));
 

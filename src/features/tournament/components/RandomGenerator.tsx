@@ -71,7 +71,13 @@ function IconButton({
 	);
 }
 
-function FavoriteChip({ name, onRemove }: { name: string; onRemove: () => void }) {
+function FavoriteChip({
+	name,
+	onRemove,
+}: {
+	name: string;
+	onRemove: () => void;
+}) {
 	return (
 		<div className="flex items-center gap-1 rounded-full border border-border bg-foreground/5 py-1 pl-3 pr-1">
 			<span className="text-sm text-foreground/80">{name}</span>
@@ -98,7 +104,10 @@ export function RandomGenerator({
 	const dottedGridId = useId().replace(/:/g, "-");
 	const [generatedName, setGeneratedName] = useState<string | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [storedFavorites, setStoredFavorites] = useLocalStorage<string[]>(storageKey, []);
+	const [storedFavorites, setStoredFavorites] = useLocalStorage<string[]>(
+		storageKey,
+		[],
+	);
 
 	const favorites = useMemo(() => new Set(storedFavorites), [storedFavorites]);
 
@@ -151,7 +160,9 @@ export function RandomGenerator({
 	return (
 		<div className="mx-auto flex w-full max-w-2xl flex-col">
 			{/* Header */}
-			<h2 className="mb-2 text-center text-2xl font-bold text-foreground">Random Name Generator</h2>
+			<h2 className="mb-2 text-center text-2xl font-bold text-foreground">
+				Random Name Generator
+			</h2>
 			<p className="mb-8 text-center text-muted-foreground">
 				Can&apos;t decide? Let fate decide for you.
 			</p>
@@ -166,14 +177,25 @@ export function RandomGenerator({
 					aria-hidden="true"
 				>
 					<defs>
-						<pattern id={dottedGridId} width="30" height="30" patternUnits="userSpaceOnUse">
+						<pattern
+							id={dottedGridId}
+							width="30"
+							height="30"
+							patternUnits="userSpaceOnUse"
+						>
 							<circle cx="2" cy="2" r="1" fill="rgba(255, 255, 255, 0.2)" />
 						</pattern>
 					</defs>
 					<rect width="100%" height="100%" fill={`url(#${dottedGridId})`} />
 				</svg>
-				<div className="random-generator-bubble random-generator-bubble--one" aria-hidden="true" />
-				<div className="random-generator-bubble random-generator-bubble--two" aria-hidden="true" />
+				<div
+					className="random-generator-bubble random-generator-bubble--one"
+					aria-hidden="true"
+				/>
+				<div
+					className="random-generator-bubble random-generator-bubble--two"
+					aria-hidden="true"
+				/>
 				<div
 					className="random-generator-bubble random-generator-bubble--three"
 					aria-hidden="true"
@@ -192,12 +214,18 @@ export function RandomGenerator({
 								<IconButton
 									onClick={() => toggleFavorite(generatedName)}
 									label={
-										favorites.has(generatedName) ? "Remove from favorites" : "Add to favorites"
+										favorites.has(generatedName)
+											? "Remove from favorites"
+											: "Add to favorites"
 									}
 								>
 									<Heart
 										size={20}
-										className={favorites.has(generatedName) ? "fill-pink-500 text-pink-500" : ""}
+										className={
+											favorites.has(generatedName)
+												? "fill-pink-500 text-pink-500"
+												: ""
+										}
 									/>
 								</IconButton>
 								<IconButton
@@ -226,7 +254,10 @@ export function RandomGenerator({
 					>
 						<span>{isGenerating ? "Generating..." : "Generate Name"}</span>
 					</button>
-					<div className="button-shadow random-generator-button-shadow" aria-hidden="true" />
+					<div
+						className="button-shadow random-generator-button-shadow"
+						aria-hidden="true"
+					/>
 				</div>
 			</div>
 
@@ -239,7 +270,11 @@ export function RandomGenerator({
 					</h3>
 					<div className="flex flex-wrap gap-2">
 						{Array.from(favorites).map((name) => (
-							<FavoriteChip key={name} name={name} onRemove={() => toggleFavorite(name)} />
+							<FavoriteChip
+								key={name}
+								name={name}
+								onRemove={() => toggleFavorite(name)}
+							/>
 						))}
 					</div>
 				</div>

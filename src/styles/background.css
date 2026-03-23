@@ -176,7 +176,11 @@
 }
 
 .loading-sequence {
-	--pw-loading-accent: color-mix(in srgb, var(--color-hot-pink) 52%, var(--color-neutral-50) 48%);
+	--pw-loading-accent: color-mix(
+		in srgb,
+		var(--color-hot-pink) 52%,
+		var(--color-neutral-50) 48%
+	);
 
 	position: fixed;
 	inset: 0;
@@ -186,7 +190,11 @@
 }
 
 .loading-sequence--victory {
-	--pw-loading-accent: color-mix(in srgb, var(--color-success) 52%, var(--color-warning) 48%);
+	--pw-loading-accent: color-mix(
+		in srgb,
+		var(--color-success) 52%,
+		var(--color-warning) 48%
+	);
 }
 
 .loading-sequence__mask {
@@ -271,13 +279,16 @@
 
 @keyframes moire-drift {
 	0% {
-		transform: translate3d(-2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.02)) rotate(-0.2deg);
+		transform: translate3d(-2%, -1%, 0)
+			scale(calc(var(--pw-fx-moire-scale) - 0.02)) rotate(-0.2deg);
 	}
 	50% {
-		transform: translate3d(1%, 2%, 0) scale(calc(var(--pw-fx-moire-scale) + 0.02)) rotate(0.2deg);
+		transform: translate3d(1%, 2%, 0)
+			scale(calc(var(--pw-fx-moire-scale) + 0.02)) rotate(0.2deg);
 	}
 	100% {
-		transform: translate3d(2%, -1%, 0) scale(calc(var(--pw-fx-moire-scale) - 0.01)) rotate(-0.1deg);
+		transform: translate3d(2%, -1%, 0)
+			scale(calc(var(--pw-fx-moire-scale) - 0.01)) rotate(-0.1deg);
 	}
 }
 
@@ -308,7 +319,8 @@
 
 	.cat-background__soft-blur {
 		opacity: var(--pw-fx-blur-opacity-mobile);
-		filter: blur(var(--pw-fx-blur-radius-mobile)) saturate(var(--pw-fx-blur-saturation-mobile));
+		filter: blur(var(--pw-fx-blur-radius-mobile))
+			saturate(var(--pw-fx-blur-saturation-mobile));
 	}
 
 	.app-frame {

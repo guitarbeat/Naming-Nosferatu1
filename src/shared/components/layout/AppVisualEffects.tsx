@@ -22,7 +22,11 @@ export function AppVisualEffects({ theme }: AppVisualEffectsProps) {
 	}, [isSlowConnection, prefersReducedMotion]);
 
 	return (
-		<div className="app-visual-effects" data-testid="app-visual-effects" aria-hidden="true">
+		<div
+			className="app-visual-effects"
+			data-testid="app-visual-effects"
+			aria-hidden="true"
+		>
 			<div className="cat-background">
 				<div className="cat-background__gradient" />
 				{moireMode === "css" ? <div className="cat-background__moire" /> : null}

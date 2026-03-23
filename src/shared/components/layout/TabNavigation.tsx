@@ -32,7 +32,11 @@ interface TabNavigationProps {
 	className?: string;
 }
 
-export function TabNavigation({ activeTab, onTabChange, className }: TabNavigationProps) {
+export function TabNavigation({
+	activeTab,
+	onTabChange,
+	className,
+}: TabNavigationProps) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const {
@@ -111,7 +115,9 @@ export function TabNavigation({ activeTab, onTabChange, className }: TabNavigati
 					className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-foreground/10 to-foreground/5 border border-border/30 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-gradient-to-r hover:from-foreground/20 hover:to-foreground/10 transition-all duration-300 shadow-sm hover:shadow-md"
 				>
 					{isSwipeMode ? <Layers size={16} /> : <LayoutGrid size={16} />}
-					<span className="font-medium">{isSwipeMode ? "Swipe Mode" : "Grid Mode"}</span>
+					<span className="font-medium">
+						{isSwipeMode ? "Swipe Mode" : "Grid Mode"}
+					</span>
 				</motion.button>
 			</div>
 
@@ -142,7 +148,9 @@ export function TabNavigation({ activeTab, onTabChange, className }: TabNavigati
 							)}
 						/>
 						<span className="hidden sm:inline font-medium">{tab.label}</span>
-						<span className="sm:hidden font-medium">{tab.label.split(" ")[0]}</span>
+						<span className="sm:hidden font-medium">
+							{tab.label.split(" ")[0]}
+						</span>
 
 						{/* Active indicator */}
 						{activeTab === tab.id && (

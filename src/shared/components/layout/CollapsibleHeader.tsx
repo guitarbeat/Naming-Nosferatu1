@@ -9,7 +9,10 @@ export const CollapsibleContent: React.FC<{
 		return null;
 	}
 	return (
-		<div id={id} className="animate-in slide-in-from-top-2 duration-200 fade-in zoom-in-95">
+		<div
+			id={id}
+			className="animate-in slide-in-from-top-2 duration-200 fade-in zoom-in-95"
+		>
 			{children}
 		</div>
 	);

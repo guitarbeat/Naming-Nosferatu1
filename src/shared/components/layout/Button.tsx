@@ -106,7 +106,8 @@ type ButtonVariant =
 	| "glass";
 type ButtonSize = "small" | "medium" | "large" | "xl" | "icon";
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+interface ButtonProps
+	extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
 	children: React.ReactNode;
 	variant?: ButtonVariant;
 	size?: ButtonSize;
@@ -221,7 +222,10 @@ const ScrollToTopButton = ({
 		let scrollTimeout: number | null = null;
 
 		const checkScroll = () => {
-			const threshold = window.innerHeight <= 768 ? window.innerHeight * 1.5 : window.innerHeight;
+			const threshold =
+				window.innerHeight <= 768
+					? window.innerHeight * 1.5
+					: window.innerHeight;
 			setShowScrollTop(window.scrollY > threshold);
 		};
 

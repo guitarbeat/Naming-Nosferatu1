@@ -58,7 +58,9 @@ export function TournamentReplay({
 	onExportHistory,
 	onReplayMatch,
 }: TournamentReplayProps) {
-	const [selectedTournament, setSelectedTournament] = useState<string>(tournamentId ?? "");
+	const [selectedTournament, setSelectedTournament] = useState<string>(
+		tournamentId ?? "",
+	);
 	const [selectedMatch, setSelectedMatch] = useState<string>("");
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -179,10 +181,14 @@ export function TournamentReplay({
 			return null;
 		}
 
-		const totalDuration = filteredMatches.reduce((sum, match) => sum + match.duration, 0);
+		const totalDuration = filteredMatches.reduce(
+			(sum, match) => sum + match.duration,
+			0,
+		);
 		const avgDuration = totalDuration / filteredMatches.length;
 		const avgRatingChange =
-			filteredMatches.reduce((sum, match) => sum + match.ratingChange, 0) / filteredMatches.length;
+			filteredMatches.reduce((sum, match) => sum + match.ratingChange, 0) /
+			filteredMatches.length;
 
 		const winsByRound = new Map<number, number>();
 		filteredMatches.forEach((match) => {
@@ -213,7 +219,9 @@ export function TournamentReplay({
 	}, []);
 
 	const handleNextMatch = useCallback(() => {
-		setCurrentMatchIndex((prev) => Math.min(filteredMatches.length - 1, prev + 1));
+		setCurrentMatchIndex((prev) =>
+			Math.min(filteredMatches.length - 1, prev + 1),
+		);
 	}, [filteredMatches.length]);
 
 	const handleExportHistory = useCallback(() => {
@@ -252,7 +260,9 @@ export function TournamentReplay({
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-3">
 					<Calendar className="text-chart-4" size={24} />
-					<h2 className="text-xl font-bold text-foreground">Tournament Replay & History</h2>
+					<h2 className="text-xl font-bold text-foreground">
+						Tournament Replay & History
+					</h2>
 				</div>
 				<div className="flex gap-2">
 					{onExportHistory && (
@@ -290,7 +300,9 @@ export function TournamentReplay({
 				</div>
 
 				<div>
-					<label className="block text-sm font-medium text-foreground mb-2">View Mode</label>
+					<label className="block text-sm font-medium text-foreground mb-2">
+						View Mode
+					</label>
 					<div className="flex gap-2">
 						<button
 							onClick={() => setViewMode("matches")}
@@ -321,15 +333,21 @@ export function TournamentReplay({
 			{/* Match Statistics */}
 			{matchStats && (
 				<div className="bg-foreground/5 rounded-lg p-4">
-					<h3 className="text-lg font-semibold text-foreground mb-4">Match Statistics</h3>
+					<h3 className="text-lg font-semibold text-foreground mb-4">
+						Match Statistics
+					</h3>
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 						<div>
 							<span className="text-muted-foreground">Total Matches:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.totalMatches}</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.totalMatches}
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Total Duration:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.totalDuration}s</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.totalDuration}s
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Avg Duration:</span>
@@ -339,15 +357,21 @@ export function TournamentReplay({
 						</div>
 						<div>
 							<span className="text-muted-foreground">Rounds Completed:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.roundsCompleted}</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.roundsCompleted}
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Longest Match:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.longestMatch}s</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.longestMatch}s
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Shortest Match:</span>
-							<span className="font-medium text-foreground ml-1">{matchStats.shortestMatch}s</span>
+							<span className="font-medium text-foreground ml-1">
+								{matchStats.shortestMatch}s
+							</span>
 						</div>
 						<div>
 							<span className="text-muted-foreground">Avg Rating Change:</span>
@@ -438,9 +462,13 @@ export function TournamentReplay({
 											>
 												{match.winnerId === match.leftId ? "W" : "L"}
 											</span>
-											<span className="font-semibold text-foreground">{match.winnerId}</span>
+											<span className="font-semibold text-foreground">
+												{match.winnerId}
+											</span>
 										</div>
-										<div className="text-xs text-muted-foreground">{match.duration}s</div>
+										<div className="text-xs text-muted-foreground">
+											{match.duration}s
+										</div>
 									</div>
 								</div>
 								<div className="mt-2 pt-2 border-t border-border/10">
@@ -448,13 +476,15 @@ export function TournamentReplay({
 										<div>
 											<span className="text-muted-foreground">Ratings:</span>
 											<span className="ml-2">
-												{match.leftRating} → {match.leftRating + match.ratingChange}
+												{match.leftRating} →{" "}
+												{match.leftRating + match.ratingChange}
 											</span>
 										</div>
 										<div>
 											<span className="text-muted-foreground">Ratings:</span>
 											<span className="ml-2">
-												{match.rightRating} → {match.rightRating - match.ratingChange}
+												{match.rightRating} →{" "}
+												{match.rightRating - match.ratingChange}
 											</span>
 										</div>
 									</div>
@@ -469,9 +499,13 @@ export function TournamentReplay({
 				<div className="flex items-center justify-center p-8">
 					<div className="text-center text-muted-foreground">
 						<Trophy size={48} className="mx-auto mb-4" />
-						<h3 className="text-lg font-semibold text-foreground mb-2">Bracket View</h3>
+						<h3 className="text-lg font-semibold text-foreground mb-2">
+							Bracket View
+						</h3>
 						<p>Interactive bracket visualization coming soon...</p>
-						<p className="text-sm">For now, use the Matches view to see tournament progression.</p>
+						<p className="text-sm">
+							For now, use the Matches view to see tournament progression.
+						</p>
 					</div>
 				</div>
 			)}
@@ -481,9 +515,13 @@ export function TournamentReplay({
 				<div className="flex items-center justify-center p-8">
 					<div className="text-center text-muted-foreground">
 						<BarChart3 size={48} className="mx-auto mb-4" />
-						<h3 className="text-lg font-semibold text-foreground mb-2">No Match History</h3>
+						<h3 className="text-lg font-semibold text-foreground mb-2">
+							No Match History
+						</h3>
 						<p>No matches found for the selected tournament.</p>
-						<p className="text-sm">Complete some tournaments to see their match history here.</p>
+						<p className="text-sm">
+							Complete some tournaments to see their match history here.
+						</p>
 					</div>
 				</div>
 			)}

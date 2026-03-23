@@ -21,7 +21,13 @@ type CatColor = "neon" | "pastel" | "warm";
 type CardSkeletonVariant = "name-card" | "elevated-card" | "mosaic-card";
 
 interface LoadingProps {
-	variant?: "spinner" | "cat" | "bongo" | "suspense" | "skeleton" | "card-skeleton";
+	variant?:
+		| "spinner"
+		| "cat"
+		| "bongo"
+		| "suspense"
+		| "skeleton"
+		| "card-skeleton";
 	catVariant?: CatVariant;
 	catColor?: CatColor;
 	showCatFace?: boolean;
@@ -88,7 +94,10 @@ const CatSpinnerContent: React.FC<{
 						<Heart size={iconSize} fill="currentColor" />
 					</motion.div>
 					{showFace && (
-						<Cat size={iconSize * 0.6} className="relative z-10 text-white drop-shadow-md" />
+						<Cat
+							size={iconSize * 0.6}
+							className="relative z-10 text-white drop-shadow-md"
+						/>
 					)}
 				</div>
 			);
@@ -160,9 +169,17 @@ export const Loading: React.FC<LoadingProps> = memo(
 							loop={true}
 						/>
 					) : (
-						<img src={randomAsset} alt="Loading..." className="w-24 h-24 object-contain" />
+						<img
+							src={randomAsset}
+							alt="Loading..."
+							className="w-24 h-24 object-contain"
+						/>
 					)}
-					{text && <p className="text-sm font-medium text-white/70 animate-pulse">{text}</p>}
+					{text && (
+						<p className="text-sm font-medium text-white/70 animate-pulse">
+							{text}
+						</p>
+					)}
 					<span className="sr-only">Loading...</span>
 				</div>
 			);
@@ -212,7 +229,9 @@ export const Loading: React.FC<LoadingProps> = memo(
 					<div className="flex justify-end pt-2">
 						<Skeleton className="h-8 w-20 rounded-lg" />
 					</div>
-					{text && <div className="text-center text-xs text-white/50 pt-2">{text}</div>}
+					{text && (
+						<div className="text-center text-xs text-white/50 pt-2">{text}</div>
+					)}
 				</div>
 			);
 		}
@@ -221,9 +240,17 @@ export const Loading: React.FC<LoadingProps> = memo(
 			return (
 				<div className={containerClasses} role="status" aria-label="Loading">
 					<div className="relative flex items-center justify-center p-4 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm">
-						<CatSpinnerContent catVariant="bounce" showFace={true} size={size} />
+						<CatSpinnerContent
+							catVariant="bounce"
+							showFace={true}
+							size={size}
+						/>
 					</div>
-					{text && <p className="text-sm font-medium text-white/70 animate-pulse">{text}</p>}
+					{text && (
+						<p className="text-sm font-medium text-white/70 animate-pulse">
+							{text}
+						</p>
+					)}
 				</div>
 			);
 		}
@@ -232,9 +259,17 @@ export const Loading: React.FC<LoadingProps> = memo(
 			return (
 				<div className={containerClasses} role="status" aria-label="Loading">
 					<div className="relative flex items-center justify-center p-4 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm">
-						<CatSpinnerContent catVariant={catVariant} showFace={showCatFace} size={size} />
+						<CatSpinnerContent
+							catVariant={catVariant}
+							showFace={showCatFace}
+							size={size}
+						/>
 					</div>
-					{text && <p className="text-sm font-medium text-white/70 animate-pulse">{text}</p>}
+					{text && (
+						<p className="text-sm font-medium text-white/70 animate-pulse">
+							{text}
+						</p>
+					)}
 					<span className="sr-only">Loading...</span>
 				</div>
 			);

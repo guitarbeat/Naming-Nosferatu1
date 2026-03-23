@@ -90,7 +90,9 @@ export function MatchSideCard({
 	const showStreak = streak >= STREAK_THRESHOLDS.warm;
 	const flameEffectsEnabled = hasSelectionFeedback;
 	const showStreakChip = Boolean(heatLevel && showStreak);
-	const heatLabel = heatLevel ? `${heatLevel[0]?.toUpperCase() ?? ""}${heatLevel.slice(1)}` : "";
+	const heatLabel = heatLevel
+		? `${heatLevel[0]?.toUpperCase() ?? ""}${heatLevel.slice(1)}`
+		: "";
 	const animateFloatClass = flameEffectsEnabled ? "animate-float" : "";
 
 	return (
@@ -124,7 +126,9 @@ export function MatchSideCard({
 
 					{heatLevel && flameEffectsEnabled && (
 						<div className="pointer-events-none absolute inset-0 z-10">
-							<div className={`absolute inset-0 ${getHeatGradientClasses(heatLevel)}`} />
+							<div
+								className={`absolute inset-0 ${getHeatGradientClasses(heatLevel)}`}
+							/>
 							<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
 								<StreakFlames
 									count={getFlameCount(streak)}

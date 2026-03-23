@@ -3,7 +3,7 @@
  * @description Image lightbox component for viewing images in fullscreen
  */
 
-import { AnimatePresence, motion, PanInfo } from "framer-motion";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X, ZoomOut } from "@/shared/lib/icons";
 import { LightboxImage } from "./LightboxImage";
@@ -15,12 +15,19 @@ interface LightboxProps {
 	onNavigate: (index: number) => void;
 }
 
-export function Lightbox({ images, currentIndex, onClose, onNavigate }: LightboxProps) {
+export function Lightbox({
+	images,
+	currentIndex,
+	onClose,
+	onNavigate,
+}: LightboxProps) {
 	const lightboxRef = useRef<HTMLDivElement>(null);
 	const [isZoomed, setIsZoomed] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [position, setPosition] = useState({ x: 0, y: 0 });
-	const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
+	const [preloadedImages, setPreloadedImages] = useState<Set<string>>(
+		new Set(),
+	);
 
 	// Preload adjacent images for better performance with cleanup
 	useEffect(() => {
@@ -113,7 +120,10 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 			const velocityThreshold = 500;
 
 			if (!isZoomed) {
-				if (Math.abs(offset) > threshold || Math.abs(velocity) > velocityThreshold) {
+				if (
+					Math.abs(offset) > threshold ||
+					Math.abs(velocity) > velocityThreshold
+				) {
 					if (offset > 0 || velocity > 0) {
 						handlePrevious();
 					} else {
@@ -132,7 +142,9 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 			return;
 		}
 		const previouslyFocusedElement =
-			document.activeElement instanceof HTMLElement ? document.activeElement : null;
+			document.activeElement instanceof HTMLElement
+				? document.activeElement
+				: null;
 
 		const getFocusableElements = () =>
 			Array.from(
@@ -165,7 +177,10 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 			const lastElement = focusableElements[focusableElements.length - 1];
 
 			if (e.shiftKey) {
-				if (document.activeElement === firstElement || document.activeElement === lightboxElement) {
+				if (
+					document.activeElement === firstElement ||
+					document.activeElement === lightboxElement
+				) {
 					e.preventDefault();
 					lastElement?.focus();
 				}
@@ -419,18 +434,24 @@ export function Lightbox({ images, currentIndex, onClose, onNavigate }: Lightbox
 				</button>
 
 				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-					<span id={`lightbox-description-${currentIndex}`} className="font-medium">
+					<span
+						id={`lightbox-description-${currentIndex}`}
+						className="font-medium"
+					>
 						Image {currentIndex + 1} of {images.length}
 					</span>
 					{isZoomed && (
-						<span className="ml-2 text-xs text-white/70">({Math.round(scale * 100)}%)</span>
+						<span className="ml-2 text-xs text-white/70">
+							({Math.round(scale * 100)}%)
+						</span>
 					)}
 				</div>
 
 				{/* Keyboard shortcuts help */}
 				<div className="absolute bottom-4 right-4 text-white/60 text-xs bg-black/30 px-2 py-1 rounded">
 					<span className="hidden sm:inline">
-						← → Navigate • Space Close • +/- Zoom • 1-9 Jump • R Reset • F Fullscreen
+						← → Navigate • Space Close • +/- Zoom • 1-9 Jump • R Reset • F
+						Fullscreen
 					</span>
 					<span className="sm:hidden">Swipe to navigate • Tap to zoom</span>
 				</div>

@@ -1,4 +1,9 @@
-import { type MotionValue, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+	type MotionValue,
+	useMotionValue,
+	useSpring,
+	useTransform,
+} from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 
 interface TiltConfig {
@@ -27,14 +32,20 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 	// Detect touch device to disable tilt on mobile
 	const [isTouchDevice, setIsTouchDevice] = useState(() => {
 		// Test suite expects tilt to be disabled immediately when matchMedia is missing.
-		if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+		if (
+			typeof window === "undefined" ||
+			typeof window.matchMedia !== "function"
+		) {
 			return true;
 		}
 
 		return window.matchMedia("(pointer: coarse)").matches;
 	});
 	useEffect(() => {
-		if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+		if (
+			typeof window === "undefined" ||
+			typeof window.matchMedia !== "function"
+		) {
 			setIsTouchDevice(true);
 			return;
 		}
@@ -51,8 +62,16 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 	const mouseXSpring = useSpring(mouseX, springConfig);
 	const mouseYSpring = useSpring(mouseY, springConfig);
 
-	const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], [`${maxTilt}deg`, `-${maxTilt}deg`]);
-	const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], [`-${maxTilt}deg`, `${maxTilt}deg`]);
+	const rotateX = useTransform(
+		mouseYSpring,
+		[-0.5, 0.5],
+		[`${maxTilt}deg`, `-${maxTilt}deg`],
+	);
+	const rotateY = useTransform(
+		mouseXSpring,
+		[-0.5, 0.5],
+		[`-${maxTilt}deg`, `${maxTilt}deg`],
+	);
 
 	const handleMouseMove = useCallback(
 		(e: React.MouseEvent<HTMLElement>) => {

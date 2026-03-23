@@ -50,7 +50,9 @@ export function TournamentBracket({
 	onShare,
 }: TournamentBracketProps) {
 	const [selectedRound, setSelectedRound] = useState(1);
-	const [viewMode, setViewMode] = useState<"bracket" | "tree" | "compact">("bracket");
+	const [viewMode, setViewMode] = useState<"bracket" | "tree" | "compact">(
+		"bracket",
+	);
 	const [zoomLevel, setZoomLevel] = useState(1);
 
 	// Organize matches into rounds
@@ -98,7 +100,8 @@ export function TournamentBracket({
 			completedRounds,
 			totalMatches,
 			completedMatches,
-			completionRate: totalMatches > 0 ? (completedMatches / totalMatches) * 100 : 0,
+			completionRate:
+				totalMatches > 0 ? (completedMatches / totalMatches) * 100 : 0,
 			averageMatchesPerRound: totalRounds > 0 ? totalMatches / totalRounds : 0,
 		};
 	}, [bracketRounds, matches]);
@@ -144,9 +147,12 @@ export function TournamentBracket({
 		setZoomLevel((prev) => Math.max(1, prev - 1));
 	}, []);
 
-	const handleViewModeChange = useCallback((mode: "bracket" | "tree" | "compact") => {
-		setViewMode(mode);
-	}, []);
+	const handleViewModeChange = useCallback(
+		(mode: "bracket" | "tree" | "compact") => {
+			setViewMode(mode);
+		},
+		[],
+	);
 
 	const handleExport = useCallback(() => {
 		if (onExport) {
@@ -158,7 +164,9 @@ export function TournamentBracket({
 				exportDate: new Date().toISOString(),
 			};
 
-			const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+			const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+				type: "application/json",
+			});
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
@@ -185,7 +193,9 @@ export function TournamentBracket({
 			<div className="flex items-center justify-center min-h-96 p-8">
 				<div className="text-center text-muted-foreground">
 					<Trophy size={48} className="mx-auto mb-4" />
-					<h3 className="text-xl font-semibold text-foreground">No Tournament Data</h3>
+					<h3 className="text-xl font-semibold text-foreground">
+						No Tournament Data
+					</h3>
 					<p>Complete a tournament to see the bracket visualization.</p>
 				</div>
 			</div>
@@ -200,7 +210,9 @@ export function TournamentBracket({
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center gap-3">
 					<Trophy size={24} className="text-chart-4" />
-					<h2 className="text-xl font-bold text-foreground">Tournament Bracket</h2>
+					<h2 className="text-xl font-bold text-foreground">
+						Tournament Bracket
+					</h2>
 				</div>
 
 				<div className="flex items-center gap-2">
@@ -247,7 +259,9 @@ export function TournamentBracket({
 						>
 							<ZoomOut size={16} />
 						</button>
-						<span className="text-sm text-muted-foreground px-2">{zoomLevel}x</span>
+						<span className="text-sm text-muted-foreground px-2">
+							{zoomLevel}x
+						</span>
 						<button
 							onClick={handleZoomIn}
 							disabled={zoomLevel === 3}
@@ -283,19 +297,27 @@ export function TournamentBracket({
 
 			{/* Tournament Stats */}
 			<div className="bg-foreground/5 rounded-lg p-4 mb-6">
-				<h3 className="text-lg font-semibold text-foreground mb-4">Tournament Statistics</h3>
+				<h3 className="text-lg font-semibold text-foreground mb-4">
+					Tournament Statistics
+				</h3>
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 					<div>
 						<span className="text-muted-foreground">Total Rounds:</span>
-						<span className="font-medium text-foreground ml-1">{bracketStats.totalRounds}</span>
+						<span className="font-medium text-foreground ml-1">
+							{bracketStats.totalRounds}
+						</span>
 					</div>
 					<div>
 						<span className="text-muted-foreground">Completed:</span>
-						<span className="font-medium text-foreground ml-1">{bracketStats.completedRounds}</span>
+						<span className="font-medium text-foreground ml-1">
+							{bracketStats.completedRounds}
+						</span>
 					</div>
 					<div>
 						<span className="text-muted-foreground">Total Matches:</span>
-						<span className="font-medium text-foreground ml-1">{bracketStats.totalMatches}</span>
+						<span className="font-medium text-foreground ml-1">
+							{bracketStats.totalMatches}
+						</span>
 					</div>
 					<div>
 						<span className="text-muted-foreground">Completed Matches:</span>
@@ -330,7 +352,9 @@ export function TournamentBracket({
 				</button>
 
 				<div className="text-center">
-					<span className="text-lg font-bold text-foreground">Round {selectedRound}</span>
+					<span className="text-lg font-bold text-foreground">
+						Round {selectedRound}
+					</span>
 					{currentRoundMatches.length > 0 && (
 						<span className="text-sm text-muted-foreground ml-4">
 							({currentRoundMatches.length} matches)
@@ -357,7 +381,9 @@ export function TournamentBracket({
 								<div className="text-center font-semibold text-foreground mb-4">
 									Round {round.round}
 									{round.winner && (
-										<span className="ml-2 text-chart-4">🏆 Winner: {round.winner}</span>
+										<span className="ml-2 text-chart-4">
+											🏆 Winner: {round.winner}
+										</span>
 									)}
 								</div>
 								<div
@@ -439,8 +465,14 @@ export function TournamentBracket({
 						{bracketRounds.map((round) => (
 							<div key={round.round} className="space-y-2">
 								<div className="flex items-center justify-between">
-									<span className="font-semibold text-foreground">Round {round.round}</span>
-									{round.winner && <span className="text-chart-4">🏆 Winner: {round.winner}</span>}
+									<span className="font-semibold text-foreground">
+										Round {round.round}
+									</span>
+									{round.winner && (
+										<span className="text-chart-4">
+											🏆 Winner: {round.winner}
+										</span>
+									)}
 								</div>
 								<div className="bg-foreground/5 rounded-lg p-4">
 									{round.matches.map((match, index) => (
@@ -448,7 +480,9 @@ export function TournamentBracket({
 											key={match.id}
 											className="flex items-center justify-between py-2 border-b border-border/10"
 										>
-											<span className="text-sm text-muted-foreground">Match {index + 1}</span>
+											<span className="text-sm text-muted-foreground">
+												Match {index + 1}
+											</span>
 											<div className="flex items-center gap-2">
 												<span
 													className="text-sm font-medium truncate max-w-24"
@@ -482,19 +516,34 @@ export function TournamentBracket({
 						{bracketRounds.map((round) => (
 							<div key={round.round} className="bg-foreground/5 rounded-lg p-4">
 								<div className="flex items-center justify-between mb-4">
-									<span className="font-semibold text-foreground">Round {round.round}</span>
-									{round.winner && <span className="text-chart-4">🏆 {round.winner}</span>}
+									<span className="font-semibold text-foreground">
+										Round {round.round}
+									</span>
+									{round.winner && (
+										<span className="text-chart-4">🏆 {round.winner}</span>
+									)}
 								</div>
 								<div className="space-y-2">
 									{round.matches.map((match, index) => (
-										<div key={match.id} className="flex items-center justify-between text-sm">
-											<span className="text-muted-foreground w-20">M{index + 1}</span>
-											<span className="flex-1 text-center">
-												{match.leftId && <span className="font-medium">{match.leftId}</span>}
-												<span className="text-muted-foreground">vs</span>
-												{match.rightId && <span className="font-medium">{match.rightId}</span>}
+										<div
+											key={match.id}
+											className="flex items-center justify-between text-sm"
+										>
+											<span className="text-muted-foreground w-20">
+												M{index + 1}
 											</span>
-											<span className="text-muted-foreground w-20">M{index + 1}</span>
+											<span className="flex-1 text-center">
+												{match.leftId && (
+													<span className="font-medium">{match.leftId}</span>
+												)}
+												<span className="text-muted-foreground">vs</span>
+												{match.rightId && (
+													<span className="font-medium">{match.rightId}</span>
+												)}
+											</span>
+											<span className="text-muted-foreground w-20">
+												M{index + 1}
+											</span>
 										</div>
 									))}
 								</div>
