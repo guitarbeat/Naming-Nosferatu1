@@ -88,11 +88,15 @@ export function MatchSideCard({
 			: "";
 
 	const showStreak = streak >= STREAK_THRESHOLDS.warm;
+	const flameEffectsEnabled = hasSelectionFeedback;
+	const showStreakChip = Boolean(heatLevel && showStreak);
+	const heatLabel = heatLevel ? `${heatLevel[0]?.toUpperCase() ?? ""}${heatLevel.slice(1)}` : "";
+	const animateFloatClass = flameEffectsEnabled ? "animate-float" : "";
 
 	return (
 		<div className="flex-1 flex flex-col min-h-[250px] sm:min-h-0">
 			<div
-				className={`relative overflow-hidden rounded-xl group cursor-pointer flex-1 animate-float transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+				className={`relative overflow-hidden rounded-xl group cursor-pointer flex-1 ${animateFloatClass} transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
 					isVoting ? "pointer-events-none" : ""
 				} ${getHeatCardClasses(heatLevel)} ${selectionClass}`}
 				style={animationDelay ? { animationDelay } : undefined}
@@ -118,7 +122,7 @@ export function MatchSideCard({
 						</span>
 					)}
 
-					{heatLevel && (
+					{heatLevel && flameEffectsEnabled && (
 						<div className="pointer-events-none absolute inset-0 z-10">
 							<div className={`absolute inset-0 ${getHeatGradientClasses(heatLevel)}`} />
 							<div className="absolute bottom-14 left-0 right-0 flex justify-center gap-0.5 opacity-90">
@@ -136,7 +140,15 @@ export function MatchSideCard({
 						className={`absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-20 flex flex-col justify-end pointer-events-none ${textAlign}`}
 					>
 						<div className={`flex items-center gap-2 flex-wrap ${headingWrap}`}>
-							{isRight && showStreak && (
+							{showStreakChip && (
+								<span
+									data-testid={`streak-chip-${side}`}
+									className="shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-bold tracking-wider uppercase"
+								>
+									{heatLabel} streak x{streak}
+								</span>
+							)}
+							{flameEffectsEnabled && isRight && showStreak && (
 								<StreakFlames
 									count={Math.min(streak, 6)}
 									side={side}
@@ -150,7 +162,7 @@ export function MatchSideCard({
 							>
 								{name}
 							</h3>
-							{!isRight && showStreak && (
+							{flameEffectsEnabled && !isRight && showStreak && (
 								<StreakFlames
 									count={Math.min(streak, 6)}
 									side={side}

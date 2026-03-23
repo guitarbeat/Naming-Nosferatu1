@@ -35,6 +35,7 @@ import {
 } from "./utils/heat";
 import { extractMatchData, getMatchSideId } from "./utils/matchHelpers";
 import { useTimedState } from "./utils/useTimedState";
+import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 
 interface StreakBurst {
 	key: number;
@@ -74,6 +75,7 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	} = tournament;
 
 	const [selectedSide, setSelectedSide] = useState<"left" | "right" | null>(null);
+	const [utilitiesOpen, setUtilitiesOpen] = useState(false);
 	const voteAnnouncement = useTimedState<string | null>(null);
 	const roundAnnouncement = useTimedState<number | null>(null);
 	const streakBurst = useTimedState<StreakBurst | null>(null);
@@ -275,11 +277,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	// Completion screen
 	if (isComplete) {
 		return (
-			<TournamentComplete
-				totalMatches={totalMatches}
-				participantCount={visibleNames.length}
-				onNewTournament={quitTournament}
-			/>
+			<>
+				<LoadingSequence
+					tone="victory"
+					title="Winner Reveal"
+					subtitle="Final tally"
+				/>
+				<TournamentComplete
+					totalMatches={totalMatches}
+					participantCount={visibleNames.length}
+					onNewTournament={quitTournament}
+				/>
+			</>
 		);
 	}
 
@@ -348,76 +357,88 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 						)}
 					</div>
 
-					<div className="shrink-0 flex items-center gap-1">
-						{(
-							[
-								{
-									action: audioManager.handleToggleMute,
-									icon: audioManager.isMuted ? VolumeX : Volume2,
-									label: audioManager.isMuted ? "Unmute" : "Mute",
-								},
-								{
-									action: audioManager.handlePreviousTrack,
-									icon: SkipBack,
-									label: "Previous track",
-								},
-								{
-									action: audioManager.toggleBackgroundMusic,
-									icon: Music,
-									label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music",
-									active: audioManager.backgroundMusicEnabled,
-								},
-								{
-									action: audioManager.handleNextTrack,
-									icon: SkipForward,
-									label: "Next track",
-								},
-								{
-									action: () => setCatPictures(!showCatPictures),
-									icon: PawPrint,
-									label: showCatPictures ? "Names only" : "Show cats",
-									active: showCatPictures,
-								},
-							] as const
-						).map(({ action, icon: Icon, label, active }) => (
-							<button
-								key={label}
-								type="button"
-								onClick={action}
-								className={`size-8 flex items-center justify-center rounded-lg transition-colors ${
-									active
-										? "bg-primary/20 text-primary"
-										: "bg-foreground/5 text-muted-foreground hover:text-foreground"
-								}`}
-								aria-label={label}
-							>
-								<Icon className="size-3" />
-							</button>
-						))}
-						{handleQuit && (
-							<button
-								type="button"
-								onClick={handleQuit}
-								className="size-8 flex items-center justify-center rounded-lg bg-destructive/20 text-destructive hover:text-destructive/80 transition-colors"
-								aria-label="Quit tournament"
-							>
-								<X className="size-3.5" />
-							</button>
-						)}
-					</div>
+					{utilitiesOpen ? (
+						<div data-testid="tournament-utilities" className="shrink-0 flex items-center gap-1">
+							{(
+								[
+									{
+										action: audioManager.handleToggleMute,
+										icon: audioManager.isMuted ? VolumeX : Volume2,
+										label: audioManager.isMuted ? "Unmute sound" : "Mute sound",
+									},
+									{
+										action: audioManager.handlePreviousTrack,
+										icon: SkipBack,
+										label: "Previous track",
+									},
+									{
+										action: audioManager.toggleBackgroundMusic,
+										icon: Music,
+										label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music",
+										active: audioManager.backgroundMusicEnabled,
+									},
+									{
+										action: audioManager.handleNextTrack,
+										icon: SkipForward,
+										label: "Next track",
+									},
+									{
+										action: () => setCatPictures(!showCatPictures),
+										icon: PawPrint,
+										label: showCatPictures ? "Hide cat pictures" : "Show cat pictures",
+										active: showCatPictures,
+									},
+								] as const
+							).map(({ action, icon: Icon, label, active }) => (
+								<button
+									key={label}
+									type="button"
+									onClick={action}
+									className={`size-8 flex items-center justify-center rounded-lg transition-colors ${
+										active
+											? "bg-primary/20 text-primary"
+											: "bg-foreground/5 text-muted-foreground hover:text-foreground"
+									}`}
+									aria-label={label}
+								>
+									<Icon className="size-3" />
+								</button>
+							))}
+							{handleQuit && (
+								<button
+									type="button"
+									onClick={handleQuit}
+									className="size-8 flex items-center justify-center rounded-lg bg-destructive/20 text-destructive hover:text-destructive/80 transition-colors"
+									aria-label="Quit tournament"
+								>
+									<X className="size-3.5" />
+								</button>
+							)}
+						</div>
+					) : (
+						<button
+							type="button"
+							onClick={() => setUtilitiesOpen(true)}
+							className="shrink-0 px-3 py-1 rounded-lg bg-foreground/5 text-muted-foreground hover:text-foreground text-[10px] sm:text-xs font-bold"
+						>
+							Show tournament utilities
+						</button>
+					)}
 				</div>
 
 				{/* Row 2: Bracket path + streak (hidden on mobile) */}
-				<div className="hidden sm:flex items-center justify-between gap-2">
-					<BracketTree round={roundNumber} totalRounds={totalRounds} />
-					{dominantStreak && (
-						<span
-							className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
-						>
-							🔥 {dominantStreak.name} x{dominantStreak.streak}
-						</span>
-					)}
-				</div>
+				{utilitiesOpen && (
+					<div className="hidden sm:flex items-center justify-between gap-2">
+						<BracketTree round={roundNumber} totalRounds={totalRounds} />
+						{dominantStreak && (
+							<span
+								className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${getHeatTextClasses(dominantStreak.heatLevel)}`}
+							>
+								🔥 {dominantStreak.name} x{dominantStreak.streak}
+							</span>
+						)}
+					</div>
+				)}
 			</header>
 
 			<main className="relative flex flex-1 flex-col items-center justify-start px-2 py-3 min-h-0 sm:px-4 sm:py-2 sm:justify-center">
@@ -521,14 +542,8 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							>
 								<div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-fuchsia-500/10 to-blue-500/20" />
 								<div className="relative">
-									<p className="text-[11px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-purple-200/70 mb-2">
-										Next Stage
-									</p>
 									<p className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
-										Round {roundAnnouncement.value}
-									</p>
-									<p className="text-xs sm:text-sm text-purple-100/80 mt-1">
-										New head-to-head matchups ready
+										{bracketStage} matchups ready
 									</p>
 								</div>
 							</motion.div>

@@ -25,10 +25,17 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 	const { maxTilt, speed } = { ...defaultConfig, ...config };
 
 	// Detect touch device to disable tilt on mobile
-	const [isTouchDevice, setIsTouchDevice] = useState(false);
+	const [isTouchDevice, setIsTouchDevice] = useState(() => {
+		// Test suite expects tilt to be disabled immediately when matchMedia is missing.
+		if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+			return true;
+		}
+
+		return window.matchMedia("(pointer: coarse)").matches;
+	});
 	useEffect(() => {
 		if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-			setIsTouchDevice(false);
+			setIsTouchDevice(true);
 			return;
 		}
 

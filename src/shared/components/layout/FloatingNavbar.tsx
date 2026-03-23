@@ -118,6 +118,11 @@ export function FloatingNavbar() {
 	const isAnalysisRoute = location.pathname === "/analysis";
 	const isTournamentRoute = location.pathname === "/tournament";
 
+	// The UI spec + test suite expect the primary navigation to be hidden on the tournament route.
+	if (isTournamentRoute) {
+		return null;
+	}
+
 	const selectedCount = selectedNames?.length || 0;
 	const isTournamentActive = Boolean(tournament.names);
 	const isComplete = tournament.isComplete;

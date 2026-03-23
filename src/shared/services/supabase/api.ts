@@ -1,6 +1,7 @@
 import { api } from "@/shared/services/apiClient";
 import { ErrorManager } from "@/shared/services/errorManager";
 import type { NameItem } from "@/shared/types";
+import { STORAGE_KEYS } from "@/shared/lib/constants";
 import { getFallbackNames } from "../../../../shared/fallbackNames";
 import { resolveSupabaseClient } from "./runtime";
 
@@ -225,15 +226,27 @@ export function isUsingFallbackData(): boolean {
 
 export const coreAPI = {
 	addName: async (name: string, description: string) => {
+		const client = await resolveSupabaseClient();
+		if (!client) {
+			return { success: false, error: "Supabase client not available" };
+		}
+
 		try {
-			const response = await api.post<{ success: boolean; data: any; error?: any }>("/names", {
-				name,
-				description,
-			});
-			if (response.success && response.data) {
-				return { success: true, data: mapNameRow(response.data) };
+			const { data, error } = await client
+				.from("cat_name_options")
+				.insert({
+					name,
+					description,
+					status: "candidate",
+				})
+				.select()
+				.single();
+
+			if (error) {
+				return { success: false, error: error.message ?? "Failed to add name" };
 			}
-			return { success: false, error: response.error || "Failed to add name" };
+
+			return { success: true, data: data ? mapNameRow(data as ApiNameRow) : null };
 		} catch (error) {
 			return {
 				success: false,
@@ -404,11 +417,17 @@ export const hiddenNamesAPI = {
 
 export const statsAPI = {
 	getSiteStats: async () => {
-		try {
-			return await api.get<any>("/analytics/site-stats");
-		} catch {
+		const client = await resolveSupabaseClient();
+		if (!client) {
 			return {};
 		}
+
+		const { data, error } = await client.rpc("get_site_stats");
+		if (error) {
+			return {};
+		}
+
+		return data ?? {};
 	},
 };
 
@@ -644,74 +663,50 @@ const validateRatingsData = (
 const _ratingsCircuitBreaker = new ErrorManager.CircuitBreaker(3, 30000); // 3 failures, 30s timeout
 
 export const ratingsAPI = {
-	saveRatings: ErrorManager.createResilientFunction(
-		async (
-			userId: string,
-			ratings: Record<string, { rating: number; wins: number; losses: number }>,
-		) => {
-			try {
-				// Validate input data before processing
-				const validation = validateRatingsData(userId, ratings);
-				if (!validation.isValid) {
-					throw new Error(validation.error || "Invalid ratings data");
-				}
+	saveRatings: async (
+		userName: string,
+		ratings: Record<string, { rating: number; wins: number; losses: number }>,
+	) => {
+		const supabaseClient = await resolveSupabaseClient();
+		const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
+		const ratingEntries = Object.entries(ratings);
 
-				const ratingsList = Object.entries(ratings).map(([nameId, data]) => ({
-					nameId,
-					rating: data.rating,
-					wins: data.wins,
-					losses: data.losses,
-				}));
+		// If we can't reliably store via Supabase, fall back to localStorage.
+		if (!supabaseClient || !userId) {
+			const existingRaw = localStorage.getItem("ratings_fallback") || "{}";
+			const fallbackData: Record<string, any> = JSON.parse(existingRaw);
 
-				const response = await api.post<{ success: boolean; count: number }>("/ratings", {
-					userId,
-					ratings: ratingsList,
-				});
-
-				if (!response?.success) {
-					throw new Error(`Failed to save ratings: ${response?.error || "Unknown error"}`);
-				}
-
-				return response;
-			} catch (error) {
-				// Log the error with context
-				ErrorManager.handleError(error, "Ratings Save", {
-					userId,
-					ratingsCount: Object.keys(ratings).length,
-					isRetryable: true,
-				});
-
-				// Fallback to localStorage if API is completely unavailable
-				if (error instanceof Error && error.message.includes("fetch")) {
-					try {
-						const existingData = localStorage.getItem("ratings_fallback");
-						const fallbackData = existingData ? JSON.parse(existingData) : {};
-						fallbackData[userId] = { ...ratings, timestamp: Date.now() };
-
-						const success = safeLocalStorageSet(
-							"ratings_fallback",
-							JSON.stringify(fallbackData),
-							true,
-						);
-						if (success) {
-							console.warn("Ratings saved to localStorage fallback due to API unavailability");
-							return { success: true, count: Object.keys(ratings).length };
-						} else {
-							console.error("Failed to save ratings to localStorage fallback: quota exceeded");
-						}
-					} catch (fallbackError) {
-						console.error("Failed to save ratings to localStorage fallback:", fallbackError);
-					}
-				}
-
-				throw error;
+			const userFallback = fallbackData[userName] ?? {};
+			const timestamp = Math.floor(Date.now());
+			for (const [nameId, data] of ratingEntries) {
+				userFallback[nameId] = { ...data };
 			}
-		},
-		{
-			threshold: 3,
-			timeout: 30000,
-			maxAttempts: 3,
-			baseDelay: 1000,
-		},
-	),
+			userFallback.timestamp = timestamp;
+
+			fallbackData[userName] = userFallback;
+			localStorage.setItem("ratings_fallback", JSON.stringify(fallbackData));
+
+			return { success: true, count: ratingEntries.length };
+		}
+
+		// Match the Supabase insert/upsert contract expected by tests.
+		const upsertPayload = ratingEntries.map(([nameId, data]) => ({
+			user_id: userId,
+			user_name: userName,
+			name_id: nameId,
+			rating: data.rating,
+			wins: data.wins,
+			losses: data.losses,
+		}));
+
+		const { error } = await supabaseClient.from("cat_name_ratings").upsert(upsertPayload, {
+			onConflict: "user_id,name_id",
+		});
+
+		if (error) {
+			return { success: false, count: 0 };
+		}
+
+		return { success: true, count: upsertPayload.length };
+	},
 };
