@@ -242,10 +242,10 @@ export function Dashboard({
 
 			{/* Global Leaderboard */}
 			<div className="py-2">
-				<div className="flex items-center justify-between mb-4">
-					<div className="flex items-center gap-3">
-						<Trophy className="text-chart-4" size={24} />
-						<h3 className="text-xl font-semibold text-foreground">Top Names</h3>
+				<div className="flex items-center justify-between mb-3 sm:mb-4">
+					<div className="flex items-center gap-2 sm:gap-3">
+						<Trophy className="text-chart-4" size={20} />
+						<h3 className="text-lg sm:text-xl font-semibold text-foreground">Top Names</h3>
 					</div>
 					{onStartNew && (
 						<Button variant="ghost" size="small" onClick={onStartNew}>
