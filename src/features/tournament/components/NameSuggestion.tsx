@@ -110,12 +110,12 @@ export function NameSuggestionInner() {
 						</motion.p>
 					</motion.div>
 
-					{/* Progress Indicator */}
+					{/* Progress Indicator - hidden on mobile */}
 					<motion.div
 						initial={{ opacity: 0, width: 0 }}
 						animate={{ opacity: 1, width: "100%" }}
 						transition={{ delay: 0.5, duration: 0.8 }}
-						className="mb-8"
+						className="mb-6 sm:mb-8 hidden sm:block"
 					>
 						<div className="flex items-center justify-between mb-2">
 							<span className="text-sm font-medium text-foreground/70">Form Progress</span>
