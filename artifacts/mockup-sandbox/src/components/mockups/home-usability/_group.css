@@ -1,0 +1,32 @@
+/* App tokens scoped to this mockup group */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=Space+Mono:wght@400;700&display=swap");
+
+:root {
+  --background: hsl(0deg 0% 100%);
+  --foreground: hsl(0deg 0% 0%);
+  --card: hsl(0deg 0% 100%);
+  --card-foreground: hsl(0deg 0% 0%);
+  --primary: hsl(0deg 0% 0%);
+  --primary-foreground: hsl(0deg 0% 100%);
+  --secondary: hsl(0deg 0% 96%);
+  --secondary-foreground: hsl(0deg 0% 0%);
+  --muted: hsl(0deg 0% 96%);
+  --muted-foreground: hsl(0deg 0% 45%);
+  --accent: hsl(0deg 0% 90%);
+  --accent-foreground: hsl(0deg 0% 0%);
+  --destructive: hsl(0deg 84% 60%);
+  --border: hsl(0deg 0% 0%);
+  --ring: hsl(0deg 0% 0%);
+  --accent-color: hsl(190deg 100% 50%);
+  --radius: 0rem;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", var(--font-sans);
+  --font-mono: "Space Mono", ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
