@@ -279,8 +279,9 @@ export function Dashboard({
 								<div className="flex-1 min-w-0">
 									<p className="font-semibold text-foreground truncate">{entry.name}</p>
 									<p className="text-xs text-muted-foreground">
-										{entry.total_ratings} rating{entry.total_ratings !== 1 ? "s" : ""} •{" "}
-										{entry.wins} win{entry.wins !== 1 ? "s" : ""}
+										{entry.total_ratings} rating
+										{entry.total_ratings !== 1 ? "s" : ""} • {entry.wins} win
+										{entry.wins !== 1 ? "s" : ""}
 									</p>
 								</div>
 								<div className="text-right">

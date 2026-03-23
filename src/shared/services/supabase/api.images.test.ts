@@ -49,14 +49,16 @@ describe("imagesAPI", () => {
 	});
 
 	describe("imagesAPI.upload", () => {
-		const mockFile = new File(["dummy content"], "test-cat.jpg", { type: "image/jpeg" });
+		const mockFile = new File(["dummy content"], "test-cat.jpg", {
+			type: "image/jpeg",
+		});
 		const userName = "test-admin";
 
 		it("should upload a file and return the public URL on success", async () => {
 			const mockUpload = vi.fn().mockResolvedValue({ data: { path: "some-path" }, error: null });
-			const mockGetPublicUrl = vi
-				.fn()
-				.mockReturnValue({ data: { publicUrl: "https://example.com/test-cat.jpg" } });
+			const mockGetPublicUrl = vi.fn().mockReturnValue({
+				data: { publicUrl: "https://example.com/test-cat.jpg" },
+			});
 			const mockFrom = vi.fn().mockReturnValue({
 				upload: mockUpload,
 				getPublicUrl: mockGetPublicUrl,
@@ -96,7 +98,9 @@ describe("imagesAPI", () => {
 		it("should fail if file type is not allowed", async () => {
 			const mockFrom = vi.fn();
 			const mockClient = { storage: { from: mockFrom } };
-			const invalidFile = new File(["dummy content"], "test.pdf", { type: "application/pdf" });
+			const invalidFile = new File(["dummy content"], "test.pdf", {
+				type: "application/pdf",
+			});
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
 			const result = await imagesAPI.upload(invalidFile, userName);

@@ -158,7 +158,9 @@ export function TournamentBracket({
 				exportDate: new Date().toISOString(),
 			};
 
-			const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+			const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+				type: "application/json",
+			});
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;

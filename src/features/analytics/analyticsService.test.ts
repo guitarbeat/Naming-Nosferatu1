@@ -43,7 +43,9 @@ describe("analyticsService", () => {
 
 		const result = await leaderboardAPI.getLeaderboard(25);
 
-		expect(rpc).toHaveBeenCalledWith("get_leaderboard_stats", { limit_count: 25 });
+		expect(rpc).toHaveBeenCalledWith("get_leaderboard_stats", {
+			limit_count: 25,
+		});
 		expect(result).toEqual([
 			{
 				name_id: "id-1",
@@ -95,7 +97,9 @@ describe("analyticsService", () => {
 
 		const result = await statsAPI.getUserStats("aaron");
 
-		expect(rpc).toHaveBeenCalledWith("get_user_stats", { p_user_name: "aaron" });
+		expect(rpc).toHaveBeenCalledWith("get_user_stats", {
+			p_user_name: "aaron",
+		});
 		expect(result).toEqual({
 			totalRatings: 3,
 			totalSelections: 7,
@@ -110,7 +114,13 @@ describe("analyticsService", () => {
 			rpc: vi.fn().mockResolvedValue({ data: null, error: new Error("unavailable") }),
 		} as never);
 		mockedCoreApi.getTrendingNames.mockResolvedValue([
-			{ id: "fallback-1", name: "Fallback Cat", avg_rating: 1501, wins: 2, losses: 1 },
+			{
+				id: "fallback-1",
+				name: "Fallback Cat",
+				avg_rating: 1501,
+				wins: 2,
+				losses: 1,
+			},
 		]);
 
 		const result = await leaderboardAPI.getLeaderboard(10);

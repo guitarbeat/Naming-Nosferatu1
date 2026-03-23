@@ -525,7 +525,9 @@ const CardNameBase = memo(function CardName({
 	const cardContent = (
 		<div
 			className="relative w-full h-full"
-			style={{ perspective: shouldEnableTilt && !disabled ? "800px" : undefined }}
+			style={{
+				perspective: shouldEnableTilt && !disabled ? "800px" : undefined,
+			}}
 		>
 			<Card
 				as={Component}
