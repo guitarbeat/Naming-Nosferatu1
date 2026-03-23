@@ -10,13 +10,12 @@
 	],
 	"ignoreDependencies": [
 		"@capacitor/cli",
-		"@sentry/tracing",
-		"@types/multer",
-		"@types/react-window",
-		"fast-check",
+		"tailwindcss",
 		"multer",
+		"@types/multer",
 		"react-window",
-		"tailwindcss"
+		"@types/react-window",
+		"@sentry/tracing"
 	],
 	"typescript": true
 }
