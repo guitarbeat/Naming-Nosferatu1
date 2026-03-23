@@ -51,3 +51,7 @@ VITE_SUPABASE_URL = "https://ocghxwwwuubgmwsxgyoy.supabase.co"
 VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZ2h4d3d3dXViZ213c3hneW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTgzMjksImV4cCI6MjA2NTY3NDMyOX0.93cpwT3YCC5GTwhlw4YAzSBgtxbp6fGkjcfqzdKX4E0"
 SUPABASE_URL = "https://ocghxwwwuubgmwsxgyoy.supabase.co"
 ADMIN_API_KEY = "cc98957ac200bbca57dd3edc1cf84b1c43c566c5465880ea0f5f4853d22c2a20"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 120000
