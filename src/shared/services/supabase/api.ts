@@ -69,11 +69,8 @@ function mapNameRow(item: ApiNameRow): NameItem {
 	};
 }
 
-async function getNamesFromSupabase(
-	includeHidden: boolean,
-): Promise<NameItem[]> {
-	const client =
-		(await resolveSupabaseClient()) as unknown as SupabaseNamesClient | null;
+async function getNamesFromSupabase(includeHidden: boolean): Promise<NameItem[]> {
+	const client = (await resolveSupabaseClient()) as unknown as SupabaseNamesClient | null;
 	if (!client) {
 		return [];
 	}
@@ -90,20 +87,13 @@ async function getNamesFromSupabase(
 	for (const [key, value] of Object.entries(filters)) {
 		query = query.eq(key, value);
 	}
-	const result = await query
-		.order("avg_rating", { ascending: false })
-		.limit(1000);
+	const result = await query.order("avg_rating", { ascending: false }).limit(1000);
 	if (result.error) {
-		console.warn(
-			"[coreAPI.getTrendingNames] Supabase fallback failed:",
-			result.error.message,
-		);
+		console.warn("[coreAPI.getTrendingNames] Supabase fallback failed:", result.error.message);
 		return [];
 	}
 
-	return (result.data ?? []).map((item) =>
-		mapNameRow(item as unknown as ApiNameRow),
-	);
+	return (result.data ?? []).map((item) => mapNameRow(item as unknown as ApiNameRow));
 }
 
 export const imagesAPI = {
@@ -142,12 +132,7 @@ export const imagesAPI = {
 			// Validate file
 			if (file instanceof File) {
 				const maxSize = 5 * 1024 * 1024; // 5MB
-				const allowedTypes = [
-					"image/jpeg",
-					"image/png",
-					"image/gif",
-					"image/webp",
-				];
+				const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 				if (file.size > maxSize) {
 					return {
@@ -173,13 +158,11 @@ export const imagesAPI = {
 			const fileName = `${userName}_${timestamp}_${randomId}.${fileExt}`;
 
 			// Upload to Supabase Storage
-			const { error } = await client.storage
-				.from("cat-images")
-				.upload(fileName, file, {
-					cacheControl: "3600",
-					upsert: false,
-					contentType: file instanceof File ? file.type : "image/jpeg",
-				});
+			const { error } = await client.storage.from("cat-images").upload(fileName, file, {
+				cacheControl: "3600",
+				upsert: false,
+				contentType: file instanceof File ? file.type : "image/jpeg",
+			});
 
 			if (error) {
 				console.error("Upload failed:", error);
@@ -217,9 +200,7 @@ export const imagesAPI = {
 				return { success: false, error: "Storage client not available" };
 			}
 
-			const { error } = await client.storage
-				.from("cat-images")
-				.remove([fileName]);
+			const { error } = await client.storage.from("cat-images").remove([fileName]);
 
 			if (error) {
 				console.error("Delete failed:", error);
@@ -272,8 +253,7 @@ export const coreAPI = {
 		} catch (error) {
 			return {
 				success: false,
-				error:
-					error instanceof Error ? error.message : "An unknown error occurred",
+				error: error instanceof Error ? error.message : "An unknown error occurred",
 			};
 		}
 	},
@@ -311,9 +291,7 @@ export const coreAPI = {
 
 			// Fallback: try API server if Supabase returned nothing
 			try {
-				const data = await api.get<ApiNameRow[]>(
-					`/names?includeHidden=${includeHidden}`,
-				);
+				const data = await api.get<ApiNameRow[]>(`/names?includeHidden=${includeHidden}`);
 				usingFallbackData = false;
 				return (data ?? []).map((item) => mapNameRow(item));
 			} catch {
@@ -321,9 +299,7 @@ export const coreAPI = {
 					throw new Error("Request aborted");
 				}
 				usingFallbackData = true;
-				console.warn(
-					"Using fallback/demo data - database connection unavailable",
-				);
+				console.warn("Using fallback/demo data - database connection unavailable");
 				return getFallbackNames(includeHidden).map((item) => mapNameRow(item));
 			}
 		})();
@@ -349,8 +325,7 @@ export const coreAPI = {
 			.map((item) => ({
 				id: String(item.id),
 				name: String(item.name),
-				description:
-					typeof item.description === "string" ? item.description : null,
+				description: typeof item.description === "string" ? item.description : null,
 				created_at:
 					typeof item.created_at === "string"
 						? item.created_at
@@ -360,11 +335,7 @@ export const coreAPI = {
 			}));
 	},
 
-	hideName: async (
-		_userName: string,
-		nameId: string | number,
-		isHidden: boolean,
-	) => {
+	hideName: async (_userName: string, nameId: string | number, isHidden: boolean) => {
 		const userName = _userName?.trim();
 		const failures: string[] = [];
 		const defaultError = `Failed to ${isHidden ? "hide" : "unhide"} name`;
@@ -381,9 +352,7 @@ export const coreAPI = {
 						});
 						if (contextResult.error) {
 							contextOk = false;
-							failures.push(
-								`set_user_context failed: ${contextResult.error.message}`,
-							);
+							failures.push(`set_user_context failed: ${contextResult.error.message}`);
 						}
 					}
 				} catch (error) {
@@ -402,9 +371,7 @@ export const coreAPI = {
 						});
 
 						if (rpcResult.error) {
-							failures.push(
-								`toggle_name_visibility failed: ${rpcResult.error.message}`,
-							);
+							failures.push(`toggle_name_visibility failed: ${rpcResult.error.message}`);
 						} else if (rpcResult.data === true) {
 							return { success: true };
 						}
@@ -507,15 +474,11 @@ const mapFields = <T extends Record<string, any>>(
 	return mapped;
 };
 
-const mapSnakeToCamel = <T extends Record<string, any>>(
-	obj: T,
-): Record<string, any> => {
+const mapSnakeToCamel = <T extends Record<string, any>>(obj: T): Record<string, any> => {
 	return mapFields(obj, snakeToCamelCase);
 };
 
-const _mapCamelToSnake = <T extends Record<string, any>>(
-	obj: T,
-): Record<string, any> => {
+const _mapCamelToSnake = <T extends Record<string, any>>(obj: T): Record<string, any> => {
 	return mapFields(obj, camelToSnakeCase);
 };
 
@@ -633,11 +596,7 @@ const cleanupLocalStorage = (priorityKeys: string[] = []): void => {
 	}
 };
 
-const safeLocalStorageSet = (
-	key: string,
-	value: string,
-	isPriority: boolean = false,
-): boolean => {
+const safeLocalStorageSet = (key: string, value: string, isPriority: boolean = false): boolean => {
 	const quota = checkLocalStorageQuota();
 
 	// Cleanup if needed
@@ -658,10 +617,7 @@ const safeLocalStorageSet = (
 			localStorage.setItem(key, value);
 			return true;
 		} catch (retryError) {
-			console.error(
-				"Failed to store data in localStorage even after cleanup:",
-				retryError,
-			);
+			console.error("Failed to store data in localStorage even after cleanup:", retryError);
 			return false;
 		}
 	}
@@ -716,12 +672,7 @@ const validateRatingsData = (
 		const { rating, wins, losses } = data;
 
 		// Validate rating value
-		if (
-			typeof rating !== "number" ||
-			Number.isNaN(rating) ||
-			rating < 800 ||
-			rating > 2400
-		) {
+		if (typeof rating !== "number" || Number.isNaN(rating) || rating < 800 || rating > 2400) {
 			return {
 				isValid: false,
 				error: `Invalid rating for ${nameId}: must be a number between 800 and 2400`,
@@ -729,12 +680,7 @@ const validateRatingsData = (
 		}
 
 		// Validate wins
-		if (
-			typeof wins !== "number" ||
-			Number.isNaN(wins) ||
-			wins < 0 ||
-			wins > 1000
-		) {
+		if (typeof wins !== "number" || Number.isNaN(wins) || wins < 0 || wins > 1000) {
 			return {
 				isValid: false,
 				error: `Invalid wins for ${nameId}: must be a number between 0 and 1000`,
@@ -742,12 +688,7 @@ const validateRatingsData = (
 		}
 
 		// Validate losses
-		if (
-			typeof losses !== "number" ||
-			Number.isNaN(losses) ||
-			losses < 0 ||
-			losses > 1000
-		) {
+		if (typeof losses !== "number" || Number.isNaN(losses) || losses < 0 || losses > 1000) {
 			return {
 				isValid: false,
 				error: `Invalid losses for ${nameId}: must be a number between 0 and 1000`,
@@ -798,11 +739,9 @@ export const ratingsAPI = {
 			losses: data.losses,
 		}));
 
-		const { error } = await supabaseClient
-			.from("cat_name_ratings")
-			.upsert(upsertPayload, {
-				onConflict: "user_id,name_id",
-			});
+		const { error } = await supabaseClient.from("cat_name_ratings").upsert(upsertPayload, {
+			onConflict: "user_id,name_id",
+		});
 
 		if (error) {
 			return { success: false, count: 0 };
