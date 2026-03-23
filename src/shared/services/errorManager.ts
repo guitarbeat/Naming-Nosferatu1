@@ -532,7 +532,7 @@ function logError(
 			"=========================",
 		].join("\n");
 
-		console.info("📋 Copy Diagnostic Report:\n" + report);
+		console.info(`📋 Copy Diagnostic Report:\n${report}`);
 
 		console.groupEnd();
 	} else {

@@ -596,7 +596,7 @@ const cleanupLocalStorage = (priorityKeys: string[] = []): void => {
 	}
 };
 
-const safeLocalStorageSet = (key: string, value: string, isPriority: boolean = false): boolean => {
+const _safeLocalStorageSet = (key: string, value: string, isPriority: boolean = false): boolean => {
 	const quota = checkLocalStorageQuota();
 
 	// Cleanup if needed
@@ -624,7 +624,7 @@ const safeLocalStorageSet = (key: string, value: string, isPriority: boolean = f
 };
 
 // Validation utilities
-const validateRatingsData = (
+const _validateRatingsData = (
 	userId: string,
 	ratings: Record<string, { rating: number; wins: number; losses: number }>,
 ): { isValid: boolean; error?: string } => {

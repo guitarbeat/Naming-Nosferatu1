@@ -12,7 +12,6 @@ import {
 	clearUserStorage,
 	getStorageString,
 	isStorageAvailable,
-	removeStorageItem,
 	setStorageString,
 } from "@/shared/lib/storage";
 import { resolveSupabaseClient } from "@/shared/services/supabase/runtime";

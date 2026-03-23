@@ -182,7 +182,7 @@ const AdminActionButton = ({
 	onClick: () => void;
 }) => {
 	const isHidden = actionType === "toggle-hidden";
-	const isLocked = actionType === "toggle-locked";
+	const _isLocked = actionType === "toggle-locked";
 	const isEnabled = isHidden ? isNameHidden(nameItem) : isNameLocked(nameItem);
 
 	const buttonClasses = `flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
@@ -547,7 +547,9 @@ export function NameSelector() {
 					try {
 						const client = await resolveSupabaseClient();
 						if (client) {
-							await client.rpc("set_user_context", { user_name_param: userName.trim() });
+							await client.rpc("set_user_context", {
+								user_name_param: userName.trim(),
+							});
 						}
 					} catch {
 						/* ignore */
@@ -599,7 +601,9 @@ export function NameSelector() {
 			try {
 				const result = await withSupabase(async (client) => {
 					try {
-						await client.rpc("set_user_context", { user_name_param: userName.trim() });
+						await client.rpc("set_user_context", {
+							user_name_param: userName.trim(),
+						});
 					} catch {
 						/* ignore */
 					}
@@ -781,7 +785,7 @@ export function NameSelector() {
 				setLightboxOpen(true);
 			}
 		},
-		[names, setLightboxIndex, setLightboxOpen],
+		[names],
 	);
 
 	const handleSelectAllAvailable = useCallback(() => {
@@ -1212,7 +1216,12 @@ export function NameSelector() {
 											<motion.div
 												initial={{ scale: 0 }}
 												animate={{ scale: 1 }}
-												transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 25 }}
+												transition={{
+													delay: 0.2,
+													type: "spring",
+													stiffness: 400,
+													damping: 25,
+												}}
 												className="mx-auto w-20 h-20 bg-gradient-to-br from-success to-success/80 rounded-full flex items-center justify-center shadow-xl shadow-success/30"
 											>
 												<Check size={40} className="text-success-foreground" strokeWidth={3} />
@@ -1337,7 +1346,11 @@ export function NameSelector() {
 													tabIndex={0}
 													whileHover={{ scale: 1.03, y: -2 }}
 													whileTap={{ scale: 0.97 }}
-													transition={{ type: "spring", stiffness: 400, damping: 25 }}
+													transition={{
+														type: "spring",
+														stiffness: 400,
+														damping: 25,
+													}}
 													className={getCardStyles(isSelected, isNameLocked(nameItem))}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">

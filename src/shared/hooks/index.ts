@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { STORAGE_KEYS } from "@/shared/lib/constants";
 import { matchesMediaQuery, subscribeToMediaQuery } from "@/shared/lib/mediaQuery";
 import {
 	getStorageString,
@@ -14,7 +15,6 @@ import {
 } from "@/shared/lib/storage";
 import { coreAPI, ratingsAPI } from "@/shared/services/supabase/client";
 import { flushRatingsMutations } from "@/shared/services/supabase/outbox";
-import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Internal Utilities
@@ -181,7 +181,9 @@ export function useBrowserState() {
 			});
 		};
 		window.addEventListener("resize", handleResize, { passive: true });
-		window.addEventListener("orientationchange", handleResize, { passive: true });
+		window.addEventListener("orientationchange", handleResize, {
+			passive: true,
+		});
 		return () => {
 			if (rafId) {
 				window.cancelAnimationFrame(rafId);
@@ -461,7 +463,10 @@ interface UseNameSuggestionResult {
 export function useNameSuggestion(props: UseNameSuggestionProps = {}): UseNameSuggestionResult {
 	const [values, setValues] = useState({ name: "", description: "" });
 	const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
-	const [touched, setTouched] = useState<{ name?: boolean; description?: boolean }>({});
+	const [touched, setTouched] = useState<{
+		name?: boolean;
+		description?: boolean;
+	}>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [globalError, setGlobalError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");

@@ -115,13 +115,12 @@ function getWorldWidth(camera: Camera) {
 	return height * camera.aspect;
 }
 
-export function MagicMoire({ theme, onError }: MagicMoireProps) {
+export function MagicMoire({ onError }: MagicMoireProps) {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [isVisible, setIsVisible] = useState(false);
 
 	useEffect(() => {
 		setIsVisible(false);
-		void theme;
 
 		const container = containerRef.current;
 		if (!container) {

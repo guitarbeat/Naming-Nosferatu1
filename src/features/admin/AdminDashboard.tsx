@@ -349,7 +349,6 @@ export function AdminDashboard() {
 				{ADMIN_TABS.map((tab) => (
 					<Button
 						key={tab.id}
-						type="button"
 						onClick={() => handleTabChange(tab.id)}
 						type="button"
 						variant={activeTab === tab.id ? "secondary" : "ghost"}

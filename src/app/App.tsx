@@ -15,8 +15,8 @@ import { NameSuggestionInner } from "@/features/tournament/components/NameSugges
 import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
-import { CatNameHero } from "@/shared/components/layout/CatNameHero";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
+import { CatNameHero } from "@/shared/components/layout/CatNameHero";
 import { LoadingSequence } from "@/shared/components/layout/LoadingSequence";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
 import { useOfflineSync } from "@/shared/hooks";
