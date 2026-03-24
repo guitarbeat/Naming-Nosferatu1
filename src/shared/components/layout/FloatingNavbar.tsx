@@ -21,12 +21,11 @@ import useAppStore from "@/store/appStore";
 import { getGlassPreset } from "./GlassPresets";
 import LiquidGlass from "./LiquidGlass";
 
-type NavSection = "pick" | "suggest" | "profile";
+type NavSection = "pick" | "suggest";
 
 const keyToId: Record<NavSection, string> = {
 	pick: "pick",
 	suggest: "suggest",
-	profile: "profile",
 };
 
 function useIsMobile() {
