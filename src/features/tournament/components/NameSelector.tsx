@@ -39,7 +39,11 @@ import {
 	X,
 	ZoomIn,
 } from "@/shared/lib/icons";
-import { coreAPI, hiddenNamesAPI, isUsingFallbackData } from "@/shared/services/supabase/api";
+import {
+	coreAPI,
+	hiddenNamesAPI,
+	isUsingFallbackData,
+} from "@/shared/services/supabase/api";
 import { resolveSupabaseClient } from "@/shared/services/supabase/client";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { IdType, NameItem } from "@/shared/types";
@@ -51,7 +55,9 @@ const SWIPE_VELOCITY_THRESHOLD = 500;
 // Smart tooltip positioning hook - positions tooltip on the best side
 function useSmartTooltip() {
 	const tooltipRef = useRef<HTMLDivElement>(null);
-	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">("top");
+	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">(
+		"top",
+	);
 
 	const measureTooltip = useCallback(() => {
 		if (!tooltipRef.current) {
@@ -111,7 +117,11 @@ const SelectionBadge = ({ isSelected }: { isSelected: boolean }) => (
 			>
 				<div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
 				<div className="relative size-6 sm:size-7 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/40 border-2 border-primary/50">
-					<Check size={14} className="text-primary-foreground" strokeWidth={3} />
+					<Check
+						size={14}
+						className="text-primary-foreground"
+						strokeWidth={3}
+					/>
 				</div>
 			</motion.div>
 		) : (
@@ -145,17 +155,29 @@ const NameContent = ({
 		<>
 			<span className={nameClasses}>{nameItem.name}</span>
 			{nameItem.pronunciation && (
-				<span className={isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`}>
+				<span
+					className={
+						isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`
+					}
+				>
 					[{nameItem.pronunciation}]
 				</span>
 			)}
-			{nameItem.description && <p className={descriptionClasses}>{nameItem.description}</p>}
+			{nameItem.description && (
+				<p className={descriptionClasses}>{nameItem.description}</p>
+			)}
 		</>
 	);
 };
 
 // Zoom button component
-const ZoomButton = ({ nameId, onClick }: { nameId: IdType; onClick: (id: IdType) => void }) => (
+const ZoomButton = ({
+	nameId,
+	onClick,
+}: {
+	nameId: IdType;
+	onClick: (id: IdType) => void;
+}) => (
 	<button
 		type="button"
 		onClick={(e) => {
@@ -257,7 +279,9 @@ export function NameSelector() {
 	const userName = useAppStore((state) => state.user.name);
 	const tournamentActions = useAppStore((state) => state.tournamentActions);
 	const [swipedIds, setSwipedIds] = useState<Set<IdType>>(new Set());
-	const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(null);
+	const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(
+		null,
+	);
 	const [dragOffset, setDragOffset] = useState(0);
 	const [names, setNames] = useState<NameItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -280,7 +304,9 @@ export function NameSelector() {
 
 	// Memoize cat images and build an id->image lookup map
 	const { catImages, catImageById } = useMemo(() => {
-		const images = names.map((nameItem) => getRandomCatImage(nameItem.id, CAT_IMAGES));
+		const images = names.map((nameItem) =>
+			getRandomCatImage(nameItem.id, CAT_IMAGES),
+		);
 		const byId = new Map<IdType, string>();
 		names.forEach((nameItem, index) => {
 			const img = images[index];
@@ -313,7 +339,8 @@ export function NameSelector() {
 				const fetchedNames = await coreAPI.getTrendingNames(true); // Include hidden names for everyone
 				if (
 					fetchedNames.length === 0 &&
-					(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)
+					(!import.meta.env.VITE_SUPABASE_URL ||
+						!import.meta.env.VITE_SUPABASE_ANON_KEY)
 				) {
 					throw new Error(
 						"Could not load cards because Supabase is not configured for this environment.",
@@ -324,7 +351,8 @@ export function NameSelector() {
 				setRetryCount(0); // Reset retry count on success
 			} catch (error) {
 				console.error("Failed to fetch names:", error);
-				const errorMessage = error instanceof Error ? error.message : "Failed to load names";
+				const errorMessage =
+					error instanceof Error ? error.message : "Failed to load names";
 				setError(errorMessage);
 
 				// Auto-retry for network errors (max 3 retries)
@@ -432,14 +460,20 @@ export function NameSelector() {
 		[],
 	);
 
-	const markSwiped = useCallback((nameId: IdType, direction: "left" | "right") => {
-		setSwipedIds((prev) => {
-			const next = new Set(prev);
-			next.add(nameId);
-			return next;
-		});
-		setSwipeHistory((prev) => [...prev, { id: nameId, direction, timestamp: Date.now() }]);
-	}, []);
+	const markSwiped = useCallback(
+		(nameId: IdType, direction: "left" | "right") => {
+			setSwipedIds((prev) => {
+				const next = new Set(prev);
+				next.add(nameId);
+				return next;
+			});
+			setSwipeHistory((prev) => [
+				...prev,
+				{ id: nameId, direction, timestamp: Date.now() },
+			]);
+		},
+		[],
+	);
 
 	const handleSwipe = useCallback(
 		(nameId: IdType, direction: "left" | "right", velocity: number = 0) => {
@@ -488,7 +522,8 @@ export function NameSelector() {
 			}
 
 			// Determine direction based on offset and velocity
-			const isRightSwipe = offset > SWIPE_OFFSET_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD;
+			const isRightSwipe =
+				offset > SWIPE_OFFSET_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD;
 			const direction = isRightSwipe ? "right" : "left";
 
 			updateDragState(0, direction);
@@ -570,7 +605,9 @@ export function NameSelector() {
 
 				const fetchedNames = await coreAPI.getTrendingNames(true);
 				setNames(fetchedNames);
-				toast.showSuccess(isCurrentlyHidden ? "Name is visible again." : "Name is now hidden.");
+				toast.showSuccess(
+					isCurrentlyHidden ? "Name is visible again." : "Name is now hidden.",
+				);
 			} catch (error) {
 				console.error("Failed to toggle hidden status:", error);
 				const detail = error instanceof Error ? error.message : "Unknown error";
@@ -612,9 +649,15 @@ export function NameSelector() {
 						p_name_id: String(nameId),
 						p_locked_in: !isCurrentlyLocked,
 					};
-					let rpcResult = await client.rpc("toggle_name_locked_in", canonicalArgs);
+					let rpcResult = await client.rpc(
+						"toggle_name_locked_in",
+						canonicalArgs,
+					);
 
-					if (rpcResult.error && isRpcSignatureError(rpcResult.error.message || "")) {
+					if (
+						rpcResult.error &&
+						isRpcSignatureError(rpcResult.error.message || "")
+					) {
 						rpcResult = await client.rpc("toggle_name_locked_in", {
 							...canonicalArgs,
 							p_user_name: userName.trim(),
@@ -622,7 +665,9 @@ export function NameSelector() {
 					}
 
 					if (rpcResult.error) {
-						throw new Error(rpcResult.error.message || "Failed to toggle locked status");
+						throw new Error(
+							rpcResult.error.message || "Failed to toggle locked status",
+						);
 					}
 					if (rpcResult.data !== true) {
 						throw new Error("Failed to toggle locked status");
@@ -633,7 +678,9 @@ export function NameSelector() {
 				if (result) {
 					const fetchedNames = await coreAPI.getTrendingNames(true);
 					setNames(fetchedNames);
-					toast.showSuccess(isCurrentlyLocked ? "Name unlocked." : "Name locked in.");
+					toast.showSuccess(
+						isCurrentlyLocked ? "Name unlocked." : "Name locked in.",
+					);
 				}
 			} catch (error) {
 				console.error("Failed to toggle locked status:", error);
@@ -697,7 +744,10 @@ export function NameSelector() {
 			return matchesNameSearchTerm(name, hiddenQuery);
 		});
 	}, [hiddenNamesAll, hiddenQuery, hiddenShowSelectedOnly, selectedNames]);
-	const previewItems = useMemo(() => hiddenNamesAll.slice(0, 6), [hiddenNamesAll]);
+	const previewItems = useMemo(
+		() => hiddenNamesAll.slice(0, 6),
+		[hiddenNamesAll],
+	);
 	const renderItems = useMemo(
 		() => hiddenFiltered.slice(0, hiddenRenderCount),
 		[hiddenFiltered, hiddenRenderCount],
@@ -823,7 +873,9 @@ export function NameSelector() {
 			pool[j] = temp as NameItem;
 		}
 
-		const randomIds = new Set(pool.slice(0, targetCount).map((name) => name.id));
+		const randomIds = new Set(
+			pool.slice(0, targetCount).map((name) => name.id),
+		);
 		setSelectedNames((prev) => {
 			const next = new Set(prev);
 			randomIds.forEach((id) => {
@@ -835,7 +887,13 @@ export function NameSelector() {
 		});
 		triggerHaptic();
 		toast.showSuccess(`Added ${targetCount} random names.`);
-	}, [availableNames, syncSelectionToStore, toast, triggerHaptic, deferredSync]);
+	}, [
+		availableNames,
+		syncSelectionToStore,
+		toast,
+		triggerHaptic,
+		deferredSync,
+	]);
 
 	if (isLoading) {
 		return (
@@ -855,7 +913,11 @@ export function NameSelector() {
 						<p className="text-lg font-medium">Failed to load names</p>
 						<p className="text-sm opacity-75 mt-1">{error}</p>
 					</div>
-					<Button onClick={() => setRetryCount((prev) => prev + 1)} variant="glass" size="small">
+					<Button
+						onClick={() => setRetryCount((prev) => prev + 1)}
+						variant="glass"
+						size="small"
+					>
 						Try Again
 					</Button>
 				</div>
@@ -897,13 +959,17 @@ export function NameSelector() {
 										>
 											{nameItem.pronunciation && (
 												<div className="name-lock-tooltip__header">
-													<div className="name-lock-tooltip__label">Pronunciation</div>
+													<div className="name-lock-tooltip__label">
+														Pronunciation
+													</div>
 													<div className="name-lock-tooltip__pronunciation">
 														{nameItem.pronunciation}
 													</div>
 												</div>
 											)}
-											<div className="name-lock-tooltip__body">{nameItem.description}</div>
+											<div className="name-lock-tooltip__body">
+												{nameItem.description}
+											</div>
 											<div className="name-lock-tooltip__arrow" />
 										</div>
 									)}
@@ -934,7 +1000,9 @@ export function NameSelector() {
 										setSwipeMode(!isSwipeMode);
 									}}
 									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border/20 bg-foreground/5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-									aria-label={isSwipeMode ? "Switch to grid mode" : "Switch to swipe mode"}
+									aria-label={
+										isSwipeMode ? "Switch to grid mode" : "Switch to swipe mode"
+									}
 								>
 									{isSwipeMode ? "Swipe" : "Grid"}
 								</button>
@@ -1025,7 +1093,8 @@ export function NameSelector() {
 								{visibleCards.length > 0 ? (
 									cardsToRender.map((nameItem, index) => {
 										const catImage =
-											catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+											catImageById.get(nameItem.id) ??
+											getRandomCatImage(nameItem.id, CAT_IMAGES);
 										return (
 											<motion.div
 												key={nameItem.id}
@@ -1093,7 +1162,10 @@ export function NameSelector() {
 																	}}
 																>
 																	<div className="flex items-center gap-2 px-6 py-3 bg-destructive/90 backdrop-blur-md rounded-full border-2 border-destructive shadow-lg rotate-[-20deg]">
-																		<X size={24} className="text-destructive-foreground" />
+																		<X
+																			size={24}
+																			className="text-destructive-foreground"
+																		/>
 																		<span className="text-destructive-foreground font-black text-lg uppercase">
 																			Nope
 																		</span>
@@ -1148,7 +1220,10 @@ export function NameSelector() {
 															{/* Name and Info Overlay */}
 															<div className={getNameOverlayClasses("swipe")}>
 																<div className="flex flex-col gap-1.5 max-w-full">
-																	<NameContent nameItem={nameItem} variant="swipe" />
+																	<NameContent
+																		nameItem={nameItem}
+																		variant="swipe"
+																	/>
 																</div>
 
 																{isAdmin && (
@@ -1159,7 +1234,8 @@ export function NameSelector() {
 																			requestAdminAction({
 																				type: "toggle-hidden",
 																				nameId: nameItem.id,
-																				isCurrentlyEnabled: isNameHidden(nameItem),
+																				isCurrentlyEnabled:
+																					isNameHidden(nameItem),
 																			});
 																		}}
 																		disabled={togglingHidden.has(nameItem.id)}
@@ -1191,7 +1267,10 @@ export function NameSelector() {
 																{selectedNames.has(nameItem.id) && (
 																	<div className="flex mt-4">
 																		<div className="px-4 py-1.5 bg-success/30 backdrop-blur-md border border-success/40 rounded-full flex items-center gap-2 shadow-lg shadow-success/20">
-																			<Check size={16} className="text-success" />
+																			<Check
+																				size={16}
+																				className="text-success"
+																			/>
 																			<span className="text-success font-black text-xs tracking-[0.2em] uppercase">
 																				Selected
 																			</span>
@@ -1224,14 +1303,19 @@ export function NameSelector() {
 												}}
 												className="mx-auto w-20 h-20 bg-gradient-to-br from-success to-success/80 rounded-full flex items-center justify-center shadow-xl shadow-success/30"
 											>
-												<Check size={40} className="text-success-foreground" strokeWidth={3} />
+												<Check
+													size={40}
+													className="text-success-foreground"
+													strokeWidth={3}
+												/>
 											</motion.div>
 											<div className="space-y-3">
 												<h2 className="text-3xl sm:text-4xl font-bold text-foreground">
 													All done!
 												</h2>
 												<p className="text-muted-foreground text-lg leading-relaxed">
-													You've reviewed all names. Ready to start the tournament?
+													You've reviewed all names. Ready to start the
+													tournament?
 												</p>
 											</div>
 											<motion.div
@@ -1282,7 +1366,9 @@ export function NameSelector() {
 										</div>
 									</Button>
 									<div className="text-center mt-2">
-										<span className="text-xs text-muted-foreground font-medium">Skip</span>
+										<span className="text-xs text-muted-foreground font-medium">
+											Skip
+										</span>
 									</div>
 								</motion.div>
 
@@ -1315,7 +1401,9 @@ export function NameSelector() {
 										</div>
 									</Button>
 									<div className="text-center mt-2">
-										<span className="text-xs text-muted-foreground font-medium">Select</span>
+										<span className="text-xs text-muted-foreground font-medium">
+											Select
+										</span>
 									</div>
 								</motion.div>
 							</div>
@@ -1331,7 +1419,8 @@ export function NameSelector() {
 										{activeNames.map((nameItem) => {
 											const isSelected = selectedNames.has(nameItem.id);
 											const catImage =
-												catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+												catImageById.get(nameItem.id) ??
+												getRandomCatImage(nameItem.id, CAT_IMAGES);
 											return (
 												<motion.div
 													key={nameItem.id}
@@ -1351,7 +1440,10 @@ export function NameSelector() {
 														stiffness: 400,
 														damping: 25,
 													}}
-													className={getCardStyles(isSelected, isNameLocked(nameItem))}
+													className={getCardStyles(
+														isSelected,
+														isNameLocked(nameItem),
+													)}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
 														<CatImage
@@ -1368,12 +1460,18 @@ export function NameSelector() {
 														{/* Enhanced Name Overlay */}
 														<div className={getNameOverlayClasses("grid")}>
 															<div className="flex flex-col gap-1.5 max-w-full">
-																<NameContent nameItem={nameItem} variant="grid" />
+																<NameContent
+																	nameItem={nameItem}
+																	variant="grid"
+																/>
 															</div>
 														</div>
 
 														{/* Enhanced Zoom Button */}
-														<ZoomButton nameId={nameItem.id} onClick={handleOpenLightbox} />
+														<ZoomButton
+															nameId={nameItem.id}
+															onClick={handleOpenLightbox}
+														/>
 													</div>
 													{isAdmin && !isSwipeMode && (
 														<motion.div
@@ -1460,14 +1558,18 @@ export function NameSelector() {
 												</span>
 											</div>
 											<span className="text-[11px] sm:text-xs text-muted-foreground">
-												{hiddenPanel.isCollapsed ? "Click to expand" : "Click to collapse"}
+												{hiddenPanel.isCollapsed
+													? "Click to expand"
+													: "Click to collapse"}
 											</span>
 										</button>
 
 										{hiddenPanel.isCollapsed && (
 											<div className="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
 												{previewItems.map((n) => {
-													const img = catImageById.get(n.id) ?? getRandomCatImage(n.id, CAT_IMAGES);
+													const img =
+														catImageById.get(n.id) ??
+														getRandomCatImage(n.id, CAT_IMAGES);
 													return (
 														<div
 															key={n.id}
@@ -1491,7 +1593,10 @@ export function NameSelector() {
 										)}
 									</div>
 
-									<CollapsibleContent id="hidden-names-panel" isCollapsed={hiddenPanel.isCollapsed}>
+									<CollapsibleContent
+										id="hidden-names-panel"
+										isCollapsed={hiddenPanel.isCollapsed}
+									>
 										<div className="mt-4">
 											<div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-3">
 												<input
@@ -1579,7 +1684,10 @@ export function NameSelector() {
 																					animate={{ scale: 1, opacity: 1 }}
 																					className="shrink-0 size-4 bg-primary rounded-full flex items-center justify-center shadow-md"
 																				>
-																					<Check size={10} className="text-primary-foreground" />
+																					<Check
+																						size={10}
+																						className="text-primary-foreground"
+																					/>
 																				</motion.div>
 																			)}
 																		</div>
@@ -1634,7 +1742,10 @@ export function NameSelector() {
 																			</div>
 																		) : (
 																			<>
-																				<Eye size={12} className="mr-1 inline" />
+																				<Eye
+																					size={12}
+																					className="mr-1 inline"
+																				/>
 																				Unhide
 																			</>
 																		)}

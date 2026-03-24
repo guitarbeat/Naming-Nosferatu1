@@ -106,7 +106,7 @@ export function FloatingNavbar() {
 	const appStore = useAppStore();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const isMobile = useIsMobile();
+	const _isMobile = useIsMobile();
 	const { tournament, tournamentActions, user, ui, uiActions } = appStore;
 	const { selectedNames } = tournament;
 	const { isLoggedIn, name: userName, avatarUrl, isAdmin } = user;
@@ -122,14 +122,9 @@ export function FloatingNavbar() {
 	const isAnalysisRoute = location.pathname === "/analysis";
 	const isTournamentRoute = location.pathname === "/tournament";
 
-	// The UI spec + test suite expect the primary navigation to be hidden on the tournament route.
-	if (isTournamentRoute) {
-		return null;
-	}
-
 	const selectedCount = selectedNames?.length || 0;
 	const isTournamentActive = Boolean(tournament.names);
-	const isComplete = tournament.isComplete;
+	const _isComplete = tournament.isComplete;
 	const profileLabel = isLoggedIn
 		? userName?.split(" ")[0] || "Profile"
 		: "Profile";
@@ -287,6 +282,11 @@ export function FloatingNavbar() {
 			mobileMediaQuery.removeEventListener("change", onViewportChange);
 		};
 	}, []);
+
+	// The UI spec + test suite expect the primary navigation to be hidden on the tournament route.
+	if (isTournamentRoute) {
+		return null;
+	}
 
 	return (
 		<motion.div

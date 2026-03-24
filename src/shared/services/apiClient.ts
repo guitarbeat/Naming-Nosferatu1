@@ -36,9 +36,7 @@ function mergeRequestSignal(
 		return internalController.signal;
 	}
 
-	externalSignal.addEventListener("abort", () => internalController.abort(), {
-		once: true,
-	});
+	externalSignal.addEventListener("abort", () => internalController.abort(), { once: true });
 	return internalController.signal;
 }
 

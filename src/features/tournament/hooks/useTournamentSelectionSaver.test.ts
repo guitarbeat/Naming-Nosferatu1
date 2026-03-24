@@ -96,10 +96,7 @@ describe("useTournamentSelectionSaver", () => {
 		it("does not save if enableAutoSave is false", () => {
 			const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 			const { result } = renderHook(() =>
-				useTournamentSelectionSaver({
-					userName: "testuser",
-					enableAutoSave: false,
-				}),
+				useTournamentSelectionSaver({ userName: "testuser", enableAutoSave: false }),
 			);
 
 			result.current?.scheduleSave(mockNames);

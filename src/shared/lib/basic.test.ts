@@ -144,22 +144,13 @@ describe("isNameActive", () => {
 		expect(isNameActive({ id: 2, name: "Cat", isHidden: true } as NameItem)).toBe(false);
 		expect(isNameActive({ id: 3, name: "Cat", lockedIn: true } as NameItem)).toBe(false);
 		expect(
-			isNameActive({
-				id: 4,
-				name: "Cat",
-				is_hidden: false,
-				locked_in: false,
-			} as NameItem),
+			isNameActive({ id: 4, name: "Cat", is_hidden: false, locked_in: false } as NameItem),
 		).toBe(true);
 	});
 });
 
 describe("matchesNameSearchTerm", () => {
-	const catName = {
-		id: 1,
-		name: "Mittens",
-		description: "Fluffy orange cat",
-	} as NameItem;
+	const catName = { id: 1, name: "Mittens", description: "Fluffy orange cat" } as NameItem;
 
 	it("matches on name and description", () => {
 		expect(matchesNameSearchTerm(catName, "Mittens")).toBe(true);

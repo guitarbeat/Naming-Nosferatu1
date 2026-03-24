@@ -73,10 +73,7 @@ describe("useNameSuggestion", () => {
 		const { result } = renderHook(() => useNameSuggestion());
 
 		// Setup mock error response
-		mockedCoreAPI.addName.mockResolvedValue({
-			success: false,
-			error: "Duplicate name",
-		});
+		mockedCoreAPI.addName.mockResolvedValue({ success: false, error: "Duplicate name" });
 
 		act(() => {
 			result.current.handleChange("name", "Duplicate Cat");

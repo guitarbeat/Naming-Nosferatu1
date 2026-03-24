@@ -32,12 +32,14 @@ export function usePersonalResults({
 
 		const processed = Object.entries(personalRatings)
 			.map(([key, rating]: [string, unknown]) => {
-				const r = rating as { rating?: number; wins?: number; losses?: number } | number;
+				const r = rating as
+					| { rating?: number; wins?: number; losses?: number }
+					| number;
 
 				// Prefer ID-keyed (new format): look up display name from the ID.
 				// Fall back to name-keyed (legacy): key is already the display name.
 				const isIdKey = idToNameMap.has(key);
-				const resolvedName = isIdKey ? idToNameMap.get(key)! : key;
+				const resolvedName = isIdKey ? (idToNameMap.get(key) ?? key) : key;
 				const resolvedId = isIdKey ? key : (nameToIdMap.get(key) ?? undefined);
 
 				return {
