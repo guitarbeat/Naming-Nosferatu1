@@ -26,7 +26,7 @@ function ProfileOverlay({ onClose }: { onClose: () => void }) {
 
 	return (
 		<motion.div
-			className="fixed inset-0 z-40 flex items-end justify-center"
+			className="fixed inset-0 z-40 flex items-center justify-center px-4 pb-24 sm:pb-4"
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
@@ -37,10 +37,10 @@ function ProfileOverlay({ onClose }: { onClose: () => void }) {
 
 			{/* Panel */}
 			<motion.div
-				className="relative z-50 w-full max-w-md rounded-t-2xl border border-border/50 bg-card p-6 pb-24 shadow-2xl sm:mb-4 sm:rounded-2xl sm:pb-6"
-				initial={{ y: "100%" }}
-				animate={{ y: 0 }}
-				exit={{ y: "100%" }}
+				className="relative z-50 w-full max-w-md rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
+				initial={{ y: 40, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				exit={{ y: 40, opacity: 0 }}
 				transition={{ type: "spring", damping: 28, stiffness: 300 }}
 			>
 				<div className="mb-4 flex items-center justify-between">
