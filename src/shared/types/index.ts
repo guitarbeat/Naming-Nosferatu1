@@ -239,6 +239,7 @@ export interface UIState {
 	isSwipeMode: boolean;
 	showCatPictures: boolean;
 	isEditingProfile: boolean;
+	isProfileOpen: boolean;
 }
 
 export interface TournamentState {

@@ -26,6 +26,8 @@ A React application for managing cat names and related data, featuring tournamen
 - Copy `config/.env.example` to `.env` (if available) or set up the required Supabase environment variables:
         - `VITE_SUPABASE_URL`
         - `VITE_SUPABASE_ANON_KEY`
+        - `DATABASE_URL` (for Drizzle/server operations)
+        - `JWT_SECRET` (required for backend API auth)
 
 ### Repository layout notes
 
@@ -41,11 +43,19 @@ Root `package.json` scripts point to these files explicitly.
 
 ### Development
 
-To start the Vite dev server:
+To start the Vite frontend dev server:
 
 ```bash
 pnpm dev
 ```
+
+To start the backend API server:
+
+```bash
+pnpm run dev:server
+```
+
+Run them in separate terminals for full-stack local development. The frontend uses the Vite default port (`5173`) and proxies `/api` requests to the backend on port `3001`. The backend requires `JWT_SECRET` to be set before startup.
 
 ### Testing
 
@@ -63,27 +73,10 @@ pnpm run test:coverage
 
 ### Code Quality
 
--   **Linting**: `pnpm run lint` (checks `src` and `shared`)
+-   **Linting**: `pnpm run lint` (checks `src` and `server`)
 -   **Fix Linting**: `pnpm run fix` or `pnpm run lint:fix`
 -   **Maintenance Suite**: `pnpm run check:maintenance` (runs case-collision, copy-artifact, env, architecture, and circular dependency checks)
 -   **Dependency Check**: `pnpm run check:deps` (using Knip)
-
-### Deployment
-
-This project now uses manual Vercel releases:
-
-- `git push origin main` updates source control and GitHub CI only
-- Production changes only when you run `pnpm run release:prod`
-- Manual preview deployments are available through `pnpm run release:preview`
-
-Release commands:
-
-```bash
-pnpm run release:preview
-pnpm run release:prod
-```
-
-These commands assume the Vercel CLI is installed, authenticated, and linked to the correct project on your machine.
 
 ## 📚 Documentation
 
@@ -97,7 +90,8 @@ For more detailed information, please refer to the [docs](./docs) directory:
 ## 🛠️ Tech Stack
 
 -   **Frontend**: React 19, Vite, Tailwind CSS, Zustand, TanStack Query
--   **Data**: Supabase (PostgreSQL, Auth, Storage, RPC)
+-   **Backend**: Node.js, Express, Drizzle ORM
+-   **Database**: Supabase (PostgreSQL)
 -   **Testing**: Vitest, React Testing Library, Supertest
 -   **Tooling**: Biome, TypeScript, pnpm
 
@@ -110,6 +104,7 @@ Minimal root directories:
 - `docs`
 - `public`
 - `scripts`
+- `server`
 - `shared`
 - `src`
 - `supabase`

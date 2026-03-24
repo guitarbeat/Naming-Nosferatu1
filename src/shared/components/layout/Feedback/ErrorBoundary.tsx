@@ -7,7 +7,6 @@ import React, { Component, type ReactNode, useState } from "react";
 import { cn } from "@/shared/lib/basic";
 import { Copy } from "@/shared/lib/icons";
 import { ErrorManager } from "@/shared/services/errorManager";
-import Button from "../Button";
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -236,15 +235,12 @@ ${error?.stack || "No stack trace available"}
 									({parsedStack.length} frames)
 								</span>
 							</span>
-							<Button
+							<button
 								onClick={(e) => {
 									e.stopPropagation();
 									copyErrorToClipboard();
 								}}
-								variant="ghost"
-								presentation="chip"
-								shape="pill"
-								className="bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground"
+								className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors text-xs"
 								aria-label="Copy error details"
 								type="button"
 							>
@@ -254,7 +250,7 @@ ${error?.stack || "No stack trace available"}
 								) : (
 									<span>Copy Report</span>
 								)}
-							</Button>
+							</button>
 						</summary>
 						<div className="p-4 pt-0 space-y-2">
 							{/* Simplified stack view */}
@@ -275,15 +271,13 @@ ${error?.stack || "No stack trace available"}
 							{/* Toggle for full stack */}
 							{error?.stack && (
 								<>
-									<Button
+									<button
 										onClick={() => setShowFullStack(!showFullStack)}
-										variant="ghost"
-										presentation="chip"
-										className="bg-transparent px-0 text-muted-foreground underline hover:bg-transparent hover:text-foreground"
+										className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
 										type="button"
 									>
 										{showFullStack ? "Hide" : "Show"} full stack trace
-									</Button>
+									</button>
 									{showFullStack && (
 										<pre className="text-[10px] leading-relaxed text-white/50 overflow-x-auto p-3 bg-black/30 rounded border border-white/5 custom-scrollbar max-h-48">
 											{error.stack}
@@ -297,28 +291,25 @@ ${error?.stack || "No stack trace available"}
 
 				{/* Action Buttons */}
 				<div className="flex flex-wrap gap-3 justify-center">
-					<Button onClick={resetError} type="button" variant="primary" shape="pill">
+					<button
+						onClick={resetError}
+						className="px-6 py-2.5 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-primary/25 active:scale-95 transition-all duration-200"
+					>
 						Try Again
-					</Button>
-					<Button
+					</button>
+					<button
 						onClick={() => window.location.reload()}
-						type="button"
-						variant="secondary"
-						shape="pill"
-						className="bg-white/10 text-foreground hover:bg-white/20"
+						className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-foreground font-medium rounded-xl transition-all duration-200"
 					>
 						Reload Page
-					</Button>
-					<Button
+					</button>
+					<button
 						onClick={copyErrorToClipboard}
-						type="button"
-						variant="ghost"
-						shape="pill"
-						className="bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-						startIcon={<Copy size={14} />}
+						className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
 					>
+						<Copy size={14} />
 						{copySuccess ? "Copied!" : "Copy Report"}
-					</Button>
+					</button>
 				</div>
 
 				{/* Help text */}
@@ -428,16 +419,12 @@ const ErrorList: React.FC<ErrorListProps> = ({
 	return (
 		<div className={cn("flex flex-col gap-2 w-full", className)}>
 			{onClearAll && (
-				<Button
+				<button
 					onClick={onClearAll}
-					type="button"
-					variant="ghost"
-					presentation="chip"
-					shape="pill"
-					className="self-end bg-transparent text-red-300 hover:bg-red-500/12 hover:text-red-100"
+					className="self-end text-xs font-medium text-red-300 hover:text-red-100 hover:scale-105 transition-all outline-none focus:ring-2 focus:ring-red-500/50 rounded px-1"
 				>
 					Clear All
-				</Button>
+				</button>
 			)}
 			<div className="flex flex-col gap-2">
 				{errors.map((err, i) => (
@@ -449,18 +436,14 @@ const ErrorList: React.FC<ErrorListProps> = ({
 							{err instanceof Error ? err.message : String(err)}
 						</div>
 						{onDismiss && (
-							<Button
+							<button
 								onClick={() => onDismiss(i)}
-								type="button"
-								variant="ghost"
-								size="icon"
-								iconOnly={true}
-								shape="pill"
-								className="ml-3 size-7 bg-transparent text-red-400 hover:bg-red-500/20 hover:text-red-100"
+								className="ml-3 p-1 text-red-400 hover:text-red-100 rounded-full hover:bg-red-500/20 transition-colors"
 								aria-label="Dismiss error"
+								type="button"
 							>
 								×
-							</Button>
+							</button>
 						)}
 					</div>
 				))}

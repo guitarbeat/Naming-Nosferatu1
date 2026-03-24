@@ -42,7 +42,7 @@
    ========================================================================== */
 
 .mobile-nav-safe-bottom {
-	padding-bottom: max(4.75rem, calc(var(--mobile-nav-safe-offset) + 0.35rem));
+	padding-bottom: max(5rem, var(--mobile-nav-safe-offset));
 }
 
 @media (min-width: 769px) {
@@ -180,10 +180,7 @@
 				env(safe-area-inset-right) +
 				var(--mobile-safe-spacing)
 			);
-			bottom: max(
-				5rem,
-				calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--mobile-safe-spacing))
-			);
+			bottom: max(5.5rem, calc(90px + env(safe-area-inset-bottom) + var(--mobile-safe-spacing)));
 		}
 	}
 }
@@ -195,10 +192,7 @@
 @media screen and (width <= 768px) and (orientation: landscape) {
 	.scroll-to-top {
 		right: var(--mobile-safe-spacing-small);
-		bottom: max(
-			4.75rem,
-			calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--mobile-safe-spacing-small))
-		);
+		bottom: max(5rem, calc(80px + env(safe-area-inset-bottom) + var(--mobile-safe-spacing-small)));
 	}
 }
 

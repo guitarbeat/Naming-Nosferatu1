@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const PROJECT_ROOT = process.cwd();
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
-const SOURCE_ROOTS = ["src", "shared"];
+const SOURCE_ROOTS = ["src", "server", "shared"];
 const EXCLUDED_FILE_PATTERNS = [/\.test\.[jt]sx?$/u, /\.d\.ts$/u];
 
 function normalizePath(filePath: string): string {
@@ -67,11 +67,7 @@ export function extractImportSpecifiers(filePath: string): string[] {
 			importSpecifiers.add(node.moduleSpecifier.text);
 		}
 
-		if (
-			ts.isExportDeclaration(node) &&
-			node.moduleSpecifier &&
-			ts.isStringLiteral(node.moduleSpecifier)
-		) {
+		if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
 			importSpecifiers.add(node.moduleSpecifier.text);
 		}
 
@@ -87,9 +83,7 @@ function resolveFileCandidate(basePath: string, knownFiles: Set<string>): string
 	const normalizedBasePath = normalizePath(basePath);
 	const candidates = [
 		normalizedBasePath,
-		...[".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"].map(
-			(extension) => `${normalizedBasePath}${extension}`,
-		),
+		...[".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"].map((extension) => `${normalizedBasePath}${extension}`),
 		...[".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"].map((extension) =>
 			path.join(normalizedBasePath, `index${extension}`),
 		),
@@ -114,10 +108,7 @@ function resolveAliasImport(
 	}
 
 	if (importPath === "@supabase/client") {
-		return resolveFileCandidate(
-			path.join(projectRoot, "src", "services", "supabase", "client"),
-			knownFiles,
-		);
+		return resolveFileCandidate(path.join(projectRoot, "src", "services", "supabase", "client"), knownFiles);
 	}
 
 	if (importPath === "@supabase/types") {
@@ -139,10 +130,7 @@ export function resolveInternalImport(
 	knownFiles: Set<string>,
 ): string | null {
 	if (importPath.startsWith(".")) {
-		return resolveFileCandidate(
-			path.resolve(path.dirname(currentFilePath), importPath),
-			knownFiles,
-		);
+		return resolveFileCandidate(path.resolve(path.dirname(currentFilePath), importPath), knownFiles);
 	}
 
 	return resolveAliasImport(importPath, projectRoot, knownFiles);

@@ -99,7 +99,7 @@ describe("App Component", () => {
 
 		expect(document.documentElement.scrollTop).toBe(0);
 		expect(document.body.scrollTop).toBe(0);
-	}, 15000);
+	});
 
 	it("renders the tournament page", async () => {
 		render(

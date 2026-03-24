@@ -1,4 +1,4 @@
-import type { IncomingMessage } from "node:http";
+import type { IncomingMessage } from "http";
 import type { Plugin } from "vite";
 import { createLogger } from "vite";
 
@@ -9,7 +9,7 @@ interface LogEntry {
 	url?: string;
 	userAgent?: string;
 	stacks?: string[];
-	extra?: unknown[];
+	extra?: any;
 }
 
 interface ClientLogRequest {
@@ -22,7 +22,7 @@ export interface ConsoleForwardOptions {
 	 */
 	enabled?: boolean;
 	/**
-	 * Dev endpoint path (default: '/__dev/client-logs')
+	 * API endpoint path (default: '/api/debug/client-logs')
 	 */
 	endpoint?: string;
 	/**
@@ -38,12 +38,12 @@ const logger = createLogger("info", {
 export function consoleForwardPlugin(options: ConsoleForwardOptions = {}): Plugin {
 	const {
 		enabled = true,
-		endpoint = "/__dev/client-logs",
+		endpoint = "/api/debug/client-logs",
 		levels = ["log", "warn", "error", "info", "debug"],
 	} = options;
 
 	const virtualModuleId = "virtual:console-forward";
-	const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+	const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
 	return {
 		name: "console-forward",

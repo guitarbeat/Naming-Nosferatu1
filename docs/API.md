@@ -155,7 +155,7 @@ VITE_API_BASE_URL=
 ```
 
 - For static-only deployments without a separate API server, leave `VITE_API_BASE_URL` unset.
-- In this repo's static Vercel deployment, reads and writes go directly to Supabase.
+- In static-only mode, name reads fall back to Supabase when `/api/*` endpoints are unavailable.
 
 ### Getting Supabase Credentials
 

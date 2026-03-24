@@ -33,14 +33,17 @@ describe("check-circular-dependencies", () => {
 		tempProjects.push(projectRoot);
 
 		writeFile(projectRoot, "src/app/main.tsx", "export default null;");
-		writeFile(projectRoot, "shared/fallbackNames.ts", "export const names = [];");
+		writeFile(projectRoot, "server/index.ts", "export {};");
+		writeFile(projectRoot, "shared/schema.ts", "export {};");
 		writeFile(projectRoot, "src/app/main.test.tsx", "export default null;");
 
 		const files = collectProjectFiles(projectRoot);
 
-		expect(
-			files.map((filePath) => path.relative(projectRoot, filePath).replace(/\\/g, "/")),
-		).toEqual(["shared/fallbackNames.ts", "src/app/main.tsx"]);
+		expect(files.map((filePath) => path.relative(projectRoot, filePath).replace(/\\/g, "/"))).toEqual([
+			"server/index.ts",
+			"shared/schema.ts",
+			"src/app/main.tsx",
+		]);
 	});
 
 	it("detects a simple relative import cycle", () => {
@@ -61,11 +64,7 @@ describe("check-circular-dependencies", () => {
 		const projectRoot = createTempProject();
 		tempProjects.push(projectRoot);
 
-		writeFile(
-			projectRoot,
-			"src/app/main.tsx",
-			"import { helper } from '@/shared/helper'; export const main = helper;",
-		);
+		writeFile(projectRoot, "src/app/main.tsx", "import { helper } from '@/shared/helper'; export const main = helper;");
 		writeFile(projectRoot, "src/shared/helper.ts", "export const helper = 'ok';");
 
 		const files = collectProjectFiles(projectRoot, ["src"]);

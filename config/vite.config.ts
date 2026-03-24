@@ -1,13 +1,17 @@
+import type { ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import autoprefixer from "autoprefixer";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { createLogger, defineConfig } from "vite";
 import { consoleForwardPlugin } from "../scripts/vite-console-forward-plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const viteLogger = createLogger();
+
+const suppressedProxyErrors = ["http proxy error: /api/names?includeHidden=true"];
 
 function getManualChunk(id: string): string | undefined {
         if (!id.includes("node_modules")) {
@@ -49,19 +53,42 @@ function getManualChunk(id: string): string | undefined {
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
+        customLogger:
+                command === "serve"
+                        ? {
+                                        ...viteLogger,
+                                        error(msg, options) {
+                                                if (suppressedProxyErrors.some((entry) => msg.includes(entry))) {
+                                                        return;
+                                                }
+                                                viteLogger.error(msg, options);
+                                        },
+                                }
+                        : undefined,
         server: {
-                host: "0.0.0.0",
-                port: 5173,
-                strictPort: false,
-                allowedHosts: true,
-                hmr: {
-                        // Replit proxies the dev server through HTTPS/port 443.
-                        // Without this, the HMR WebSocket targets the internal port
-                        // and drops every few seconds behind the proxy.
-                        clientPort: 443,
-                },
-                watch: {
-                        usePolling: true,
+		host: "0.0.0.0",
+		port: 5173,
+		strictPort: false,
+		allowedHosts: true,
+		watch: {
+			usePolling: true,
+		},
+                proxy: {
+                        "/api": {
+                                target: "http://localhost:3001",
+                                changeOrigin: true,
+                                configure(proxy) {
+                                        proxy.on("error", (_error, _req, res) => {
+                                                const response = res as ServerResponse | undefined;
+                                                if (!response || response.headersSent) {
+                                                        return;
+                                                }
+
+                                                response.writeHead(503, { "Content-Type": "application/json" });
+                                                response.end(JSON.stringify({ error: "API server unavailable" }));
+                                        });
+                                },
+                        },
                 },
         },
         css: {
@@ -74,7 +101,7 @@ export default defineConfig(({ command }) => ({
                 tailwindcss(),
                 consoleForwardPlugin({
                         enabled: command === "serve",
-                        endpoint: "/__dev/client-logs",
+                        endpoint: "/api/debug/client-logs",
                         levels: ["log", "warn", "error", "info", "debug"],
                 }),
         ],

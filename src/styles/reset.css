@@ -95,12 +95,10 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-	outline: var(--focus-ring-width, 3px) solid
-		var(--focus-ring-color, color-mix(in srgb, #2ff3e0 80%, white 20%));
-	outline-offset: var(--focus-ring-offset, 3px);
-	border-radius: var(--radius-sm);
-	box-shadow: 0 0 0 var(--focus-ring-spread, 3px)
-		color-mix(in srgb, var(--focus-ring-color, #2ff3e0) 25%, transparent);
+	outline: 3px solid color-mix(in srgb, #2ff3e0 80%, white 20%);
+	outline-offset: 3px;
+	border-radius: 4px;
+	box-shadow: 0 0 0 3px color-mix(in srgb, #2ff3e0 25%, transparent);
 }
 
 /* ==========================================================================

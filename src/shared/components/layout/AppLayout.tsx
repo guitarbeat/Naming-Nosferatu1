@@ -3,7 +3,8 @@
  * @description Main application layout component with floating primary nav
  */
 
-import { AppVisualEffects } from "@/shared/components/layout/AppVisualEffects";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAuth } from "@/app/providers/Providers";
 import { ScrollToTopButton } from "@/shared/components/layout/Button";
 import {
 	ErrorBoundary,
@@ -12,19 +13,56 @@ import {
 	OfflineIndicator,
 } from "@/shared/components/layout/Feedback";
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
-import { FrameEffect } from "@/shared/components/layout/FrameEffect";
+import { ProfileInner } from "@/features/tournament/components/ProfileSection";
+import { X } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
-import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
 	children: React.ReactNode;
 }
 
+function ProfileOverlay({ onClose }: { onClose: () => void }) {
+	const { login } = useAuth();
+
+	return (
+		<motion.div
+			className="fixed inset-0 z-40 flex items-center justify-center px-4 pb-24 sm:pb-4"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.2 }}
+		>
+			{/* Backdrop */}
+			<div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={onClose} />
+
+			{/* Panel */}
+			<motion.div
+				className="relative z-50 w-full max-w-md overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
+				initial={{ y: 40, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				exit={{ y: 40, opacity: 0 }}
+				transition={{ type: "spring", damping: 28, stiffness: 300 }}
+			>
+				<div className="mb-4 flex items-center justify-between">
+					<h2 className="text-lg font-semibold text-foreground">Your Profile</h2>
+					<button
+						type="button"
+						onClick={onClose}
+						className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+						aria-label="Close profile"
+					>
+						<X className="size-5" />
+					</button>
+				</div>
+				<ProfileInner onLogin={(name) => login({ name })} />
+			</motion.div>
+		</motion.div>
+	);
+}
+
 export function AppLayout({ children }: AppLayoutProps) {
-	const { user, tournament, errors, errorActions, ui } = useAppStore();
+	const { user, tournament, errors, errorActions, ui, uiActions } = useAppStore();
 	const { isLoggedIn } = user;
-	const location = useLocation();
-	const isImmersiveRoute = location.pathname === "/tournament";
 
 	return (
 		<ErrorBoundary context="Main Application Layout">
@@ -38,51 +76,57 @@ export function AppLayout({ children }: AppLayoutProps) {
 					Skip to main content
 				</a>
 
-				<AppVisualEffects theme={ui.theme} />
+				{/* Background effects layer */}
+				<div className="cat-background fixed inset-0 -z-10" aria-hidden="true">
+					<div className="cat-background__gradient" />
+					<div className="cat-background__moire" />
+					<div className="cat-background__soft-blur" />
+					<div className="cat-background__vignette" />
+				</div>
 
 				<FloatingNavbar />
 
-				<FrameEffect>
-					{/* Main content area with proper spacing */}
-					<main
-						id="main-content"
-						className={`mobile-nav-safe-bottom relative flex min-h-dvh w-full flex-col px-3 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-4 sm:px-6 sm:pb-24 sm:pt-6 md:pt-10 ${
-							!isImmersiveRoute ? "app-main-shell--nav-safe" : ""
-						}`}
-						tabIndex={-1}
-					>
-						{/* Error banner */}
-						{Boolean(errors.current) && (
-							<div className="mx-auto mb-4 w-full max-w-4xl">
-								<ErrorComponent
-									error={String(errors.current)}
-									onRetry={() => errorActions.clearError()}
-									onDismiss={() => errorActions.clearError()}
-								/>
-							</div>
-						)}
-
-						{/* Page content */}
-						<div className="flex w-full flex-1 flex-col items-center gap-8 sm:gap-12">
-							{children}
+				{/* Main content area with proper spacing */}
+				<main
+					id="main-content"
+					className="relative flex min-h-dvh w-full flex-col px-3 pb-24 pt-4 sm:px-6 sm:pb-24 sm:pt-6 md:pt-10"
+					tabIndex={-1}
+				>
+					{/* Error banner */}
+					{Boolean(errors.current) && (
+						<div className="mx-auto mb-4 w-full max-w-4xl">
+							<ErrorComponent
+								error={String(errors.current)}
+								onRetry={() => errorActions.clearError()}
+								onDismiss={() => errorActions.clearError()}
+							/>
 						</div>
+					)}
 
-						{/* Loading overlay */}
-						{tournament.isLoading && (
-							<div
-								className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-								role="status"
-								aria-live="polite"
-								aria-busy="true"
-							>
-								<Loading variant="spinner" text="Initializing Tournament..." />
-							</div>
-						)}
+					{/* Page content */}
+					<div className="flex w-full flex-1 flex-col items-center gap-8 sm:gap-12">{children}</div>
 
-						<ScrollToTopButton isLoggedIn={isLoggedIn} />
-					</main>
-				</FrameEffect>
-			</div>
-		</ErrorBoundary>
+					{/* Loading overlay */}
+					{tournament.isLoading && (
+						<div
+							className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+							role="status"
+							aria-live="polite"
+							aria-busy="true"
+						>
+							<Loading variant="spinner" text="Initializing Tournament..." />
+						</div>
+					)}
+
+				<ScrollToTopButton isLoggedIn={isLoggedIn} />
+			</main>
+
+			<AnimatePresence>
+				{ui.isProfileOpen && (
+					<ProfileOverlay onClose={() => uiActions.setProfileOpen(false)} />
+				)}
+			</AnimatePresence>
+		</div>
+	</ErrorBoundary>
 	);
 }

@@ -12,15 +12,9 @@ export const STREAK_THRESHOLDS = {
 } as const;
 
 export function getHeatLevel(streak: number): HeatLevel | null {
-	if (streak >= STREAK_THRESHOLDS.blazing) {
-		return "blazing";
-	}
-	if (streak >= STREAK_THRESHOLDS.hot) {
-		return "hot";
-	}
-	if (streak >= STREAK_THRESHOLDS.warm) {
-		return "warm";
-	}
+	if (streak >= STREAK_THRESHOLDS.blazing) return "blazing";
+	if (streak >= STREAK_THRESHOLDS.hot) return "hot";
+	if (streak >= STREAK_THRESHOLDS.warm) return "warm";
 	return null;
 }
 

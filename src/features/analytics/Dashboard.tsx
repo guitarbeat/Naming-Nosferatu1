@@ -188,7 +188,7 @@ export function Dashboard({
 	};
 
 	return (
-		<div className="dashboard-container space-y-10">
+		<div className="dashboard-container space-y-6 sm:space-y-10">
 			{/* Personal Results with Ranking Adjustment */}
 			{personalRatings && Object.keys(personalRatings).length > 0 && onUpdateRatings && (
 				<PersonalResults
@@ -215,26 +215,26 @@ export function Dashboard({
 			{/* User Stats */}
 			{userName && userStats && (
 				<div className="py-2">
-					<div className="flex items-center gap-3 mb-4">
-						<BarChart3 className="text-primary" size={24} />
-						<h3 className="text-xl font-semibold text-foreground">Your Stats</h3>
+					<div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+						<BarChart3 className="text-primary" size={20} />
+						<h3 className="text-lg sm:text-xl font-semibold text-foreground">Your Stats</h3>
 					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
-							<p className="text-sm text-muted-foreground mb-1">Ratings Given</p>
-							<p className="text-2xl font-bold text-foreground">{userStats.totalRatings}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Ratings</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalRatings}</p>
 						</div>
 						<div className="py-2">
-							<p className="text-sm text-muted-foreground mb-1">Names Selected</p>
-							<p className="text-2xl font-bold text-foreground">{userStats.totalSelections}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Selected</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalSelections}</p>
 						</div>
 						<div className="py-2">
-							<p className="text-sm text-muted-foreground mb-1">Total Wins</p>
-							<p className="text-2xl font-bold text-foreground">{userStats.totalWins}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Wins</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalWins}</p>
 						</div>
 						<div className="py-2">
-							<p className="text-sm text-muted-foreground mb-1">Win Rate</p>
-							<p className="text-2xl font-bold text-foreground">{userStats.winRate}%</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Win Rate</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.winRate}%</p>
 						</div>
 					</div>
 				</div>
@@ -242,13 +242,13 @@ export function Dashboard({
 
 			{/* Global Leaderboard */}
 			<div className="py-2">
-				<div className="flex items-center justify-between mb-4">
-					<div className="flex items-center gap-3">
-						<Trophy className="text-chart-4" size={24} />
-						<h3 className="text-xl font-semibold text-foreground">Top Names</h3>
+				<div className="flex items-center justify-between mb-3 sm:mb-4">
+					<div className="flex items-center gap-2 sm:gap-3">
+						<Trophy className="text-chart-4" size={20} />
+						<h3 className="text-lg sm:text-xl font-semibold text-foreground">Top Names</h3>
 					</div>
 					{onStartNew && (
-						<Button variant="ghost" size="sm" onClick={onStartNew}>
+						<Button variant="ghost" size="small" onClick={onStartNew}>
 							Start New Tournament
 						</Button>
 					)}
@@ -301,7 +301,7 @@ export function Dashboard({
 			{siteStats && (
 				<div className="py-2">
 					<h3 className="text-xl font-semibold text-foreground mb-4">Site Statistics</h3>
-					<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Names</p>
 							<p className="text-2xl font-bold text-foreground">{siteStats.totalNames}</p>
@@ -333,24 +333,24 @@ export function Dashboard({
 			{/* Engagement Metrics */}
 			{engagementMetrics && (
 				<div className="py-4">
-					<div className="flex items-center justify-between mb-4">
-						<div className="flex items-center gap-3">
-							<TrendingUp className="text-chart-4" size={24} />
-							<h3 className="text-xl font-semibold text-chart-4">Engagement Metrics</h3>
+					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+						<div className="flex items-center gap-2 sm:gap-3">
+							<TrendingUp className="text-chart-4" size={20} />
+							<h3 className="text-lg sm:text-xl font-semibold text-chart-4">Engagement</h3>
 						</div>
-						<div className="flex gap-2">
+						<div className="flex gap-2 w-full sm:w-auto">
 							<select
 								value={timeframe}
 								onChange={(e) => setTimeframe(e.target.value as "day" | "week" | "month")}
-								className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+								className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 border border-border rounded-lg bg-background text-foreground text-sm"
 							>
-								<option value="day">Last 24 Hours</option>
-								<option value="week">Last Week</option>
-								<option value="month">Last Month</option>
+								<option value="day">24h</option>
+								<option value="week">Week</option>
+								<option value="month">Month</option>
 							</select>
 							<Button
 								variant="ghost"
-								size="sm"
+								size="small"
 								onClick={() => fetchEngagementMetrics()}
 								disabled={_isLoadingStats}
 							>
@@ -360,7 +360,7 @@ export function Dashboard({
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
 						<div className="p-4 border border-border rounded-lg bg-card">
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
@@ -460,7 +460,11 @@ export function Dashboard({
 							<EyeOff className="text-chart-4" size={24} />
 							<h3 className="text-xl font-semibold text-chart-4">Admin: Hidden Names</h3>
 						</div>
-						<Button variant="ghost" size="sm" onClick={() => setShowHiddenNames(!showHiddenNames)}>
+						<Button
+							variant="ghost"
+							size="small"
+							onClick={() => setShowHiddenNames(!showHiddenNames)}
+						>
 							{showHiddenNames ? "Hide List" : "Show List"}
 						</Button>
 					</div>
@@ -476,7 +480,7 @@ export function Dashboard({
 										<span className="text-foreground font-medium">{name.name}</span>
 										<Button
 											variant="ghost"
-											size="sm"
+											size="small"
 											onClick={() => handleUnhideName(name.id)}
 											className="text-chart-2 hover:text-chart-2/80"
 										>

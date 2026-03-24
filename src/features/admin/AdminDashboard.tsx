@@ -301,68 +301,64 @@ export function AdminDashboard() {
 	}
 
 	return (
-		<div className="min-h-screen bg-background text-foreground p-6">
-			<div className="mb-8">
-				<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+		<div className="min-h-screen bg-background text-foreground p-3 sm:p-6">
+			<div className="mb-4 sm:mb-8">
+				<h1 className="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 					Admin Dashboard
 				</h1>
-				<p className="text-muted-foreground">Manage names and monitor site activity</p>
+				<p className="text-sm text-muted-foreground">Manage names and monitor activity</p>
 			</div>
 
 			{stats && (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-					<div className="p-6">
-						<div className="flex items-center gap-3 mb-2">
-							<BarChart3 className="text-primary" size={24} />
-							<h3 className="text-lg font-semibold text-primary">Total Names</h3>
+				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-8">
+					<div className="p-3 sm:p-6">
+						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+							<BarChart3 className="text-primary" size={18} />
+							<h3 className="text-sm sm:text-lg font-semibold text-primary">Total</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">{stats.totalNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.totalNames}</p>
 					</div>
 
-					<div className="p-6">
-						<div className="flex items-center gap-3 mb-2">
-							<Eye className="text-chart-2" size={24} />
-							<h3 className="text-lg font-semibold text-chart-2">Active</h3>
+					<div className="p-3 sm:p-6">
+						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+							<Eye className="text-chart-2" size={18} />
+							<h3 className="text-sm sm:text-lg font-semibold text-chart-2">Active</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">{stats.activeNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.activeNames}</p>
 					</div>
 
-					<div className="p-6">
-						<div className="flex items-center gap-3 mb-2">
-							<Lock className="text-chart-4" size={24} />
-							<h3 className="text-lg font-semibold text-chart-4">Locked In</h3>
+					<div className="p-3 sm:p-6">
+						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+							<Lock className="text-chart-4" size={18} />
+							<h3 className="text-sm sm:text-lg font-semibold text-chart-4">Locked</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
 					</div>
 
-					<div className="p-6">
-						<div className="flex items-center gap-3 mb-2">
-							<EyeOff className="text-destructive" size={24} />
-							<h3 className="text-lg font-semibold text-destructive">Hidden</h3>
+					<div className="p-3 sm:p-6">
+						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+							<EyeOff className="text-destructive" size={18} />
+							<h3 className="text-sm sm:text-lg font-semibold text-destructive">Hidden</h3>
 						</div>
-						<p className="text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
 					</div>
 				</div>
 			)}
 
-			<div className="flex gap-2 mb-6 border-b border-border/10">
+			{/* Tabs - horizontal scroll on mobile */}
+			<div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-border/10 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
 				{ADMIN_TABS.map((tab) => (
-					<Button
+					<button
 						key={tab.id}
-						type="button"
 						onClick={() => handleTabChange(tab.id)}
-						type="button"
-						variant={activeTab === tab.id ? "secondary" : "ghost"}
-						presentation="chip"
-						shape="pill"
-						className={`px-4 py-2 font-medium ${
+						className={`px-3 sm:px-4 py-2 font-medium text-sm whitespace-nowrap transition-colors ${
 							activeTab === tab.id
-								? "bg-primary/12 text-foreground"
-								: "bg-transparent text-muted-foreground hover:bg-foreground/8 hover:text-foreground"
+								? "text-foreground border-b-2 border-primary"
+								: "text-muted-foreground hover:text-foreground"
 						}`}
 					>
 						{tab.label}
-					</Button>
+					</button>
 				))}
 			</div>
 
@@ -397,34 +393,29 @@ export function AdminDashboard() {
 									))}
 								</select>
 
-								<Button
-									onClick={() => void loadAdminData()}
-									variant="ghost"
-									size="sm"
-									iconOnly={true}
-								>
+								<Button onClick={() => void loadAdminData()} variant="ghost" size="small">
 									<Loader2 size={16} />
 								</Button>
 							</div>
 						</div>
 
 						{selectedNames.size > 0 && (
-							<div className="mb-4 py-4 border-y border-border/10">
-								<p className="text-sm text-primary mb-2">{selectedNames.size} names selected</p>
-								<div className="flex gap-2">
-									<Button onClick={() => void handleBulkAction("hide")} size="sm">
+							<div className="mb-4 py-3 sm:py-4 border-y border-border/10">
+								<p className="text-sm text-primary mb-2">{selectedNames.size} selected</p>
+								<div className="flex flex-wrap gap-2">
+									<Button onClick={() => void handleBulkAction("hide")} size="small">
 										<EyeOff size={14} /> Hide
 									</Button>
-									<Button onClick={() => void handleBulkAction("unhide")} size="sm">
+									<Button onClick={() => void handleBulkAction("unhide")} size="small">
 										<Eye size={14} /> Unhide
 									</Button>
-									<Button onClick={() => void handleBulkAction("lock")} size="sm">
+									<Button onClick={() => void handleBulkAction("lock")} size="small">
 										<Lock size={14} /> Lock
 									</Button>
-									<Button onClick={() => void handleBulkAction("unlock")} size="sm">
+									<Button onClick={() => void handleBulkAction("unlock")} size="small">
 										<Lock size={14} /> Unlock
 									</Button>
-									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="sm">
+									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="small">
 										Clear
 									</Button>
 								</div>
@@ -437,64 +428,58 @@ export function AdminDashboard() {
 								const hidden = isNameHidden(name);
 								const locked = isNameLocked(name);
 								return (
-									<div key={name.id} className="py-4">
-										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-4">
+									<div key={name.id} className="py-3 sm:py-4">
+										<div className="flex items-start sm:items-center justify-between gap-2">
+											<div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
 												<input
 													type="checkbox"
 													checked={selectedNames.has(nameId)}
 													onChange={(event) => handleSelectionChange(nameId, event.target.checked)}
-													className="w-4 h-4"
+													className="w-4 h-4 mt-1 sm:mt-0 shrink-0"
 												/>
-												<div>
-													<h3 className="font-semibold text-foreground">{name.name}</h3>
+												<div className="min-w-0">
+													<div className="flex items-center gap-2 flex-wrap">
+														<h3 className="font-semibold text-foreground text-sm sm:text-base">{name.name}</h3>
+														{locked && (
+															<span className="text-[10px] text-chart-4 font-semibold inline-flex items-center gap-0.5">
+																<Lock size={10} /> Locked
+															</span>
+														)}
+														{hidden && (
+															<span className="text-[10px] text-destructive font-semibold inline-flex items-center gap-0.5">
+																<EyeOff size={10} /> Hidden
+															</span>
+														)}
+													</div>
 													{name.description && (
-														<p className="text-sm text-muted-foreground">{name.description}</p>
+														<p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">{name.description}</p>
 													)}
-													<div className="flex gap-4 mt-1 text-xs text-muted-foreground/60">
+													<div className="flex gap-3 mt-0.5 text-[10px] sm:text-xs text-muted-foreground/60">
 														<span>Votes: {name.votes}</span>
 														<span>
 															Score:{" "}
 															{name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
 														</span>
-														{name.lastVoted && (
-															<span>Last: {new Date(name.lastVoted).toLocaleDateString()}</span>
-														)}
 													</div>
 												</div>
 											</div>
 
-											<div className="flex items-center gap-2">
-												{locked && (
-													<div className="text-xs text-chart-4 font-semibold">
-														<Lock size={12} /> Locked
-													</div>
-												)}
-												{hidden && (
-													<div className="text-xs text-destructive font-semibold">
-														<EyeOff size={12} /> Hidden
-													</div>
-												)}
-
-												<div className="flex gap-1">
-													<Button
-														onClick={() => void handleToggleHidden(name.id, hidden)}
-														variant="ghost"
-														size="sm"
-														iconOnly={true}
-													>
-														{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
-													</Button>
-													<Button
-														onClick={() => void handleToggleLocked(name.id, locked)}
-														variant="ghost"
-														size="sm"
-														iconOnly={true}
-														aria-label={locked ? "Unlock name" : "Lock name"}
-													>
-														<Lock size={14} />
-													</Button>
-												</div>
+											<div className="flex items-center gap-1 shrink-0">
+												<Button
+													onClick={() => void handleToggleHidden(name.id, hidden)}
+													variant="ghost"
+													size="small"
+												>
+													{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
+												</Button>
+												<Button
+													onClick={() => void handleToggleLocked(name.id, locked)}
+													variant="ghost"
+													size="small"
+													aria-label={locked ? "Unlock name" : "Lock name"}
+												>
+													<Lock size={14} />
+												</Button>
 											</div>
 										</div>
 									</div>
@@ -516,21 +501,12 @@ export function AdminDashboard() {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Image Upload</h3>
-									<div className="relative group focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background rounded-lg transition-all duration-200">
-										<label
-											htmlFor="admin-image-upload"
-											className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border/20 bg-foreground/5 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 hover:border-border/40"
-										>
-											<span className="truncate">Choose a file to upload</span>
-										</label>
-										<input
-											id="admin-image-upload"
-											type="file"
-											accept="image/*"
-											onChange={handleImageUpload}
-											className="sr-only"
-										/>
-									</div>
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleImageUpload}
+										className="w-full p-2 bg-foreground/10 border border-border/20 rounded"
+									/>
 								</div>
 								<div>
 									<h3 className="text-lg font-semibold mb-2">Recent Activity</h3>

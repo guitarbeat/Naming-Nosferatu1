@@ -9,7 +9,6 @@
 
 export {
 	Activity,
-	ArrowUp,
 	BarChart3,
 	Cat,
 	Check,

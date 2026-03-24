@@ -1,25 +1,13 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"entry": ["src/app/main.tsx"],
-	"project": [
-		"src/**/*.{js,jsx,ts,tsx}",
-		"shared/**/*.{js,jsx,ts,tsx}"
-	],
+	"project": ["src/**/*.{js,jsx,ts,tsx}"],
 	"ignore": [
 		"**/*.md",
 		"**/README.md",
 		"src/features/tournament/hooks/useTournamentSelectionSaver.ts",
 		"src/features/tournament/hooks/useTournamentSelectionSaver.bench.ts"
 	],
-	"ignoreDependencies": [
-		"@capacitor/cli",
-		"@sentry/tracing",
-		"@types/multer",
-		"@types/react-window",
-		"fast-check",
-		"multer",
-		"react-window",
-		"tailwindcss"
-	],
+	"ignoreDependencies": ["@capacitor/cli", "tailwindcss"],
 	"typescript": true
 }
