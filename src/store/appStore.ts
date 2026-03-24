@@ -368,6 +368,7 @@ const createUserAndSettingsSlice: StateCreator<
 		isSwipeMode: getInitialSwipeMode(),
 		showCatPictures: true,
 		isEditingProfile: false,
+		isProfileOpen: false,
 	},
 
 	uiActions: {
