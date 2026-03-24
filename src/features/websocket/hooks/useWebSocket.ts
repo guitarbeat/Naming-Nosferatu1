@@ -52,9 +52,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 	// Update connection state
 	useEffect(() => {
 		const service = wsServiceRef.current;
-		if (!service) {
-			return;
-		}
+		if (!service) return;
 
 		const updateConnectionState = () => {
 			const state = service.getConnectionState();

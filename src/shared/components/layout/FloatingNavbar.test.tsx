@@ -137,13 +137,12 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		const pickButton = screen.getByText("Pick Names").closest("button");
-		const suggestButton = screen.getByText("Suggest").closest("button");
-		const profileButton = screen.getByText("Profile").closest("button");
-
-		expect(pickButton).toBeInTheDocument();
-		expect(suggestButton).toHaveAttribute("aria-current", "location");
-		expect(profileButton).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Pick Names" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Suggest" })).toHaveAttribute(
+			"aria-current",
+			"location",
+		);
+		expect(screen.getByRole("button", { name: "Profile" })).toBeInTheDocument();
 	});
 
 	it("promotes the first item to a highlighted start action when enough names are selected", () => {
@@ -156,12 +155,12 @@ describe("FloatingNavbar", () => {
 			</MemoryRouter>,
 		);
 
-		const startButton = screen.getByText("Start (3)").closest("button");
+		const startButton = screen.getByRole("button", { name: "Start (3)" });
 
 		expect(startButton).toBeInTheDocument();
 		expect(startButton).toHaveClass("floating-navbar__item--accent");
 		expect(screen.queryByRole("button", { name: "Pick Names" })).not.toBeInTheDocument();
-	}, 20000);
+	});
 
 	it("shows analyze as the current destination on the analysis route", () => {
 		mockStore.tournament.isComplete = true;

@@ -1,19 +1,12 @@
 /**
  * @file background.css
- * @description Application shell effects: ambient background, magicContainer moire, frame
+ * @description Cat background effects: gradient, moiré, blur, vignette, stars
  */
-
-.app-visual-effects {
-	position: fixed;
-	inset: 0;
-	z-index: var(--z-background-shell);
-	overflow: hidden;
-	pointer-events: none;
-}
 
 .cat-background {
 	position: fixed;
 	inset: 0;
+	z-index: var(--z-negative);
 	overflow: hidden;
 	pointer-events: none;
 	background: var(--color-neutral-900);
@@ -22,7 +15,6 @@
 .cat-background__gradient {
 	position: absolute;
 	inset: 0;
-	z-index: var(--z-0);
 	background:
 		radial-gradient(
 			circle at 50% 120%,
@@ -53,7 +45,6 @@
 .cat-background__moire {
 	position: absolute;
 	inset: -12%;
-	z-index: var(--z-1);
 	background-image:
 		repeating-radial-gradient(
 			circle at 50% 50%,
@@ -75,7 +66,6 @@
 .cat-background__soft-blur {
 	position: absolute;
 	inset: -16%;
-	z-index: 2;
 	background:
 		radial-gradient(
 			circle at 30% 18%,
@@ -102,7 +92,6 @@
 .cat-background__vignette {
 	position: absolute;
 	inset: 0;
-	z-index: 3;
 	background: radial-gradient(
 		circle at center,
 		transparent var(--pw-fx-vignette-inner-stop),
@@ -111,162 +100,6 @@
 		rgb(var(--pw-fx-vignette-outer-rgb) / var(--pw-fx-vignette-outer-alpha))
 			var(--pw-fx-vignette-outer-stop)
 	);
-}
-
-#magicContainer,
-.magic-container {
-	position: fixed;
-	inset: 0;
-	width: 100%;
-	z-index: var(--z-1);
-	transition: opacity 0.8s ease-in-out;
-	pointer-events: none;
-}
-
-.magic-container {
-	opacity: 0;
-}
-
-.magic-container--visible {
-	opacity: var(--pw-fx-magic-opacity);
-}
-
-.magic-container canvas,
-#magicContainer canvas {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-:root[data-loading-sequence="sealed"] .magic-container {
-	opacity: 0;
-}
-
-.app-frame-shell {
-	position: relative;
-}
-
-.app-frame-shell__content {
-	position: relative;
-	z-index: var(--z-content);
-}
-
-.app-main-shell {
-	z-index: var(--z-content);
-}
-
-.app-frame {
-	position: fixed;
-	inset: 0;
-	box-sizing: border-box;
-	border: var(--pw-frame-border-width) solid
-		rgb(var(--pw-frame-color-rgb) / var(--pw-frame-color-alpha));
-	mix-blend-mode: difference;
-	user-select: none;
-	z-index: var(--z-frame);
-}
-
-.app-frame::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	margin: calc(var(--pw-frame-border-width) * -1);
-	border: inherit;
-	border-radius: var(--pw-frame-border-radius);
-}
-
-.loading-sequence {
-	--pw-loading-accent: color-mix(in srgb, var(--color-hot-pink) 52%, var(--color-neutral-50) 48%);
-
-	position: fixed;
-	inset: 0;
-	z-index: var(--z-loading-sequence);
-	overflow: hidden;
-	pointer-events: none;
-}
-
-.loading-sequence--victory {
-	--pw-loading-accent: color-mix(in srgb, var(--color-success) 52%, var(--color-warning) 48%);
-}
-
-.loading-sequence__mask {
-	position: absolute;
-	left: 0;
-	width: 100%;
-	height: 50%;
-	background: rgb(var(--pw-frame-color-rgb) / 0.98);
-	mix-blend-mode: difference;
-	transition:
-		transform 1s cubic-bezier(0.22, 1, 0.36, 1),
-		opacity 0.35s ease;
-	will-change: transform, opacity;
-}
-
-.loading-sequence__mask--top {
-	top: 0;
-	transform-origin: top;
-}
-
-.loading-sequence__mask--bottom {
-	bottom: 0;
-	transform-origin: bottom;
-}
-
-.loading-sequence--opening .loading-sequence__mask--top {
-	transform: scaleY(0);
-}
-
-.loading-sequence--opening .loading-sequence__mask--bottom {
-	transform: scaleY(0);
-}
-
-.loading-sequence__copy {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	z-index: 1;
-	display: grid;
-	gap: 0.7rem;
-	width: min(34rem, calc(100vw - 2.5rem));
-	transform: translate(-50%, -50%);
-	text-align: center;
-	mix-blend-mode: difference;
-	color: rgb(var(--pw-frame-color-rgb) / 0.94);
-	transition:
-		opacity 0.35s ease,
-		transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.loading-sequence--opening .loading-sequence__copy {
-	opacity: 0;
-	transform: translate(-50%, calc(-50% - 10px)) scale(0.985);
-}
-
-.loading-sequence__eyebrow {
-	font-size: 0.72rem;
-	font-weight: 700;
-	letter-spacing: 0.28em;
-	text-transform: uppercase;
-	color: var(--pw-loading-accent);
-}
-
-.loading-sequence__title {
-	font-family: var(--font-display);
-	font-size: clamp(2.2rem, 8vw, 5.75rem);
-	font-weight: 800;
-	line-height: 0.92;
-	letter-spacing: -0.05em;
-	text-wrap: balance;
-	text-transform: uppercase;
-}
-
-.loading-sequence__subtitle {
-	justify-self: center;
-	max-width: 28rem;
-	font-size: clamp(0.9rem, 2.4vw, 1.08rem);
-	line-height: 1.5;
-	color: rgb(var(--pw-frame-color-rgb) / 0.72);
-	text-wrap: balance;
 }
 
 @keyframes moire-drift {
@@ -298,35 +131,17 @@
 		background-attachment: scroll;
 	}
 
-	.magic-container--visible {
-		opacity: var(--pw-fx-magic-opacity-mobile);
-	}
-
 	.cat-background__moire {
-		opacity: var(--pw-fx-moire-opacity-mobile);
+		opacity: calc(var(--pw-fx-moire-opacity-mobile) * 0.5);
 	}
 
 	.cat-background__soft-blur {
-		opacity: var(--pw-fx-blur-opacity-mobile);
+		opacity: calc(var(--pw-fx-blur-opacity-mobile) * 0.6);
 		filter: blur(var(--pw-fx-blur-radius-mobile)) saturate(var(--pw-fx-blur-saturation-mobile));
 	}
 
-	.app-frame {
-		border-width: 5px;
-	}
-
-	.app-frame::after {
-		border-radius: 16px;
-	}
-
-	.loading-sequence__copy {
-		width: min(24rem, calc(100vw - 2rem));
-		gap: 0.55rem;
-	}
-
-	.loading-sequence__eyebrow {
-		font-size: 0.64rem;
-		letter-spacing: 0.22em;
+	.cat-background__vignette {
+		opacity: 0.6;
 	}
 }
 
@@ -339,25 +154,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.magic-container {
-		transition: none;
-	}
-
-	.loading-sequence__mask,
-	.loading-sequence__copy {
-		transition-duration: 0.18s;
-	}
-
-	.loading-sequence--opening .loading-sequence__mask {
-		transform: none;
-		opacity: 0;
-	}
-
-	.loading-sequence--opening .loading-sequence__copy {
-		transform: translate(-50%, -50%);
-		opacity: 0;
-	}
-
 	.cat-background__moire,
 	.cat-background__soft-blur {
 		animation: none;

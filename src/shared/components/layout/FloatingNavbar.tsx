@@ -53,7 +53,6 @@ function FloatingNavItem({
 	customIcon,
 	className,
 	ariaLabel,
-	showLabel = true,
 }: {
 	icon: ElementType;
 	label: string;
@@ -65,7 +64,6 @@ function FloatingNavItem({
 	customIcon?: ReactNode;
 	className?: string;
 	ariaLabel?: string;
-	showLabel?: boolean;
 }) {
 	return (
 		<motion.button
@@ -89,7 +87,6 @@ function FloatingNavItem({
 				className={cn(
 					"floating-navbar__label",
 					variant === "utility" && "floating-navbar__label--utility",
-					!showLabel && "sr-only",
 				)}
 			>
 				{label}
@@ -111,17 +108,11 @@ export function FloatingNavbar() {
 	const [activeSection, setActiveSection] = useState<NavSection>("pick");
 	const [isNavVisible, setIsNavVisible] = useState(true);
 	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-	const [isCompactPhone, setIsCompactPhone] = useState(false);
 	const navGlassId = useId();
 
 	const isHomeRoute = location.pathname === "/";
 	const isAnalysisRoute = location.pathname === "/analysis";
 	const isTournamentRoute = location.pathname === "/tournament";
-
-	// The UI spec + test suite expect the primary navigation to be hidden on the tournament route.
-	if (isTournamentRoute) {
-		return null;
-	}
 
 	const selectedCount = selectedNames?.length || 0;
 	const isTournamentActive = Boolean(tournament.names);
@@ -220,14 +211,6 @@ export function FloatingNavbar() {
 	}, []);
 
 	useEffect(() => {
-		const compactPhoneQuery = window.matchMedia("(max-width: 420px)");
-		const updateCompactPhone = () => setIsCompactPhone(compactPhoneQuery.matches);
-		updateCompactPhone();
-		compactPhoneQuery.addEventListener("change", updateCompactPhone);
-		return () => compactPhoneQuery.removeEventListener("change", updateCompactPhone);
-	}, []);
-
-	useEffect(() => {
 		let lastScrollY = window.scrollY;
 		let ticking = false;
 		const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
@@ -311,11 +294,6 @@ export function FloatingNavbar() {
 								}
 								isCurrent={isHomeRoute && activeSection === "pick"}
 								isAccent={selectedCount >= 2 && !isTournamentRoute}
-								showLabel={
-									!isCompactPhone ||
-									(isHomeRoute && activeSection === "pick") ||
-									isTournamentRoute
-								}
 								onClick={() => {
 									if (isTournamentRoute) {
 										navigate("/");
@@ -332,7 +310,6 @@ export function FloatingNavbar() {
 							icon={BarChart3}
 							label="Analyze"
 							isCurrent={isAnalysisRoute}
-							showLabel={!isCompactPhone || isAnalysisRoute}
 							onClick={() => handleNavClick("analyze")}
 						/>
 
@@ -340,7 +317,6 @@ export function FloatingNavbar() {
 							icon={Lightbulb}
 							label="Suggest"
 							isCurrent={isHomeRoute && activeSection === "suggest"}
-							showLabel={!isCompactPhone || (isHomeRoute && activeSection === "suggest")}
 							onClick={() => handleNavClick("suggest")}
 						/>
 
@@ -348,7 +324,6 @@ export function FloatingNavbar() {
 							icon={User}
 							label={profileLabel}
 							isCurrent={isHomeRoute && activeSection === "profile"}
-							showLabel={!isCompactPhone || (isHomeRoute && activeSection === "profile")}
 							onClick={() => handleNavClick("profile")}
 							customIcon={
 								isLoggedIn && avatarUrl ? (
@@ -374,7 +349,6 @@ export function FloatingNavbar() {
 							variant="utility"
 							isPressed={isSwipeMode}
 							ariaLabel={isSwipeMode ? "Swipe mode active" : "Grid mode active"}
-							showLabel={!isCompactPhone}
 							onClick={() => setSwipeMode(!isSwipeMode)}
 						/>
 					</div>

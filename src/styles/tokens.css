@@ -735,6 +735,6 @@
 	--mobile-touch-target: 44px;
 	--mobile-text-scale: 1.1;
 	--mobile-spacing-scale: 1.2;
-	--mobile-nav-height: 4.25rem;
-	--mobile-nav-safe-offset: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 0.75rem);
+	--mobile-nav-height: 4.5rem;
+	--mobile-nav-safe-offset: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 1.25rem);
 }
