@@ -45,7 +45,9 @@ describe("TournamentFlow responsive behavior", () => {
 		);
 
 		expect(screen.getByTestId("name-selector")).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "Analyze Results" })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("button", { name: "Analyze Results" }),
+		).not.toBeInTheDocument();
 	});
 
 	it("keeps completion actions mobile-friendly with stacked buttons", () => {
@@ -58,8 +60,12 @@ describe("TournamentFlow responsive behavior", () => {
 			</MemoryRouter>,
 		);
 
-		const analyzeButton = screen.getByRole("button", { name: "Analyze Results" });
-		const startButton = screen.getByRole("button", { name: "Start New Tournament" });
+		const analyzeButton = screen.getByRole("button", {
+			name: "Analyze Results",
+		});
+		const startButton = screen.getByRole("button", {
+			name: "Start New Tournament",
+		});
 		const heading = screen.getByRole("heading", {
 			name: "A victor emerges from the eternal tournament",
 		});

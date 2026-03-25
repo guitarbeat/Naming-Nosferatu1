@@ -35,7 +35,10 @@ describe("Supabase Service API", () => {
 
 			const result = await coreAPI.addName("Test Cat", "Desc");
 
-			expect(api.post).toHaveBeenCalledWith("/names", { name: "Test Cat", description: "Desc" });
+			expect(api.post).toHaveBeenCalledWith("/names", {
+				name: "Test Cat",
+				description: "Desc",
+			});
 			expect(result.success).toBe(true);
 			expect(result.data).toBeDefined();
 			expect(result.data?.name).toBe("Test Cat");
@@ -145,7 +148,10 @@ describe("Supabase Service API", () => {
 			await Promise.resolve();
 			releaseRequest?.();
 
-			const [firstResult, secondResult] = await Promise.all([firstRequest, secondRequest]);
+			const [firstResult, secondResult] = await Promise.all([
+				firstRequest,
+				secondRequest,
+			]);
 
 			expect(api.get).toHaveBeenCalledTimes(1);
 			expect(firstResult).toEqual(secondResult);
@@ -174,7 +180,9 @@ describe("Supabase Service API", () => {
 
 			expect(resolveSupabaseClient).toHaveBeenCalled();
 			expect(mockRpc).toHaveBeenCalledTimes(2);
-			expect(mockRpc).toHaveBeenNthCalledWith(1, "set_user_context", { user_name_param: "admin" });
+			expect(mockRpc).toHaveBeenNthCalledWith(1, "set_user_context", {
+				user_name_param: "admin",
+			});
 			// The second call args are tricky because of the RPC argument shape checks
 			// expecting toggle_name_visibility params
 			expect(mockRpc).toHaveBeenNthCalledWith(
@@ -195,7 +203,9 @@ describe("Supabase Service API", () => {
 			// Actually implementation calls resolveSupabaseClient first.
 			// If we make rpc fail, it pushes to failures array and continues to API fallback.
 
-			const mockRpc = vi.fn().mockResolvedValue({ error: { message: "RPC failed" } });
+			const mockRpc = vi
+				.fn()
+				.mockResolvedValue({ error: { message: "RPC failed" } });
 			const mockClient = { rpc: mockRpc };
 			mockedResolveSupabaseClient.mockResolvedValue(mockClient);
 
@@ -204,7 +214,9 @@ describe("Supabase Service API", () => {
 			const result = await coreAPI.hideName("admin", "123", true);
 
 			expect(mockRpc).toHaveBeenCalled();
-			expect(api.patch).toHaveBeenCalledWith("/names/123/hide", { isHidden: true });
+			expect(api.patch).toHaveBeenCalledWith("/names/123/hide", {
+				isHidden: true,
+			});
 			expect(result.success).toBe(true);
 		});
 	});

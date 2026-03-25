@@ -30,7 +30,11 @@ interface NameItemProps {
 	};
 }
 
-const VirtualizedNameItem: React.FC<NameItemProps> = ({ index, style, data }) => {
+const VirtualizedNameItem: React.FC<NameItemProps> = ({
+	index,
+	style,
+	data,
+}) => {
 	const { names, selectedNames, onToggleName } = data;
 	const name = names[index];
 	const nameId = name ? String(name.id) : "";
@@ -64,7 +68,9 @@ const VirtualizedNameItem: React.FC<NameItemProps> = ({ index, style, data }) =>
 			<div className="flex-1 min-w-0">
 				<h3 className="font-semibold text-foreground truncate">{name.name}</h3>
 				{name.description && (
-					<p className="text-sm text-muted-foreground truncate">{name.description}</p>
+					<p className="text-sm text-muted-foreground truncate">
+						{name.description}
+					</p>
 				)}
 			</div>
 			<div className="flex items-center gap-2 flex-shrink-0">
@@ -131,7 +137,10 @@ export const VirtualizedNameList: React.FC<VirtualizedNameListProps> = ({
 			<div className="flex flex-col items-center justify-center h-96 text-center">
 				<p className="text-muted-foreground mb-4">No names found</p>
 				{searchTerm && (
-					<button onClick={handleClearSelection} className="text-primary hover:underline">
+					<button
+						onClick={handleClearSelection}
+						className="text-primary hover:underline"
+					>
 						Clear search
 					</button>
 				)}

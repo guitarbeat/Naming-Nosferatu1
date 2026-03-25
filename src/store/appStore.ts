@@ -91,8 +91,8 @@ interface UIActions {
 	setSwipeMode: (enabled: boolean) => void;
 	setCatPictures: (show: boolean) => void;
 	setUserComparison: (show: boolean) => void;
-		setEditingProfile: (editing: boolean) => void;
-		setProfileOpen: (open: boolean) => void;
+	setEditingProfile: (editing: boolean) => void;
+	setProfileOpen: (open: boolean) => void;
 }
 
 interface SiteSettingsActions {
@@ -103,7 +103,11 @@ interface SiteSettingsActions {
 interface ErrorActions {
 	setError: (error: unknown | null) => void;
 	clearError: () => void;
-	logError: (error: unknown, context: string, metadata?: Record<string, unknown>) => void;
+	logError: (
+		error: unknown,
+		context: string,
+		metadata?: Record<string, unknown>,
+	) => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -134,7 +138,11 @@ interface AppState {
 type SetFn = Parameters<StateCreator<AppState>>[0];
 
 /** Merge partial updates into a nested slice. */
-function patch<K extends keyof AppState>(set: SetFn, key: K, updates: Partial<AppState[K]>): void {
+function patch<K extends keyof AppState>(
+	set: SetFn,
+	key: K,
+	updates: Partial<AppState[K]>,
+): void {
 	set((state) => ({
 		...state,
 		[key]: { ...state[key], ...updates },
@@ -248,7 +256,8 @@ const createTournamentSlice: StateCreator<
 
 		setRatings: (ratingsOrFn) => {
 			const current = get().tournament.ratings;
-			const next = typeof ratingsOrFn === "function" ? ratingsOrFn(current) : ratingsOrFn;
+			const next =
+				typeof ratingsOrFn === "function" ? ratingsOrFn(current) : ratingsOrFn;
 			patch(set, "tournament", { ratings: { ...current, ...next } });
 		},
 
@@ -268,7 +277,8 @@ const createTournamentSlice: StateCreator<
 				isLoading: false,
 			}),
 
-		setSelection: (selectedNames) => patch(set, "tournament", { selectedNames }),
+		setSelection: (selectedNames) =>
+			patch(set, "tournament", { selectedNames }),
 	},
 });
 
@@ -289,7 +299,12 @@ const createUserAndSettingsSlice: StateCreator<
 	[],
 	Pick<
 		AppState,
-		"user" | "userActions" | "ui" | "uiActions" | "siteSettings" | "siteSettingsActions"
+		| "user"
+		| "userActions"
+		| "ui"
+		| "uiActions"
+		| "siteSettings"
+		| "siteSettingsActions"
 	>
 > = (set, get) => ({
 	// ── User ────────────────────────────────────────────────────────────────
@@ -409,7 +424,8 @@ const createUserAndSettingsSlice: StateCreator<
 		},
 
 		setMatrixMode: (enabled) => patch(set, "ui", { matrixMode: enabled }),
-		setGlobalAnalytics: (show) => patch(set, "ui", { showGlobalAnalytics: show }),
+		setGlobalAnalytics: (show) =>
+			patch(set, "ui", { showGlobalAnalytics: show }),
 
 		setSwipeMode: (enabled) => {
 			patch(set, "ui", { isSwipeMode: enabled });
@@ -418,7 +434,8 @@ const createUserAndSettingsSlice: StateCreator<
 
 		setCatPictures: (show) => patch(set, "ui", { showCatPictures: show }),
 		setUserComparison: (show) => patch(set, "ui", { showUserComparison: show }),
-		setEditingProfile: (editing) => patch(set, "ui", { isEditingProfile: editing }),
+		setEditingProfile: (editing) =>
+			patch(set, "ui", { isEditingProfile: editing }),
 		setProfileOpen: (open) => patch(set, "ui", { isProfileOpen: open }),
 	},
 
@@ -430,7 +447,8 @@ const createUserAndSettingsSlice: StateCreator<
 	},
 
 	siteSettingsActions: {
-		setCatChosenName: (data) => patch(set, "siteSettings", { catChosenName: data }),
+		setCatChosenName: (data) =>
+			patch(set, "siteSettings", { catChosenName: data }),
 		markSettingsLoaded: () => patch(set, "siteSettings", { isLoaded: true }),
 	},
 });
@@ -522,7 +540,9 @@ export default useAppStore;
  *   return <Router />;
  * }
  */
-export function useAppStoreInitialization(onUserContext?: (name: string) => void): void {
+export function useAppStoreInitialization(
+	onUserContext?: (name: string) => void,
+): void {
 	const initUser = useAppStore((s) => s.userActions.initializeFromStorage);
 	const initTheme = useAppStore((s) => s.uiActions.initializeTheme);
 

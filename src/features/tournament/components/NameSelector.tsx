@@ -40,7 +40,11 @@ import {
 	ZoomIn,
 } from "@/shared/lib/icons";
 import { api } from "@/shared/services/apiClient";
-import { coreAPI, hiddenNamesAPI, isUsingFallbackData } from "@/shared/services/supabase/api";
+import {
+	coreAPI,
+	hiddenNamesAPI,
+	isUsingFallbackData,
+} from "@/shared/services/supabase/api";
 import { resolveSupabaseClient } from "@/shared/services/supabase/client";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { IdType, NameItem } from "@/shared/types";
@@ -52,7 +56,9 @@ const SWIPE_VELOCITY_THRESHOLD = 500;
 // Smart tooltip positioning hook - positions tooltip on the best side
 function useSmartTooltip() {
 	const tooltipRef = useRef<HTMLDivElement>(null);
-	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">("top");
+	const [tooltipPosition, setTooltipPosition] = useState<"top" | "bottom">(
+		"top",
+	);
 
 	const measureTooltip = useCallback(() => {
 		if (!tooltipRef.current) {
@@ -95,7 +101,7 @@ const useDeferredSync = () => {
 	const deferredSync = useCallback((syncFn: () => void) => {
 		setTimeout(syncFn, 0);
 	}, []);
-	
+
 	return deferredSync;
 };
 
@@ -118,41 +124,53 @@ const SelectionBadge = () => (
 );
 
 // Name content component
-const NameContent = ({ nameItem, variant = "grid" }: { nameItem: NameItem; variant?: "grid" | "swipe" }) => {
+const NameContent = ({
+	nameItem,
+	variant = "grid",
+}: {
+	nameItem: NameItem;
+	variant?: "grid" | "swipe";
+}) => {
 	const isGrid = variant === "grid";
 	const nameClasses = isGrid
 		? "mobile-readable-title font-bold text-foreground text-sm sm:text-base leading-tight drop-shadow-lg"
 		: "font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center";
-	
+
 	const pronunciationClasses = isGrid
 		? "mobile-readable-meta text-warning/90 text-xs sm:text-sm leading-tight font-bold italic drop-shadow-md"
 		: "text-warning text-2xl lg:text-3xl font-bold italic opacity-90";
-	
+
 	const descriptionClasses = isGrid
 		? "mobile-readable-description text-foreground/85 text-xs sm:text-sm leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium"
 		: "text-foreground/90 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center";
 
 	return (
 		<>
-			<span className={nameClasses}>
-				{nameItem.name}
-			</span>
+			<span className={nameClasses}>{nameItem.name}</span>
 			{nameItem.pronunciation && (
-				<span className={isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`}>
+				<span
+					className={
+						isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`
+					}
+				>
 					[{nameItem.pronunciation}]
 				</span>
 			)}
 			{nameItem.description && (
-				<p className={descriptionClasses}>
-					{nameItem.description}
-				</p>
+				<p className={descriptionClasses}>{nameItem.description}</p>
 			)}
 		</>
 	);
 };
 
 // Zoom button component
-const ZoomButton = ({ nameId, onClick }: { nameId: IdType; onClick: (id: IdType) => void }) => (
+const ZoomButton = ({
+	nameId,
+	onClick,
+}: {
+	nameId: IdType;
+	onClick: (id: IdType) => void;
+}) => (
 	<button
 		type="button"
 		onClick={(e) => {
@@ -167,21 +185,21 @@ const ZoomButton = ({ nameId, onClick }: { nameId: IdType; onClick: (id: IdType)
 );
 
 // Admin action button component
-const AdminActionButton = ({ 
-	nameItem, 
-	actionType, 
-	isProcessing, 
-	onClick 
-}: { 
-	nameItem: NameItem; 
-	actionType: "toggle-hidden" | "toggle-locked"; 
-	isProcessing: boolean; 
-	onClick: () => void; 
+const AdminActionButton = ({
+	nameItem,
+	actionType,
+	isProcessing,
+	onClick,
+}: {
+	nameItem: NameItem;
+	actionType: "toggle-hidden" | "toggle-locked";
+	isProcessing: boolean;
+	onClick: () => void;
 }) => {
 	const isHidden = actionType === "toggle-hidden";
 	const isLocked = actionType === "toggle-locked";
 	const isEnabled = isHidden ? isNameHidden(nameItem) : isNameLocked(nameItem);
-	
+
 	const buttonClasses = `flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
 		isHidden
 			? isEnabled
@@ -219,26 +237,30 @@ const AdminActionButton = ({
 				</>
 			)}
 		</motion.button>
-);
+	);
 };
 
 // Card styles utility
 const getCardStyles = (isSelected: boolean, isLocked: boolean) => {
-	const baseClasses = "mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
+	const baseClasses =
+		"mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
 	const selectedClasses = isSelected
 		? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl shadow-primary/20 ring-4 ring-primary/30 scale-[1.02] z-10"
 		: "border-border/20 bg-gradient-to-br from-foreground/5 to-foreground/0 hover:border-border/40 hover:bg-gradient-to-br hover:from-foreground/10 hover:to-foreground/5 hover:shadow-xl hover:shadow-foreground/10";
 	const lockedClasses = isLocked ? "opacity-60 cursor-not-allowed" : "";
-	
+
 	return `${baseClasses} ${selectedClasses} ${lockedClasses}`;
 };
 
 // Name overlay styles utility
 const getNameOverlayClasses = (variant: "grid" | "swipe") => {
-	const baseClasses = "absolute flex flex-col justify-center items-center text-center pointer-events-none";
-	const gridClasses = "inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent";
-	const swipeClasses = "inset-0 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
-	
+	const baseClasses =
+		"absolute flex flex-col justify-center items-center text-center pointer-events-none";
+	const gridClasses =
+		"inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent";
+	const swipeClasses =
+		"inset-0 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
+
 	return `${baseClasses} ${variant === "grid" ? gridClasses : swipeClasses}`;
 };
 
@@ -250,7 +272,9 @@ export function NameSelector() {
 	const userName = useAppStore((state) => state.user.name);
 	const tournamentActions = useAppStore((state) => state.tournamentActions);
 	const [swipedIds, setSwipedIds] = useState<Set<IdType>>(new Set());
-	const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(null);
+	const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(
+		null,
+	);
 	const [dragOffset, setDragOffset] = useState(0);
 	const [names, setNames] = useState<NameItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -273,7 +297,9 @@ export function NameSelector() {
 
 	// Memoize cat images and build an id->image lookup map
 	const { catImages, catImageById } = useMemo(() => {
-		const images = names.map((nameItem) => getRandomCatImage(nameItem.id, CAT_IMAGES));
+		const images = names.map((nameItem) =>
+			getRandomCatImage(nameItem.id, CAT_IMAGES),
+		);
 		const byId = new Map<IdType, string>();
 		names.forEach((nameItem, index) => {
 			const img = images[index];
@@ -318,7 +344,10 @@ export function NameSelector() {
 							);
 						}
 
-						console.warn("Backend probe failed but Supabase fallback is configured:", probeError);
+						console.warn(
+							"Backend probe failed but Supabase fallback is configured:",
+							probeError,
+						);
 					}
 				}
 				setNames(fetchedNames);
@@ -326,7 +355,8 @@ export function NameSelector() {
 				setRetryCount(0); // Reset retry count on success
 			} catch (error) {
 				console.error("Failed to fetch names:", error);
-				const errorMessage = error instanceof Error ? error.message : "Failed to load names";
+				const errorMessage =
+					error instanceof Error ? error.message : "Failed to load names";
 				setError(errorMessage);
 
 				// Auto-retry for network errors (max 3 retries)
@@ -434,14 +464,20 @@ export function NameSelector() {
 		[],
 	);
 
-	const markSwiped = useCallback((nameId: IdType, direction: "left" | "right") => {
-		setSwipedIds((prev) => {
-			const next = new Set(prev);
-			next.add(nameId);
-			return next;
-		});
-		setSwipeHistory((prev) => [...prev, { id: nameId, direction, timestamp: Date.now() }]);
-	}, []);
+	const markSwiped = useCallback(
+		(nameId: IdType, direction: "left" | "right") => {
+			setSwipedIds((prev) => {
+				const next = new Set(prev);
+				next.add(nameId);
+				return next;
+			});
+			setSwipeHistory((prev) => [
+				...prev,
+				{ id: nameId, direction, timestamp: Date.now() },
+			]);
+		},
+		[],
+	);
 
 	const handleSwipe = useCallback(
 		(nameId: IdType, direction: "left" | "right", velocity: number = 0) => {
@@ -490,7 +526,8 @@ export function NameSelector() {
 			}
 
 			// Determine direction based on offset and velocity
-			const isRightSwipe = offset > SWIPE_OFFSET_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD;
+			const isRightSwipe =
+				offset > SWIPE_OFFSET_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD;
 			const direction = isRightSwipe ? "right" : "left";
 
 			updateDragState(0, direction);
@@ -549,7 +586,9 @@ export function NameSelector() {
 					try {
 						const client = await resolveSupabaseClient();
 						if (client) {
-							await client.rpc("set_user_context", { user_name_param: userName.trim() });
+							await client.rpc("set_user_context", {
+								user_name_param: userName.trim(),
+							});
 						}
 					} catch {
 						/* ignore */
@@ -570,7 +609,9 @@ export function NameSelector() {
 
 				const fetchedNames = await coreAPI.getTrendingNames(true);
 				setNames(fetchedNames);
-				toast.showSuccess(isCurrentlyHidden ? "Name is visible again." : "Name is now hidden.");
+				toast.showSuccess(
+					isCurrentlyHidden ? "Name is visible again." : "Name is now hidden.",
+				);
 			} catch (error) {
 				console.error("Failed to toggle hidden status:", error);
 				const detail = error instanceof Error ? error.message : "Unknown error";
@@ -601,7 +642,9 @@ export function NameSelector() {
 			try {
 				const result = await withSupabase(async (client) => {
 					try {
-						await client.rpc("set_user_context", { user_name_param: userName.trim() });
+						await client.rpc("set_user_context", {
+							user_name_param: userName.trim(),
+						});
 					} catch {
 						/* ignore */
 					}
@@ -610,9 +653,15 @@ export function NameSelector() {
 						p_name_id: String(nameId),
 						p_locked_in: !isCurrentlyLocked,
 					};
-					let rpcResult = await client.rpc("toggle_name_locked_in", canonicalArgs);
+					let rpcResult = await client.rpc(
+						"toggle_name_locked_in",
+						canonicalArgs,
+					);
 
-					if (rpcResult.error && isRpcSignatureError(rpcResult.error.message || "")) {
+					if (
+						rpcResult.error &&
+						isRpcSignatureError(rpcResult.error.message || "")
+					) {
 						rpcResult = await client.rpc("toggle_name_locked_in", {
 							...canonicalArgs,
 							p_user_name: userName.trim(),
@@ -620,7 +669,9 @@ export function NameSelector() {
 					}
 
 					if (rpcResult.error) {
-						throw new Error(rpcResult.error.message || "Failed to toggle locked status");
+						throw new Error(
+							rpcResult.error.message || "Failed to toggle locked status",
+						);
 					}
 					if (rpcResult.data !== true) {
 						throw new Error("Failed to toggle locked status");
@@ -631,7 +682,9 @@ export function NameSelector() {
 				if (result) {
 					const fetchedNames = await coreAPI.getTrendingNames(true);
 					setNames(fetchedNames);
-					toast.showSuccess(isCurrentlyLocked ? "Name unlocked." : "Name locked in.");
+					toast.showSuccess(
+						isCurrentlyLocked ? "Name unlocked." : "Name locked in.",
+					);
 				}
 			} catch (error) {
 				console.error("Failed to toggle locked status:", error);
@@ -695,7 +748,10 @@ export function NameSelector() {
 			return matchesNameSearchTerm(name, hiddenQuery);
 		});
 	}, [hiddenNamesAll, hiddenQuery, hiddenShowSelectedOnly, selectedNames]);
-	const previewItems = useMemo(() => hiddenNamesAll.slice(0, 6), [hiddenNamesAll]);
+	const previewItems = useMemo(
+		() => hiddenNamesAll.slice(0, 6),
+		[hiddenNamesAll],
+	);
 	const renderItems = useMemo(
 		() => hiddenFiltered.slice(0, hiddenRenderCount),
 		[hiddenFiltered, hiddenRenderCount],
@@ -821,7 +877,9 @@ export function NameSelector() {
 			pool[j] = temp as NameItem;
 		}
 
-		const randomIds = new Set(pool.slice(0, targetCount).map((name) => name.id));
+		const randomIds = new Set(
+			pool.slice(0, targetCount).map((name) => name.id),
+		);
 		setSelectedNames((prev) => {
 			const next = new Set(prev);
 			randomIds.forEach((id) => {
@@ -833,7 +891,13 @@ export function NameSelector() {
 		});
 		triggerHaptic();
 		toast.showSuccess(`Added ${targetCount} random names.`);
-	}, [availableNames, syncSelectionToStore, toast, triggerHaptic, deferredSync]);
+	}, [
+		availableNames,
+		syncSelectionToStore,
+		toast,
+		triggerHaptic,
+		deferredSync,
+	]);
 
 	if (isLoading) {
 		return (
@@ -853,7 +917,11 @@ export function NameSelector() {
 						<p className="text-lg font-medium">Failed to load names</p>
 						<p className="text-sm opacity-75 mt-1">{error}</p>
 					</div>
-					<Button onClick={() => setRetryCount((prev) => prev + 1)} variant="glass" size="small">
+					<Button
+						onClick={() => setRetryCount((prev) => prev + 1)}
+						variant="glass"
+						size="small"
+					>
 						Try Again
 					</Button>
 				</div>
@@ -895,13 +963,17 @@ export function NameSelector() {
 										>
 											{nameItem.pronunciation && (
 												<div className="name-lock-tooltip__header">
-													<div className="name-lock-tooltip__label">Pronunciation</div>
+													<div className="name-lock-tooltip__label">
+														Pronunciation
+													</div>
 													<div className="name-lock-tooltip__pronunciation">
 														{nameItem.pronunciation}
 													</div>
 												</div>
 											)}
-											<div className="name-lock-tooltip__body">{nameItem.description}</div>
+											<div className="name-lock-tooltip__body">
+												{nameItem.description}
+											</div>
 											<div className="name-lock-tooltip__arrow" />
 										</div>
 									)}
@@ -928,18 +1000,24 @@ export function NameSelector() {
 										setSwipeMode(!isSwipeMode);
 									}}
 									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border/20 bg-foreground/5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-									aria-label={isSwipeMode ? "Switch to grid mode" : "Switch to swipe mode"}
+									aria-label={
+										isSwipeMode ? "Switch to grid mode" : "Switch to swipe mode"
+									}
 								>
 									{isSwipeMode ? "Swipe" : "Grid"}
 								</button>
-								<span className="tabular-nums font-mono">{selectedAvailableCount}/{availableNames.length}</span>
+								<span className="tabular-nums font-mono">
+									{selectedAvailableCount}/{availableNames.length}
+								</span>
 							</div>
 						</div>
 						<div className="w-full h-1.5 sm:h-2 bg-border/20 rounded-full overflow-hidden">
 							<motion.div
 								className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
 								initial={{ width: 0 }}
-								animate={{ width: `${(selectedAvailableCount / Math.max(availableNames.length, 1)) * 100}%` }}
+								animate={{
+									width: `${(selectedAvailableCount / Math.max(availableNames.length, 1)) * 100}%`,
+								}}
 								transition={{ duration: 0.5, ease: "easeOut" }}
 							/>
 						</div>
@@ -957,7 +1035,12 @@ export function NameSelector() {
 					<div className="flex items-center justify-center">
 						{isSwipeMode && swipeHistory.length > 0 ? (
 							<div className="flex items-center gap-3">
-								<Button onClick={handleUndo} variant="outline" size="small" className="gap-2 border-warning/20 text-warning hover:bg-warning/10 hover:border-warning">
+								<Button
+									onClick={handleUndo}
+									variant="outline"
+									size="small"
+									className="gap-2 border-warning/20 text-warning hover:bg-warning/10 hover:border-warning"
+								>
 									<Undo2 size={14} />
 									Undo ({swipeHistory.length})
 								</Button>
@@ -975,10 +1058,10 @@ export function NameSelector() {
 									All
 								</Button>
 								<div className="hidden sm:block w-px h-4 bg-border/30" />
-								<Button 
-									variant="ghost" 
-									size="sm" 
-									onClick={handleSelectRandomAvailable} 
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleSelectRandomAvailable}
 									className="gap-1.5 h-8 px-2.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium hover:bg-accent/50 transition-colors"
 								>
 									<Shuffle size={14} />
@@ -1000,7 +1083,7 @@ export function NameSelector() {
 					</div>
 				</div>
 
-			{isSwipeMode ? (
+				{isSwipeMode ? (
 					<>
 						<div
 							className="relative w-full flex items-center justify-center"
@@ -1010,7 +1093,8 @@ export function NameSelector() {
 								{visibleCards.length > 0 ? (
 									cardsToRender.map((nameItem, index) => {
 										const catImage =
-											catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+											catImageById.get(nameItem.id) ??
+											getRandomCatImage(nameItem.id, CAT_IMAGES);
 										return (
 											<motion.div
 												key={nameItem.id}
@@ -1051,8 +1135,8 @@ export function NameSelector() {
 														scale: 1.02,
 														transition: { duration: 0.15 },
 													}}
-												className="w-full max-w-md"
-												style={{ height: "min(65dvh, 500px)" }}
+													className="w-full max-w-md"
+													style={{ height: "min(65dvh, 500px)" }}
 												>
 													<Card
 														className={`relative overflow-hidden group transition-all duration-200 h-full ${
@@ -1078,7 +1162,10 @@ export function NameSelector() {
 																	}}
 																>
 																	<div className="flex items-center gap-2 px-6 py-3 bg-destructive/90 backdrop-blur-md rounded-full border-2 border-destructive shadow-lg rotate-[-20deg]">
-																		<X size={24} className="text-destructive-foreground" />
+																		<X
+																			size={24}
+																			className="text-destructive-foreground"
+																		/>
 																		<span className="text-destructive-foreground font-black text-lg uppercase">
 																			Nope
 																		</span>
@@ -1133,7 +1220,10 @@ export function NameSelector() {
 															{/* Name and Info Overlay */}
 															<div className={getNameOverlayClasses("swipe")}>
 																<div className="flex flex-col gap-1.5 max-w-full">
-																	<NameContent nameItem={nameItem} variant="swipe" />
+																	<NameContent
+																		nameItem={nameItem}
+																		variant="swipe"
+																	/>
 																</div>
 
 																{isAdmin && (
@@ -1144,7 +1234,8 @@ export function NameSelector() {
 																			requestAdminAction({
 																				type: "toggle-hidden",
 																				nameId: nameItem.id,
-																				isCurrentlyEnabled: isNameHidden(nameItem),
+																				isCurrentlyEnabled:
+																					isNameHidden(nameItem),
 																			});
 																		}}
 																		disabled={togglingHidden.has(nameItem.id)}
@@ -1176,7 +1267,10 @@ export function NameSelector() {
 																{selectedNames.has(nameItem.id) && (
 																	<div className="flex mt-4">
 																		<div className="px-4 py-1.5 bg-success/30 backdrop-blur-md border border-success/40 rounded-full flex items-center gap-2 shadow-lg shadow-success/20">
-																			<Check size={16} className="text-success" />
+																			<Check
+																				size={16}
+																				className="text-success"
+																			/>
 																			<span className="text-success font-black text-xs tracking-[0.2em] uppercase">
 																				Selected
 																			</span>
@@ -1192,7 +1286,7 @@ export function NameSelector() {
 									})
 								) : (
 									<div className="absolute inset-0 flex items-center justify-center">
-										<motion.div 
+										<motion.div
 											initial={{ opacity: 0, y: 20 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ duration: 0.6, ease: "easeOut" }}
@@ -1201,17 +1295,27 @@ export function NameSelector() {
 											<motion.div
 												initial={{ scale: 0 }}
 												animate={{ scale: 1 }}
-												transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 25 }}
+												transition={{
+													delay: 0.2,
+													type: "spring",
+													stiffness: 400,
+													damping: 25,
+												}}
 												className="mx-auto w-20 h-20 bg-gradient-to-br from-success to-success/80 rounded-full flex items-center justify-center shadow-xl shadow-success/30"
 											>
-												<Check size={40} className="text-success-foreground" strokeWidth={3} />
+												<Check
+													size={40}
+													className="text-success-foreground"
+													strokeWidth={3}
+												/>
 											</motion.div>
 											<div className="space-y-3">
 												<h2 className="text-3xl sm:text-4xl font-bold text-foreground">
 													All done!
 												</h2>
 												<p className="text-muted-foreground text-lg leading-relaxed">
-													You've reviewed all names. Ready to start the tournament?
+													You've reviewed all names. Ready to start the
+													tournament?
 												</p>
 											</div>
 											<motion.div
@@ -1223,7 +1327,7 @@ export function NameSelector() {
 												<Button
 													onClick={() => {
 														// Navigate to tournament or next step
-														window.location.href = '/tournament';
+														window.location.href = "/tournament";
 													}}
 													className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-105 active:scale-95"
 												>
@@ -1262,7 +1366,9 @@ export function NameSelector() {
 										</div>
 									</Button>
 									<div className="text-center mt-2">
-										<span className="text-xs text-muted-foreground font-medium">Skip</span>
+										<span className="text-xs text-muted-foreground font-medium">
+											Skip
+										</span>
 									</div>
 								</motion.div>
 
@@ -1285,9 +1391,9 @@ export function NameSelector() {
 										title="Select (Right Arrow)"
 									>
 										<div className="relative">
-											<Heart 
-												size={28} 
-												className="sm:size-8" 
+											<Heart
+												size={28}
+												className="sm:size-8"
 												strokeWidth={2.5}
 												fill="currentColor"
 											/>
@@ -1295,7 +1401,9 @@ export function NameSelector() {
 										</div>
 									</Button>
 									<div className="text-center mt-2">
-										<span className="text-xs text-muted-foreground font-medium">Select</span>
+										<span className="text-xs text-muted-foreground font-medium">
+											Select
+										</span>
 									</div>
 								</motion.div>
 							</div>
@@ -1311,7 +1419,8 @@ export function NameSelector() {
 										{activeNames.map((nameItem) => {
 											const isSelected = selectedNames.has(nameItem.id);
 											const catImage =
-												catImageById.get(nameItem.id) ?? getRandomCatImage(nameItem.id, CAT_IMAGES);
+												catImageById.get(nameItem.id) ??
+												getRandomCatImage(nameItem.id, CAT_IMAGES);
 											return (
 												<motion.div
 													key={nameItem.id}
@@ -1326,8 +1435,15 @@ export function NameSelector() {
 													tabIndex={0}
 													whileHover={{ scale: 1.03, y: -2 }}
 													whileTap={{ scale: 0.97 }}
-													transition={{ type: "spring", stiffness: 400, damping: 25 }}
-													className={getCardStyles(isSelected, isNameLocked(nameItem))}
+													transition={{
+														type: "spring",
+														stiffness: 400,
+														damping: 25,
+													}}
+													className={getCardStyles(
+														isSelected,
+														isNameLocked(nameItem),
+													)}
 												>
 													<div className="w-full relative aspect-[5/4] sm:aspect-[4/3] group/img">
 														<CatImage
@@ -1344,12 +1460,18 @@ export function NameSelector() {
 														{/* Enhanced Name Overlay */}
 														<div className={getNameOverlayClasses("grid")}>
 															<div className="flex flex-col gap-1.5 max-w-full">
-																<NameContent nameItem={nameItem} variant="grid" />
+																<NameContent
+																	nameItem={nameItem}
+																	variant="grid"
+																/>
 															</div>
 														</div>
 
 														{/* Enhanced Zoom Button */}
-														<ZoomButton nameId={nameItem.id} onClick={handleOpenLightbox} />
+														<ZoomButton
+															nameId={nameItem.id}
+															onClick={handleOpenLightbox}
+														/>
 													</div>
 													{isAdmin && !isSwipeMode && (
 														<motion.div
@@ -1362,22 +1484,26 @@ export function NameSelector() {
 																nameItem={nameItem}
 																actionType="toggle-hidden"
 																isProcessing={togglingHidden.has(nameItem.id)}
-																onClick={() => requestAdminAction({
-																	type: "toggle-hidden",
-																	nameId: nameItem.id,
-																	isCurrentlyEnabled: isNameHidden(nameItem),
-																})}
+																onClick={() =>
+																	requestAdminAction({
+																		type: "toggle-hidden",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled: isNameHidden(nameItem),
+																	})
+																}
 															/>
 
 															<AdminActionButton
 																nameItem={nameItem}
 																actionType="toggle-locked"
 																isProcessing={togglingLocked.has(nameItem.id)}
-																onClick={() => requestAdminAction({
-																	type: "toggle-locked",
-																	nameId: nameItem.id,
-																	isCurrentlyEnabled: isNameLocked(nameItem),
-																})}
+																onClick={() =>
+																	requestAdminAction({
+																		type: "toggle-locked",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled: isNameLocked(nameItem),
+																	})
+																}
 															/>
 														</motion.div>
 													)}
@@ -1432,14 +1558,18 @@ export function NameSelector() {
 												</span>
 											</div>
 											<span className="text-[11px] sm:text-xs text-muted-foreground">
-												{hiddenPanel.isCollapsed ? "Click to expand" : "Click to collapse"}
+												{hiddenPanel.isCollapsed
+													? "Click to expand"
+													: "Click to collapse"}
 											</span>
 										</button>
 
 										{hiddenPanel.isCollapsed && (
 											<div className="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
 												{previewItems.map((n) => {
-													const img = catImageById.get(n.id) ?? getRandomCatImage(n.id, CAT_IMAGES);
+													const img =
+														catImageById.get(n.id) ??
+														getRandomCatImage(n.id, CAT_IMAGES);
 													return (
 														<div
 															key={n.id}
@@ -1463,7 +1593,10 @@ export function NameSelector() {
 										)}
 									</div>
 
-									<CollapsibleContent id="hidden-names-panel" isCollapsed={hiddenPanel.isCollapsed}>
+									<CollapsibleContent
+										id="hidden-names-panel"
+										isCollapsed={hiddenPanel.isCollapsed}
+									>
 										<div className="mt-4">
 											<div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-3">
 												<input
@@ -1551,7 +1684,10 @@ export function NameSelector() {
 																					animate={{ scale: 1, opacity: 1 }}
 																					className="shrink-0 size-4 bg-primary rounded-full flex items-center justify-center shadow-md"
 																				>
-																					<Check size={10} className="text-primary-foreground" />
+																					<Check
+																						size={10}
+																						className="text-primary-foreground"
+																					/>
 																				</motion.div>
 																			)}
 																		</div>
@@ -1606,7 +1742,10 @@ export function NameSelector() {
 																			</div>
 																		) : (
 																			<>
-																				<Eye size={12} className="mr-1 inline" />
+																				<Eye
+																					size={12}
+																					className="mr-1 inline"
+																				/>
 																				Unhide
 																			</>
 																		)}

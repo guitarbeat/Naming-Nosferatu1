@@ -4,12 +4,17 @@
  * Uses the shared useNameSuggestion hook for consistent submission logic.
  */
 
-import { useCallback, useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
+import { useCallback, useEffect, useId, useRef } from "react";
+import {
+	Button,
+	Input,
+	LiquidGlass,
+	Textarea,
+} from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
-import { CheckCircle, Lightbulb, PartyPopper, X } from "@/shared/lib/icons";
+import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";
 
 // ============================================================================
 // TYPES
@@ -29,19 +34,22 @@ interface NameSuggestionProps {
 // ============================================================================
 
 export function NameSuggestionInner() {
-	const { values, isSubmitting, handleChange, handleSubmit, globalError, successMessage } =
-		useNameSuggestion();
+	const {
+		values,
+		isSubmitting,
+		handleChange,
+		handleSubmit,
+		globalError,
+		successMessage,
+	} = useNameSuggestion();
 
 	const handleLocalSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		await handleSubmit();
 	};
 
-	// Calculate form completion progress
-	const nameProgress = Math.min((values.name.length / 50) * 100, 100);
-	const descriptionProgress = Math.min((values.description.length / 500) * 100, 100);
-	const overallProgress = (nameProgress + descriptionProgress) / 2;
-	const isFormComplete = values.name.trim().length > 0 && values.description.trim().length > 0;
+	const isFormComplete =
+		values.name.trim().length > 0 && values.description.trim().length > 0;
 
 	return (
 		<form onSubmit={handleLocalSubmit} className="w-full max-w-4xl mx-auto">
@@ -64,7 +72,6 @@ export function NameSuggestionInner() {
 
 				{/* Main Content Container */}
 				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-border/20 shadow-2xl p-4 sm:p-8 md:p-12">
-					
 					{/* Header - compact on mobile */}
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -75,13 +82,22 @@ export function NameSuggestionInner() {
 						<motion.div
 							initial={{ scale: 0 }}
 							animate={{ scale: 1 }}
-							transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 25 }}
+							transition={{
+								delay: 0.2,
+								type: "spring",
+								stiffness: 400,
+								damping: 25,
+							}}
 							className="inline-flex mx-auto items-center gap-2 sm:gap-3 rounded-full border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 px-4 sm:px-6 py-2 sm:py-3 mb-3 sm:mb-6"
 						>
 							<Lightbulb size={16} className="text-primary sm:hidden" />
 							<motion.div
 								animate={{ rotate: [0, 10, -10, 0] }}
-								transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+								transition={{
+									duration: 2,
+									repeat: Infinity,
+									ease: "easeInOut",
+								}}
 								className="hidden sm:block"
 							>
 								<Lightbulb size={20} className="text-primary" />
@@ -90,7 +106,7 @@ export function NameSuggestionInner() {
 								Submit A Name
 							</span>
 						</motion.div>
-						
+
 						<motion.h1
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -99,7 +115,7 @@ export function NameSuggestionInner() {
 						>
 							Drop Your Best Cat Name
 						</motion.h1>
-						
+
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -110,37 +126,19 @@ export function NameSuggestionInner() {
 						</motion.p>
 					</motion.div>
 
-					{/* Progress Indicator - hidden on mobile */}
-					<motion.div
-						initial={{ opacity: 0, width: 0 }}
-						animate={{ opacity: 1, width: "100%" }}
-						transition={{ delay: 0.5, duration: 0.8 }}
-						className="mb-6 sm:mb-8 hidden sm:block"
-					>
-						<div className="flex items-center justify-between mb-2">
-							<span className="text-sm font-medium text-foreground/70">Form Progress</span>
-							<span className="text-sm font-bold text-primary">{Math.round(overallProgress)}%</span>
-						</div>
-						<div className="h-2 bg-foreground/10 rounded-full overflow-hidden">
-							<motion.div
-								initial={{ width: 0 }}
-								animate={{ width: `${overallProgress}%` }}
-								transition={{ duration: 0.5, ease: "easeOut" }}
-								className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-							/>
-						</div>
-					</motion.div>
-
 					{/* Form Fields */}
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.6, duration: 0.6 }}
-						className="space-y-5 sm:space-y-8"
+						className="space-y-5 sm:space-y-8 mt-6 sm:mt-8"
 					>
 						{/* Name Input */}
 						<div className="space-y-2 sm:space-y-3">
-							<label htmlFor="suggest-name" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+							<label
+								htmlFor="suggest-name"
+								className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+							>
 								<span className="w-2 h-2 bg-primary rounded-full" />
 								Name suggestion
 								<span className="text-destructive">*</span>
@@ -173,7 +171,10 @@ export function NameSuggestionInner() {
 						{/* Description Textarea */}
 						<div className="space-y-2 sm:space-y-3">
 							<div className="flex items-center justify-between gap-2">
-								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+								<label
+									htmlFor="suggest-description"
+									className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+								>
 									<span className="w-2 h-2 bg-accent rounded-full" />
 									Why this name?
 									<span className="text-destructive">*</span>
@@ -195,16 +196,17 @@ export function NameSuggestionInner() {
 									id="suggest-description"
 									value={values.description}
 									onChange={(e) => handleChange("description", e.target.value)}
-								placeholder="Why is this name special?"
-								rows={3}
-								className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
+									placeholder="Why is this name special?"
+									rows={3}
+									className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
 									disabled={isSubmitting}
 									maxLength={500}
 									showCount={false}
 								/>
 							</motion.div>
 							<p className="text-xs text-muted-foreground italic">
-								Help voters understand the vibe and personality behind your suggestion
+								Help voters understand the vibe and personality behind your
+								suggestion
 							</p>
 						</div>
 
@@ -217,7 +219,8 @@ export function NameSuggestionInner() {
 						>
 							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 								<p className="text-sm text-muted-foreground">
-									Your suggestion will be added to the shared discovery pool for everyone to enjoy
+									Your suggestion will be added to the shared discovery pool for
+									everyone to enjoy
 								</p>
 								<motion.div
 									whileHover={{ scale: 1.05, y: -2 }}
@@ -255,7 +258,7 @@ export function NameSuggestionInner() {
 								</div>
 							</motion.div>
 						)}
-						
+
 						{successMessage && (
 							<motion.div
 								initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -422,7 +425,10 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 					</div>
 
 					<div className="p-6">
-						<p id="suggest-name-description" className="text-sm text-muted-foreground mb-6">
+						<p
+							id="suggest-name-description"
+							className="text-sm text-muted-foreground mb-6"
+						>
 							Help us expand the list by suggesting new cat names!
 						</p>
 
@@ -483,7 +489,12 @@ function ModalNameSuggestion({ isOpen, onClose }: ModalNameSuggestionProps) {
 							)}
 
 							<div className="flex justify-end gap-3 mt-4 pt-4 border-t border-border">
-								<Button type="button" variant="ghost" onClick={handleClose} disabled={isSubmitting}>
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={handleClose}
+									disabled={isSubmitting}
+								>
 									Cancel
 								</Button>
 								<Button

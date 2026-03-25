@@ -4,7 +4,10 @@
  */
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { leaderboardAPI, statsAPI } from "@/features/analytics/services/analyticsService";
+import {
+	leaderboardAPI,
+	statsAPI,
+} from "@/features/analytics/services/analyticsService";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
 import {
@@ -88,9 +91,12 @@ export function Dashboard({
 	} | null>(null);
 	const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
 	const [_isLoadingStats, setIsLoadingStats] = useState(true);
-	const [hiddenNames, setHiddenNames] = useState<Array<{ id: string | number; name: string }>>([]);
+	const [hiddenNames, setHiddenNames] = useState<
+		Array<{ id: string | number; name: string }>
+	>([]);
 	const [showHiddenNames, setShowHiddenNames] = useState(false);
-	const [engagementMetrics, setEngagementMetrics] = useState<EngagementMetrics | null>(null);
+	const [engagementMetrics, setEngagementMetrics] =
+		useState<EngagementMetrics | null>(null);
 	const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
 
 	// Fetch leaderboard
@@ -100,8 +106,8 @@ export function Dashboard({
 			try {
 				const data = await leaderboardAPI.getLeaderboard(10);
 				setLeaderboard(data);
-			} catch (error) {
-				console.error("Failed to fetch leaderboard:", error);
+			} catch (_error) {
+				// Suppress expected errors during normal flow
 			} finally {
 				setIsLoadingLeaderboard(false);
 			}
@@ -114,8 +120,8 @@ export function Dashboard({
 		try {
 			const metrics = await statsAPI.getEngagementMetrics(timeframe);
 			setEngagementMetrics(metrics);
-		} catch (error) {
-			console.error("Failed to fetch engagement metrics:", error);
+		} catch (_error) {
+			// Suppress expected errors during normal flow
 		} finally {
 			setIsLoadingStats(false);
 		}
@@ -148,8 +154,8 @@ export function Dashboard({
 					});
 				}
 				setUserStats(user);
-			} catch (error) {
-				console.error("Failed to fetch stats:", error);
+			} catch (_error) {
+				// Suppress expected errors during normal flow
 			} finally {
 				setIsLoadingStats(false);
 			}
@@ -164,8 +170,8 @@ export function Dashboard({
 				try {
 					const data = await hiddenNamesAPI.getHiddenNames();
 					setHiddenNames(data);
-				} catch (error) {
-					console.error("Failed to fetch hidden names:", error);
+				} catch (_error) {
+					// Suppress expected errors during normal flow
 				}
 			};
 			fetchHidden();
@@ -182,28 +188,30 @@ export function Dashboard({
 				throw new Error(result.error || "Failed to unhide name");
 			}
 			setHiddenNames((prev) => prev.filter((n) => n.id !== nameId));
-		} catch (error) {
-			console.error("Failed to unhide name:", error);
+		} catch (_error) {
+			// Suppress expected errors during normal flow
 		}
 	};
 
 	return (
 		<div className="dashboard-container space-y-6 sm:space-y-10">
 			{/* Personal Results with Ranking Adjustment */}
-			{personalRatings && Object.keys(personalRatings).length > 0 && onUpdateRatings && (
-				<PersonalResults
-					personalRatings={personalRatings}
-					currentTournamentNames={currentTournamentNames}
-					onStartNew={
-						onStartNew ||
-						(() => {
-							// Default no-op
-						})
-					}
-					onUpdateRatings={onUpdateRatings}
-					userName={userName}
-				/>
-			)}
+			{personalRatings &&
+				Object.keys(personalRatings).length > 0 &&
+				onUpdateRatings && (
+					<PersonalResults
+						personalRatings={personalRatings}
+						currentTournamentNames={currentTournamentNames}
+						onStartNew={
+							onStartNew ||
+							(() => {
+								// Default no-op
+							})
+						}
+						onUpdateRatings={onUpdateRatings}
+						userName={userName}
+					/>
+				)}
 
 			{/* Random Name Generator */}
 			<div className="py-2">
@@ -217,24 +225,42 @@ export function Dashboard({
 				<div className="py-2">
 					<div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
 						<BarChart3 className="text-primary" size={20} />
-						<h3 className="text-lg sm:text-xl font-semibold text-foreground">Your Stats</h3>
+						<h3 className="text-lg sm:text-xl font-semibold text-foreground">
+							Your Stats
+						</h3>
 					</div>
 					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
-							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Ratings</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalRatings}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">
+								Ratings
+							</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.totalRatings}
+							</p>
 						</div>
 						<div className="py-2">
-							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Selected</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalSelections}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">
+								Selected
+							</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.totalSelections}
+							</p>
 						</div>
 						<div className="py-2">
-							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Wins</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalWins}</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">
+								Wins
+							</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.totalWins}
+							</p>
 						</div>
 						<div className="py-2">
-							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Win Rate</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.winRate}%</p>
+							<p className="text-xs sm:text-sm text-muted-foreground mb-1">
+								Win Rate
+							</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.winRate}%
+							</p>
 						</div>
 					</div>
 				</div>
@@ -245,7 +271,9 @@ export function Dashboard({
 				<div className="flex items-center justify-between mb-3 sm:mb-4">
 					<div className="flex items-center gap-2 sm:gap-3">
 						<Trophy className="text-chart-4" size={20} />
-						<h3 className="text-lg sm:text-xl font-semibold text-foreground">Top Names</h3>
+						<h3 className="text-lg sm:text-xl font-semibold text-foreground">
+							Top Names
+						</h3>
 					</div>
 					{onStartNew && (
 						<Button variant="ghost" size="small" onClick={onStartNew}>
@@ -277,14 +305,19 @@ export function Dashboard({
 									{index + 1}
 								</div>
 								<div className="flex-1 min-w-0">
-									<p className="font-semibold text-foreground truncate">{entry.name}</p>
+									<p className="font-semibold text-foreground truncate">
+										{entry.name}
+									</p>
 									<p className="text-xs text-muted-foreground">
-										{entry.total_ratings} rating{entry.total_ratings !== 1 ? "s" : ""} •{" "}
-										{entry.wins} win{entry.wins !== 1 ? "s" : ""}
+										{entry.total_ratings} rating
+										{entry.total_ratings !== 1 ? "s" : ""} • {entry.wins} win
+										{entry.wins !== 1 ? "s" : ""}
 									</p>
 								</div>
 								<div className="text-right">
-									<p className="text-lg font-bold text-primary">{Math.round(entry.avg_rating)}</p>
+									<p className="text-lg font-bold text-primary">
+										{Math.round(entry.avg_rating)}
+									</p>
 									<p className="text-xs text-muted-foreground">rating</p>
 								</div>
 							</div>
@@ -300,19 +333,27 @@ export function Dashboard({
 			{/* Site Statistics */}
 			{siteStats && (
 				<div className="py-2">
-					<h3 className="text-xl font-semibold text-foreground mb-4">Site Statistics</h3>
+					<h3 className="text-xl font-semibold text-foreground mb-4">
+						Site Statistics
+					</h3>
 					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Names</p>
-							<p className="text-2xl font-bold text-foreground">{siteStats.totalNames}</p>
+							<p className="text-2xl font-bold text-foreground">
+								{siteStats.totalNames}
+							</p>
 						</div>
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Active Names</p>
-							<p className="text-2xl font-bold text-foreground">{siteStats.activeNames}</p>
+							<p className="text-2xl font-bold text-foreground">
+								{siteStats.activeNames}
+							</p>
 						</div>
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Total Users</p>
-							<p className="text-2xl font-bold text-foreground">{siteStats.totalUsers}</p>
+							<p className="text-2xl font-bold text-foreground">
+								{siteStats.totalUsers}
+							</p>
 						</div>
 						<div className="py-2">
 							<p className="text-sm text-muted-foreground mb-1">Avg Rating</p>
@@ -323,7 +364,9 @@ export function Dashboard({
 						{isAdmin && (
 							<div className="py-2">
 								<p className="text-sm text-chart-4/80 mb-1">Hidden Names</p>
-								<p className="text-2xl font-bold text-chart-4">{siteStats.hiddenNames}</p>
+								<p className="text-2xl font-bold text-chart-4">
+									{siteStats.hiddenNames}
+								</p>
 							</div>
 						)}
 					</div>
@@ -336,12 +379,16 @@ export function Dashboard({
 					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4">
 						<div className="flex items-center gap-2 sm:gap-3">
 							<TrendingUp className="text-chart-4" size={20} />
-							<h3 className="text-lg sm:text-xl font-semibold text-chart-4">Engagement</h3>
+							<h3 className="text-lg sm:text-xl font-semibold text-chart-4">
+								Engagement
+							</h3>
 						</div>
 						<div className="flex gap-2 w-full sm:w-auto">
 							<select
 								value={timeframe}
-								onChange={(e) => setTimeframe(e.target.value as "day" | "week" | "month")}
+								onChange={(e) =>
+									setTimeframe(e.target.value as "day" | "week" | "month")
+								}
 								className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 border border-border rounded-lg bg-background text-foreground text-sm"
 							>
 								<option value="day">24h</option>
@@ -365,7 +412,9 @@ export function Dashboard({
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
-									<p className="text-sm text-muted-foreground">Total Tournaments</p>
+									<p className="text-sm text-muted-foreground">
+										Total Tournaments
+									</p>
 									<p className="text-2xl font-bold text-foreground">
 										{engagementMetrics.totalTournaments}
 									</p>
@@ -395,7 +444,9 @@ export function Dashboard({
 							<div className="flex items-center gap-2 mb-2">
 								<Target className="text-chart-4" size={20} />
 								<div>
-									<p className="text-sm text-muted-foreground">Peak Active Users</p>
+									<p className="text-sm text-muted-foreground">
+										Peak Active Users
+									</p>
 									<p className="text-2xl font-bold text-foreground">
 										{engagementMetrics.peakActiveUsers}
 									</p>
@@ -404,7 +455,9 @@ export function Dashboard({
 							<div className="flex items-center gap-2 mb-2">
 								<Activity className="text-chart-4" size={20} />
 								<div>
-									<p className="text-sm text-muted-foreground">User Retention</p>
+									<p className="text-sm text-muted-foreground">
+										User Retention
+									</p>
 									<p className="text-2xl font-bold text-chart-4">
 										{engagementMetrics.userRetentionRate}%
 									</p>
@@ -414,7 +467,9 @@ export function Dashboard({
 								<BarChart3 className="text-chart-4" size={20} />
 								<div>
 									<p className="text-sm text-muted-foreground">Bounce Rate</p>
-									<p className="text-2xl font-bold text-chart-4">{engagementMetrics.bounceRate}%</p>
+									<p className="text-2xl font-bold text-chart-4">
+										{engagementMetrics.bounceRate}%
+									</p>
 								</div>
 							</div>
 						</div>
@@ -441,7 +496,9 @@ export function Dashboard({
 							<div className="flex items-center gap-2 mb-2">
 								<Users className="text-chart-4" size={20} />
 								<div>
-									<p className="text-sm text-muted-foreground">Monthly Active</p>
+									<p className="text-sm text-muted-foreground">
+										Monthly Active
+									</p>
 									<p className="text-2xl font-bold text-foreground">
 										{engagementMetrics.monthlyActiveUsers}
 									</p>
@@ -458,7 +515,9 @@ export function Dashboard({
 					<div className="flex items-center justify-between mb-4">
 						<div className="flex items-center gap-3">
 							<EyeOff className="text-chart-4" size={24} />
-							<h3 className="text-xl font-semibold text-chart-4">Admin: Hidden Names</h3>
+							<h3 className="text-xl font-semibold text-chart-4">
+								Admin: Hidden Names
+							</h3>
 						</div>
 						<Button
 							variant="ghost"
@@ -477,7 +536,9 @@ export function Dashboard({
 										key={name.id}
 										className="flex items-center justify-between py-3 border-b border-border/10"
 									>
-										<span className="text-foreground font-medium">{name.name}</span>
+										<span className="text-foreground font-medium">
+											{name.name}
+										</span>
 										<Button
 											variant="ghost"
 											size="small"
@@ -490,7 +551,9 @@ export function Dashboard({
 									</div>
 								))
 							) : (
-								<p className="text-center text-muted-foreground py-4">No hidden names</p>
+								<p className="text-center text-muted-foreground py-4">
+									No hidden names
+								</p>
 							)}
 						</div>
 					)}

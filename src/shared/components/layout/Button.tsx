@@ -6,7 +6,7 @@
 import { cva } from "class-variance-authority";
 import React, { memo } from "react";
 import { cn } from "@/shared/lib/basic";
-import { Loader2 } from "@/shared/lib/icons";
+import { ArrowUp, Loader2 } from "@/shared/lib/icons";
 import "./FancyButton.css";
 
 /**
@@ -106,7 +106,8 @@ type ButtonVariant =
 	| "glass";
 type ButtonSize = "small" | "medium" | "large" | "xl" | "icon";
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+interface ButtonProps
+	extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
 	children: React.ReactNode;
 	variant?: ButtonVariant;
 	size?: ButtonSize;
@@ -221,7 +222,10 @@ const ScrollToTopButton = ({
 		let scrollTimeout: number | null = null;
 
 		const checkScroll = () => {
-			const threshold = window.innerHeight <= 768 ? window.innerHeight * 1.5 : window.innerHeight;
+			const threshold =
+				window.innerHeight <= 768
+					? window.innerHeight * 1.5
+					: window.innerHeight;
 			setShowScrollTop(window.scrollY > threshold);
 		};
 
@@ -260,7 +264,7 @@ const ScrollToTopButton = ({
 			aria-label="Scroll to top"
 			tabIndex={0}
 		>
-			↑
+			<ArrowUp size={20} className="text-foreground" />
 		</button>
 	);
 };

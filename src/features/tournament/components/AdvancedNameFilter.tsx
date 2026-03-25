@@ -5,7 +5,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/shared/components/layout/Button";
-import { ChevronDown, Clock, Filter, Search, Star, TrendingUp, X } from "@/shared/lib/icons";
+import {
+	ChevronDown,
+	Clock,
+	Filter,
+	Search,
+	Star,
+	TrendingUp,
+	X,
+} from "@/shared/lib/icons";
 
 export interface FilterOptions {
 	searchTerm: string;
@@ -73,7 +81,10 @@ export function AdvancedNameFilter({
 
 			// Category filter
 			if (filters.categories.length > 0) {
-				if (!name.categories || !filters.categories.some((cat) => name.categories.includes(cat))) {
+				if (
+					!name.categories ||
+					!filters.categories.some((cat) => name.categories.includes(cat))
+				) {
 					return false;
 				}
 			}
@@ -121,7 +132,8 @@ export function AdvancedNameFilter({
 					break;
 				case "recent":
 					comparison =
-						new Date(b.lastActiveAt || "0").getTime() - new Date(a.lastActiveAt || "0").getTime();
+						new Date(b.lastActiveAt || "0").getTime() -
+						new Date(a.lastActiveAt || "0").getTime();
 					break;
 			}
 
@@ -180,7 +192,9 @@ export function AdvancedNameFilter({
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<Filter className="text-chart-4" size={20} />
-					<h3 className="text-lg font-semibold text-foreground">Advanced Filters</h3>
+					<h3 className="text-lg font-semibold text-foreground">
+						Advanced Filters
+					</h3>
 				</div>
 				<Button
 					variant="ghost"
@@ -226,13 +240,17 @@ export function AdvancedNameFilter({
 					{/* Categories */}
 					{availableCategories.length > 0 && (
 						<div>
-							<label className="block text-sm font-medium text-foreground mb-2">Categories</label>
+							<label className="block text-sm font-medium text-foreground mb-2">
+								Categories
+							</label>
 							<div className="flex flex-wrap gap-2">
 								{availableCategories.map((category) => (
 									<button
 										key={category}
 										onClick={() => {
-											const newCategories = filters.categories.includes(category)
+											const newCategories = filters.categories.includes(
+												category,
+											)
 												? filters.categories.filter((c) => c !== category)
 												: [...filters.categories, category];
 											updateFilter("categories", newCategories);
@@ -264,10 +282,14 @@ export function AdvancedNameFilter({
 									max="3000"
 									step="50"
 									value={filters.minRating}
-									onChange={(e) => updateFilter("minRating", parseInt(e.target.value, 10))}
+									onChange={(e) =>
+										updateFilter("minRating", parseInt(e.target.value, 10))
+									}
 									className="w-full"
 								/>
-								<div className="text-xs text-center text-muted-foreground">{filters.minRating}</div>
+								<div className="text-xs text-center text-muted-foreground">
+									{filters.minRating}
+								</div>
 							</div>
 							<div className="flex-1">
 								<label className="text-xs text-muted-foreground">Max</label>
@@ -277,10 +299,14 @@ export function AdvancedNameFilter({
 									max="3000"
 									step="50"
 									value={filters.maxRating}
-									onChange={(e) => updateFilter("maxRating", parseInt(e.target.value, 10))}
+									onChange={(e) =>
+										updateFilter("maxRating", parseInt(e.target.value, 10))
+									}
 									className="w-full"
 								/>
-								<div className="text-xs text-center text-muted-foreground">{filters.maxRating}</div>
+								<div className="text-xs text-center text-muted-foreground">
+									{filters.maxRating}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -288,7 +314,9 @@ export function AdvancedNameFilter({
 					{/* Quick Filters */}
 					<div className="flex gap-2">
 						<button
-							onClick={() => updateFilter("onlyFavorites", !filters.onlyFavorites)}
+							onClick={() =>
+								updateFilter("onlyFavorites", !filters.onlyFavorites)
+							}
 							className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
 								filters.onlyFavorites
 									? "bg-chart-4 text-white"
@@ -300,7 +328,9 @@ export function AdvancedNameFilter({
 						</button>
 
 						<button
-							onClick={() => updateFilter("onlyRecentlyActive", !filters.onlyRecentlyActive)}
+							onClick={() =>
+								updateFilter("onlyRecentlyActive", !filters.onlyRecentlyActive)
+							}
 							className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
 								filters.onlyRecentlyActive
 									? "bg-chart-4 text-white"
@@ -331,7 +361,9 @@ export function AdvancedNameFilter({
 							</select>
 							<select
 								value={filters.sortOrder}
-								onChange={(e) => updateFilter("sortOrder", e.target.value as any)}
+								onChange={(e) =>
+									updateFilter("sortOrder", e.target.value as any)
+								}
 								className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
 							>
 								<option value="asc">Ascending</option>
@@ -345,7 +377,9 @@ export function AdvancedNameFilter({
 						<div className="text-sm text-muted-foreground">
 							{filteredNames.length} of {names.length} names shown
 							{activeFilterCount > 0 && (
-								<span className="ml-2">({activeFilterCount} filters active)</span>
+								<span className="ml-2">
+									({activeFilterCount} filters active)
+								</span>
 							)}
 						</div>
 						<Button
@@ -381,8 +415,10 @@ export function AdvancedNameFilter({
 							<span className="font-medium text-foreground">Avg Rating:</span>
 							<span className="ml-1">
 								{Math.round(
-									filteredNames.reduce((sum, name) => sum + (name.avgRating || 1500), 0) /
-										filteredNames.length,
+									filteredNames.reduce(
+										(sum, name) => sum + (name.avgRating || 1500),
+										0,
+									) / filteredNames.length,
 								)}
 							</span>
 						</div>

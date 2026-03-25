@@ -1,4 +1,9 @@
-import { useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import {
+	type MotionValue,
+	useMotionValue,
+	useSpring,
+	useTransform,
+} from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 
 interface TiltConfig {
@@ -28,7 +33,8 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 	const [isTouchDevice, setIsTouchDevice] = useState(false);
 	useEffect(() => {
 		setIsTouchDevice(
-			typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches
+			typeof window !== "undefined" &&
+				window.matchMedia("(pointer: coarse)").matches,
 		);
 	}, []);
 
@@ -44,12 +50,12 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 	const rotateX = useTransform(
 		mouseYSpring,
 		[-0.5, 0.5],
-		[`${maxTilt}deg`, `-${maxTilt}deg`]
+		[`${maxTilt}deg`, `-${maxTilt}deg`],
 	);
 	const rotateY = useTransform(
 		mouseXSpring,
 		[-0.5, 0.5],
-		[`-${maxTilt}deg`, `${maxTilt}deg`]
+		[`-${maxTilt}deg`, `${maxTilt}deg`],
 	);
 
 	const handleMouseMove = useCallback(
@@ -61,7 +67,7 @@ export function useTilt(enabled = true, config: TiltConfig = {}): TiltValues {
 			mouseX.set(x);
 			mouseY.set(y);
 		},
-		[isEnabled, mouseX, mouseY]
+		[isEnabled, mouseX, mouseY],
 	);
 
 	const handleMouseLeave = useCallback(() => {

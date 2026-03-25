@@ -44,12 +44,20 @@ export function TournamentComplete({
 					<div className="space-y-4">
 						<div className="grid grid-cols-2 gap-4 text-left">
 							<div className="bg-foreground/5 rounded-lg p-4">
-								<div className="text-sm text-muted-foreground mb-1">Total Matches</div>
-								<div className="text-xl font-bold text-foreground">{totalMatches}</div>
+								<div className="text-sm text-muted-foreground mb-1">
+									Total Matches
+								</div>
+								<div className="text-xl font-bold text-foreground">
+									{totalMatches}
+								</div>
 							</div>
 							<div className="bg-foreground/5 rounded-lg p-4">
-								<div className="text-sm text-muted-foreground mb-1">Participants</div>
-								<div className="text-xl font-bold text-foreground">{participantCount}</div>
+								<div className="text-sm text-muted-foreground mb-1">
+									Participants
+								</div>
+								<div className="text-xl font-bold text-foreground">
+									{participantCount}
+								</div>
 							</div>
 						</div>
 
@@ -60,7 +68,9 @@ export function TournamentComplete({
 								className="w-full glass-panel py-3 px-6 rounded-full flex items-center justify-center gap-3 border border-primary/20 cursor-pointer hover:bg-foreground/5 transition-colors"
 							>
 								<LogOut className="text-primary" />
-								<span className="font-bold text-foreground">Start New Tournament</span>
+								<span className="font-bold text-foreground">
+									Start New Tournament
+								</span>
 							</button>
 
 							<button

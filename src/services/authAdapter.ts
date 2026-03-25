@@ -1,1 +1,4 @@
-export { supabaseAuthAdapter, supabaseAuthAdapter as authAdapter } from "./supabaseAuthAdapter";
+export {
+	supabaseAuthAdapter,
+	supabaseAuthAdapter as authAdapter,
+} from "./supabaseAuthAdapter";

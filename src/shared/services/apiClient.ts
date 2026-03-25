@@ -1,4 +1,5 @@
-const rawApiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api";
+const rawApiBase =
+	(import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api";
 
 const API_BASE = rawApiBase.replace(/\/+$/, "");
 
@@ -36,7 +37,9 @@ function mergeRequestSignal(
 		return internalController.signal;
 	}
 
-	externalSignal.addEventListener("abort", () => internalController.abort(), { once: true });
+	externalSignal.addEventListener("abort", () => internalController.abort(), {
+		once: true,
+	});
 	return internalController.signal;
 }
 
@@ -53,7 +56,10 @@ function buildFetchOptions(
 	};
 }
 
-function releasePendingRequest(requestKey: string, abortController: AbortController): void {
+function releasePendingRequest(
+	requestKey: string,
+	abortController: AbortController,
+): void {
 	if (pendingRequests.get(requestKey) === abortController) {
 		pendingRequests.delete(requestKey);
 	}
@@ -76,12 +82,18 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
 	pendingRequests.set(requestKey, abortController);
 
 	try {
-		const res = await fetch(requestUrl, buildFetchOptions(options, abortController));
+		const res = await fetch(
+			requestUrl,
+			buildFetchOptions(options, abortController),
+		);
 
 		if (!res.ok) {
 			const error = await res.json().catch(() => ({ error: res.statusText }));
-			const message = error.error || error.message || `Request failed: ${res.status}`;
-			throw new Error(res.status === 404 ? `${message} (${requestUrl})` : message);
+			const message =
+				error.error || error.message || `Request failed: ${res.status}`;
+			throw new Error(
+				res.status === 404 ? `${message} (${requestUrl})` : message,
+			);
 		}
 		return res.json();
 	} finally {

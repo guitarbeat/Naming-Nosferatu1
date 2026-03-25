@@ -26,7 +26,9 @@ declare global {
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
-export function shouldWarnMissingSupabaseCredentials(hostname: string): boolean {
+export function shouldWarnMissingSupabaseCredentials(
+	hostname: string,
+): boolean {
 	return !LOCAL_HOSTS.has(hostname);
 }
 
@@ -42,7 +44,8 @@ function getCurrentHostname(): string {
 const getSupabaseCredentials = (): { url: string; key: string } | null => {
 	const url = import.meta.env.VITE_SUPABASE_URL;
 	const key =
-		import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+		import.meta.env.VITE_SUPABASE_ANON_KEY ||
+		import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 	if (!url || !key) {
 		if (shouldWarnMissingSupabaseCredentials(getCurrentHostname())) {
@@ -58,63 +61,71 @@ const getSupabaseCredentials = (): { url: string; key: string } | null => {
 
 let supabaseInstance: SupabaseClient<Database> | null =
 	typeof window !== "undefined" ? (window.__supabaseClient ?? null) : null;
-let initializationPromise: Promise<SupabaseClient<Database> | null> | null = null;
+let initializationPromise: Promise<SupabaseClient<Database> | null> | null =
+	null;
 
-const createSupabaseClient = async (): Promise<SupabaseClient<Database> | null> => {
-	// Validate and get credentials (returns null if missing)
-	const credentials = getSupabaseCredentials();
-	if (!credentials) {
-		return null;
-	}
-	const { url: SupabaseUrl, key: SupabaseAnonKey } = credentials;
+const createSupabaseClient =
+	async (): Promise<SupabaseClient<Database> | null> => {
+		// Validate and get credentials (returns null if missing)
+		const credentials = getSupabaseCredentials();
+		if (!credentials) {
+			return null;
+		}
+		const { url: SupabaseUrl, key: SupabaseAnonKey } = credentials;
 
-	try {
-		const { createClient } = await import("@supabase/supabase-js");
-		const authOptions = {
-			persistSession: true,
-			autoRefreshToken: true,
-			storage: (() => {
-				if (!isStorageAvailable()) {
-					return undefined;
-				}
-				try {
-					return window.localStorage;
-				} catch {
-					return undefined;
-				}
-			})(),
-		} as const;
+		try {
+			const { createClient } = await import("@supabase/supabase-js");
+			const authOptions = {
+				persistSession: true,
+				autoRefreshToken: true,
+				storage: (() => {
+					if (!isStorageAvailable()) {
+						return undefined;
+					}
+					try {
+						return window.localStorage;
+					} catch {
+						return undefined;
+					}
+				})(),
+			} as const;
 
-		const currentUserName: string | null = getStorageString(STORAGE_KEYS.USER);
+			const currentUserName: string | null = getStorageString(
+				STORAGE_KEYS.USER,
+			);
 
-		/* ----------------------------------------------------------------------
+			/* ----------------------------------------------------------------------
 		   MIGRATION UPDATE: Using x-user-id for future RLS policies
 		   ---------------------------------------------------------------------- */
-		const currentUserId: string | null = getStorageString(STORAGE_KEYS.USER_ID);
+			const currentUserId: string | null = getStorageString(
+				STORAGE_KEYS.USER_ID,
+			);
 
-		const client = createClient<Database>(SupabaseUrl, SupabaseAnonKey, {
-			auth: authOptions,
-			global: {
-				headers: {
-					"X-Client-Info": "cat-name-tournament",
-					...(currentUserName ? { "x-user-name": currentUserName } : {}),
-					...(currentUserId ? { "x-user-id": currentUserId } : {}),
+			const client = createClient<Database>(SupabaseUrl, SupabaseAnonKey, {
+				auth: authOptions,
+				global: {
+					headers: {
+						"X-Client-Info": "cat-name-tournament",
+						...(currentUserName ? { "x-user-name": currentUserName } : {}),
+						...(currentUserId ? { "x-user-id": currentUserId } : {}),
+					},
 				},
-			},
-			db: { schema: "public" },
-		});
+				db: { schema: "public" },
+			});
 
-		if (typeof window !== "undefined") {
-			window.__supabaseClient = client;
+			if (typeof window !== "undefined") {
+				window.__supabaseClient = client;
+			}
+			return client;
+		} catch (error) {
+			console.error("❌ Failed to create Supabase client:", error);
+			return null;
 		}
-		return client;
-	} catch (error) {
-		console.error("❌ Failed to create Supabase client:", error);
-		return null;
-	}
-};
+	};
 
-const getSupabaseClient = async (retryCount = 0): Promise<SupabaseClient<Database> | null> => {
+const getSupabaseClient = async (
+	retryCount = 0,
+): Promise<SupabaseClient<Database> | null> => {
 	if (supabaseInstance) {
 		return supabaseInstance;
 	}
@@ -136,7 +147,8 @@ const getSupabaseClient = async (retryCount = 0): Promise<SupabaseClient<Databas
 	return initializationPromise;
 };
 
-export const resolveSupabaseClient = async () => supabaseInstance ?? (await getSupabaseClient());
+export const resolveSupabaseClient = async () =>
+	supabaseInstance ?? (await getSupabaseClient());
 
 export const updateSupabaseUserContext = (
 	userName: string | null,
@@ -165,7 +177,8 @@ export const updateSupabaseUserContext = (
 	}
 };
 
-const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
+const isDev =
+	typeof process !== "undefined" && process.env?.NODE_ENV === "development";
 
 const isSupabaseAvailable = async () => {
 	const client = await resolveSupabaseClient();
