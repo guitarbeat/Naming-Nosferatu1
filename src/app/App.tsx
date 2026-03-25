@@ -7,17 +7,19 @@
  * @returns {JSX.Element} The complete application UI
  */
 
+import { AnimatePresence, motion } from "framer-motion";
 import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { errorContexts, routeComponents } from "@/app/appConfig";
 import { useAuth } from "@/app/providers/Providers";
 import { NameSuggestionInner } from "@/features/tournament/components/NameSuggestion";
+import { ProfileInner } from "@/features/tournament/components/ProfileSection";
 import { useTournamentHandlers } from "@/features/tournament/hooks";
 import Tournament from "@/features/tournament/Tournament";
 import { AppLayout, Button, ErrorBoundary, Loading, Section } from "@/shared/components";
 import { SectionHeading } from "@/shared/components/layout/SectionHeading";
 import { useOfflineSync } from "@/shared/hooks";
-import { Lightbulb, Trophy } from "@/shared/lib/icons";
+import { Lightbulb, Trophy, X } from "@/shared/lib/icons";
 import {
 	cleanupPerformanceMonitoring,
 	initializePerformanceMonitoring,
@@ -30,10 +32,60 @@ const TournamentFlow = routeComponents.TournamentFlow;
 const DashboardLazy = routeComponents.DashboardLazy;
 const AdminDashboardLazy = routeComponents.AdminDashboardLazy;
 
+function ProfileOverlay({ onClose }: { onClose: () => void }) {
+	const { login } = useAuth();
+
+	return (
+		<motion.div
+			className="fixed inset-0 z-40 flex items-center justify-center px-4 pb-24 sm:pb-4"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.2 }}
+		>
+			<div
+				className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+				onClick={onClose}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						onClose();
+					}
+				}}
+				role="button"
+				tabIndex={0}
+				aria-label="Close profile"
+			/>
+
+			<motion.div
+				className="relative z-50 w-full max-w-md overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
+				initial={{ y: 40, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				exit={{ y: 40, opacity: 0 }}
+				transition={{ type: "spring", damping: 28, stiffness: 300 }}
+			>
+				<div className="mb-4 flex items-center justify-between">
+					<h2 className="text-lg font-semibold text-foreground">Your Profile</h2>
+					<button
+						type="button"
+						onClick={onClose}
+						className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+						aria-label="Close profile"
+					>
+						<X className="size-5" />
+					</button>
+				</div>
+				<ProfileInner onLogin={(name) => login({ name })} />
+			</motion.div>
+		</motion.div>
+	);
+}
+
 function App() {
 	const { user: authUser, isLoading } = useAuth();
 	const isInitialized = !isLoading;
-	const { userActions } = useAppStore();
+	const ui = useAppStore((s) => s.ui);
+	const uiActions = useAppStore((s) => s.uiActions);
+	const userActions = useAppStore((s) => s.userActions);
 	const location = useLocation();
 	const { pathname } = location;
 
@@ -76,7 +128,13 @@ function App() {
 	}
 
 	return (
-		<AppLayout>
+		<AppLayout
+			profileOverlay={
+				<AnimatePresence>
+					{ui.isProfileOpen && <ProfileOverlay onClose={() => uiActions.setProfileOpen(false)} />}
+				</AnimatePresence>
+			}
+		>
 			<Routes>
 				<Route
 					path="/"
@@ -105,10 +163,7 @@ function HomeContent() {
 	return (
 		<>
 			<Section id="pick" variant="minimal" padding="compact" maxWidth="xl" centered={true}>
-				<SectionHeading
-					icon={Trophy}
-					title="Pick Names"
-				/>
+				<SectionHeading icon={Trophy} title="Pick Names" />
 				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 					<TournamentFlow />
 				</Suspense>

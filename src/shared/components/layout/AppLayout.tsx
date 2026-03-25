@@ -3,8 +3,6 @@
  * @description Main application layout component with floating primary nav
  */
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useAuth } from "@/app/providers/Providers";
 import { ScrollToTopButton } from "@/shared/components/layout/Button";
 import {
 	ErrorBoundary,
@@ -13,55 +11,15 @@ import {
 	OfflineIndicator,
 } from "@/shared/components/layout/Feedback";
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
-import { ProfileInner } from "@/features/tournament/components/ProfileSection";
-import { X } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
 
 interface AppLayoutProps {
 	children: React.ReactNode;
+	profileOverlay?: React.ReactNode;
 }
 
-function ProfileOverlay({ onClose }: { onClose: () => void }) {
-	const { login } = useAuth();
-
-	return (
-		<motion.div
-			className="fixed inset-0 z-40 flex items-center justify-center px-4 pb-24 sm:pb-4"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-			transition={{ duration: 0.2 }}
-		>
-			{/* Backdrop */}
-			<div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={onClose} />
-
-			{/* Panel */}
-			<motion.div
-				className="relative z-50 w-full max-w-md overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
-				initial={{ y: 40, opacity: 0 }}
-				animate={{ y: 0, opacity: 1 }}
-				exit={{ y: 40, opacity: 0 }}
-				transition={{ type: "spring", damping: 28, stiffness: 300 }}
-			>
-				<div className="mb-4 flex items-center justify-between">
-					<h2 className="text-lg font-semibold text-foreground">Your Profile</h2>
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-						aria-label="Close profile"
-					>
-						<X className="size-5" />
-					</button>
-				</div>
-				<ProfileInner onLogin={(name) => login({ name })} />
-			</motion.div>
-		</motion.div>
-	);
-}
-
-export function AppLayout({ children }: AppLayoutProps) {
-	const { user, tournament, errors, errorActions, ui, uiActions } = useAppStore();
+export function AppLayout({ children, profileOverlay }: AppLayoutProps) {
+	const { user, tournament, errors, errorActions } = useAppStore();
 	const { isLoggedIn } = user;
 
 	return (
@@ -118,15 +76,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 						</div>
 					)}
 
-				<ScrollToTopButton isLoggedIn={isLoggedIn} />
-			</main>
+					<ScrollToTopButton isLoggedIn={isLoggedIn} />
+				</main>
 
-			<AnimatePresence>
-				{ui.isProfileOpen && (
-					<ProfileOverlay onClose={() => uiActions.setProfileOpen(false)} />
-				)}
-			</AnimatePresence>
-		</div>
-	</ErrorBoundary>
+				{profileOverlay}
+			</div>
+		</ErrorBoundary>
 	);
 }

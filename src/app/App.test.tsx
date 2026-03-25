@@ -13,12 +13,17 @@ vi.mock("@/app/providers/Providers", () => ({
 }));
 
 vi.mock("@/store/appStore", () => ({
-	default: () => ({
-		user: { name: "Test User", isAdmin: false },
-		userActions: { setAdminStatus: vi.fn() },
-		tournament: { names: [], ratings: [] },
-		tournamentActions: {},
-	}),
+	default: (selector: any) => {
+		const state = {
+			user: { name: "Test User", isAdmin: false },
+			userActions: { setAdminStatus: vi.fn() },
+			ui: { isProfileOpen: false },
+			uiActions: { setProfileOpen: vi.fn() },
+			tournament: { names: [], ratings: [] },
+			tournamentActions: {},
+		};
+		return selector ? selector(state) : state;
+	},
 	useAppStoreInitialization: vi.fn(),
 }));
 
