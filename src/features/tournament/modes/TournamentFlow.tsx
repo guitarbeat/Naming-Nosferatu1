@@ -41,12 +41,16 @@ export default function TournamentFlow() {
 				.saveRatings(userId, ratingsWithStats)
 				.then((result) => {
 					if (result?.success) {
-						console.log(`Successfully saved ${result.count} ratings to database`);
+						console.log(
+							`Successfully saved ${result.count} ratings to database`,
+						);
 					}
 				})
 				.catch((_error) => {
 					// Error is already logged by ratingsAPI with context
-					console.warn("Tournament ratings save failed, but fallback may have been used");
+					console.warn(
+						"Tournament ratings save failed, but fallback may have been used",
+					);
 				});
 		}
 	}, [tournament.isComplete, tournament.ratings, user.name]);
@@ -73,8 +77,8 @@ export default function TournamentFlow() {
 							</div>
 							<p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10">
 								Your personal rankings have been updated. Head over to the{" "}
-								<strong className="text-primary">Analyze</strong> section to see the full breakdown
-								and compare results!
+								<strong className="text-primary">Analyze</strong> section to see
+								the full breakdown and compare results!
 							</p>
 							<div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
 								<button

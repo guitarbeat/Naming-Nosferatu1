@@ -4,7 +4,13 @@
  */
 
 import { AnimatePresence, motion } from "framer-motion";
-import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+	type ChangeEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import Button from "@/shared/components/layout/Button";
 import { Loading } from "@/shared/components/layout/Feedback";
 import { Input } from "@/shared/components/layout/FormPrimitives";
@@ -18,7 +24,12 @@ import {
 } from "@/shared/lib/basic";
 import { isRpcSignatureError } from "@/shared/lib/errors";
 import { BarChart3, Eye, EyeOff, Loader2, Lock } from "@/shared/lib/icons";
-import { coreAPI, hiddenNamesAPI, imagesAPI, statsAPI } from "@/shared/services/supabase/api";
+import {
+	coreAPI,
+	hiddenNamesAPI,
+	imagesAPI,
+	statsAPI,
+} from "@/shared/services/supabase/api";
 import { withSupabase } from "@/shared/services/supabase/runtime";
 import type { NameItem } from "@/shared/types";
 import useAppStore from "@/store/appStore";
@@ -79,7 +90,10 @@ function mapNameToDisplay(name: NameItem): NameWithStats {
 	};
 }
 
-function buildAdminStats(names: NameWithStats[], siteStats: SiteStatsLike | null): AdminStats {
+function buildAdminStats(
+	names: NameWithStats[],
+	siteStats: SiteStatsLike | null,
+): AdminStats {
 	return {
 		totalNames: names.length,
 		activeNames: getActiveNames(names).length,
@@ -110,7 +124,9 @@ function filterNamesByStatusAndSearch(
 		return filtered;
 	}
 
-	return filtered.filter((name) => matchesNameSearchTerm(name, normalizedSearch));
+	return filtered.filter((name) =>
+		matchesNameSearchTerm(name, normalizedSearch),
+	);
 }
 
 export function AdminDashboard() {
@@ -161,7 +177,11 @@ export function AdminDashboard() {
 	}, [names]);
 
 	const handleToggleHidden = useCallback(
-		async (nameId: string | number, isHidden: boolean, options: ToggleOptions = {}) => {
+		async (
+			nameId: string | number,
+			isHidden: boolean,
+			options: ToggleOptions = {},
+		) => {
 			try {
 				const idStr = String(nameId);
 				const result = isHidden
@@ -183,7 +203,11 @@ export function AdminDashboard() {
 	);
 
 	const handleToggleLocked = useCallback(
-		async (nameId: string | number, isLocked: boolean, options: ToggleOptions = {}) => {
+		async (
+			nameId: string | number,
+			isLocked: boolean,
+			options: ToggleOptions = {},
+		) => {
 			try {
 				const idStr = String(nameId);
 				await withSupabase(async (client) => {
@@ -203,7 +227,9 @@ export function AdminDashboard() {
 					}
 
 					if (result.error) {
-						throw new Error(result.error.message || "Failed to toggle locked status");
+						throw new Error(
+							result.error.message || "Failed to toggle locked status",
+						);
 					}
 					return result.data;
 				}, null);
@@ -224,11 +250,18 @@ export function AdminDashboard() {
 				return;
 			}
 
-			const actionHandlers: Record<BulkAction, (name: NameWithStats) => Promise<void>> = {
-				hide: (name) => handleToggleHidden(name.id, false, { skipRefresh: true }),
-				unhide: (name) => handleToggleHidden(name.id, true, { skipRefresh: true }),
-				lock: (name) => handleToggleLocked(name.id, false, { skipRefresh: true }),
-				unlock: (name) => handleToggleLocked(name.id, true, { skipRefresh: true }),
+			const actionHandlers: Record<
+				BulkAction,
+				(name: NameWithStats) => Promise<void>
+			> = {
+				hide: (name) =>
+					handleToggleHidden(name.id, false, { skipRefresh: true }),
+				unhide: (name) =>
+					handleToggleHidden(name.id, true, { skipRefresh: true }),
+				lock: (name) =>
+					handleToggleLocked(name.id, false, { skipRefresh: true }),
+				unlock: (name) =>
+					handleToggleLocked(name.id, true, { skipRefresh: true }),
 			};
 
 			try {
@@ -245,7 +278,13 @@ export function AdminDashboard() {
 				console.error("Failed to perform bulk action:", error);
 			}
 		},
-		[handleToggleHidden, handleToggleLocked, loadAdminData, nameById, selectedNames],
+		[
+			handleToggleHidden,
+			handleToggleLocked,
+			loadAdminData,
+			nameById,
+			selectedNames,
+		],
 	);
 
 	const handleImageUpload = useCallback(
@@ -269,28 +308,36 @@ export function AdminDashboard() {
 		[actorName],
 	);
 
-	const handleSelectionChange = useCallback((nameId: string, checked: boolean) => {
-		setSelectedNames((prevSelectedNames) => {
-			const next = new Set(prevSelectedNames);
-			if (checked) {
-				next.add(nameId);
-			} else {
-				next.delete(nameId);
-			}
-			return next;
-		});
-	}, []);
+	const handleSelectionChange = useCallback(
+		(nameId: string, checked: boolean) => {
+			setSelectedNames((prevSelectedNames) => {
+				const next = new Set(prevSelectedNames);
+				if (checked) {
+					next.add(nameId);
+				} else {
+					next.delete(nameId);
+				}
+				return next;
+			});
+		},
+		[],
+	);
 
 	const handleTabChange = useCallback((tab: DashboardTab) => {
 		setActiveTab(tab);
 	}, []);
 
-	const handleFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-		const option = FILTER_OPTIONS.find((item) => item.value === event.target.value);
-		if (option) {
-			setFilterStatus(option.value);
-		}
-	}, []);
+	const handleFilterChange = useCallback(
+		(event: ChangeEvent<HTMLSelectElement>) => {
+			const option = FILTER_OPTIONS.find(
+				(item) => item.value === event.target.value,
+			);
+			if (option) {
+				setFilterStatus(option.value);
+			}
+		},
+		[],
+	);
 
 	if (isLoading) {
 		return (
@@ -306,7 +353,9 @@ export function AdminDashboard() {
 				<h1 className="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
 					Admin Dashboard
 				</h1>
-				<p className="text-sm text-muted-foreground">Manage names and monitor activity</p>
+				<p className="text-sm text-muted-foreground">
+					Manage names and monitor activity
+				</p>
 			</div>
 
 			{stats && (
@@ -314,33 +363,49 @@ export function AdminDashboard() {
 					<div className="p-3 sm:p-6">
 						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
 							<BarChart3 className="text-primary" size={18} />
-							<h3 className="text-sm sm:text-lg font-semibold text-primary">Total</h3>
+							<h3 className="text-sm sm:text-lg font-semibold text-primary">
+								Total
+							</h3>
 						</div>
-						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.totalNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">
+							{stats.totalNames}
+						</p>
 					</div>
 
 					<div className="p-3 sm:p-6">
 						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
 							<Eye className="text-chart-2" size={18} />
-							<h3 className="text-sm sm:text-lg font-semibold text-chart-2">Active</h3>
+							<h3 className="text-sm sm:text-lg font-semibold text-chart-2">
+								Active
+							</h3>
 						</div>
-						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.activeNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">
+							{stats.activeNames}
+						</p>
 					</div>
 
 					<div className="p-3 sm:p-6">
 						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
 							<Lock className="text-chart-4" size={18} />
-							<h3 className="text-sm sm:text-lg font-semibold text-chart-4">Locked</h3>
+							<h3 className="text-sm sm:text-lg font-semibold text-chart-4">
+								Locked
+							</h3>
 						</div>
-						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.lockedInNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">
+							{stats.lockedInNames}
+						</p>
 					</div>
 
 					<div className="p-3 sm:p-6">
 						<div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
 							<EyeOff className="text-destructive" size={18} />
-							<h3 className="text-sm sm:text-lg font-semibold text-destructive">Hidden</h3>
+							<h3 className="text-sm sm:text-lg font-semibold text-destructive">
+								Hidden
+							</h3>
 						</div>
-						<p className="text-2xl sm:text-3xl font-bold text-foreground">{stats.hiddenNames}</p>
+						<p className="text-2xl sm:text-3xl font-bold text-foreground">
+							{stats.hiddenNames}
+						</p>
 					</div>
 				</div>
 			)}
@@ -393,7 +458,11 @@ export function AdminDashboard() {
 									))}
 								</select>
 
-								<Button onClick={() => void loadAdminData()} variant="ghost" size="small">
+								<Button
+									onClick={() => void loadAdminData()}
+									variant="ghost"
+									size="small"
+								>
 									<Loader2 size={16} />
 								</Button>
 							</div>
@@ -401,21 +470,39 @@ export function AdminDashboard() {
 
 						{selectedNames.size > 0 && (
 							<div className="mb-4 py-3 sm:py-4 border-y border-border/10">
-								<p className="text-sm text-primary mb-2">{selectedNames.size} selected</p>
+								<p className="text-sm text-primary mb-2">
+									{selectedNames.size} selected
+								</p>
 								<div className="flex flex-wrap gap-2">
-									<Button onClick={() => void handleBulkAction("hide")} size="small">
+									<Button
+										onClick={() => void handleBulkAction("hide")}
+										size="small"
+									>
 										<EyeOff size={14} /> Hide
 									</Button>
-									<Button onClick={() => void handleBulkAction("unhide")} size="small">
+									<Button
+										onClick={() => void handleBulkAction("unhide")}
+										size="small"
+									>
 										<Eye size={14} /> Unhide
 									</Button>
-									<Button onClick={() => void handleBulkAction("lock")} size="small">
+									<Button
+										onClick={() => void handleBulkAction("lock")}
+										size="small"
+									>
 										<Lock size={14} /> Lock
 									</Button>
-									<Button onClick={() => void handleBulkAction("unlock")} size="small">
+									<Button
+										onClick={() => void handleBulkAction("unlock")}
+										size="small"
+									>
 										<Lock size={14} /> Unlock
 									</Button>
-									<Button onClick={() => setSelectedNames(new Set())} variant="ghost" size="small">
+									<Button
+										onClick={() => setSelectedNames(new Set())}
+										variant="ghost"
+										size="small"
+									>
 										Clear
 									</Button>
 								</div>
@@ -434,12 +521,16 @@ export function AdminDashboard() {
 												<input
 													type="checkbox"
 													checked={selectedNames.has(nameId)}
-													onChange={(event) => handleSelectionChange(nameId, event.target.checked)}
+													onChange={(event) =>
+														handleSelectionChange(nameId, event.target.checked)
+													}
 													className="w-4 h-4 mt-1 sm:mt-0 shrink-0"
 												/>
 												<div className="min-w-0">
 													<div className="flex items-center gap-2 flex-wrap">
-														<h3 className="font-semibold text-foreground text-sm sm:text-base">{name.name}</h3>
+														<h3 className="font-semibold text-foreground text-sm sm:text-base">
+															{name.name}
+														</h3>
 														{locked && (
 															<span className="text-[10px] text-chart-4 font-semibold inline-flex items-center gap-0.5">
 																<Lock size={10} /> Locked
@@ -452,13 +543,17 @@ export function AdminDashboard() {
 														)}
 													</div>
 													{name.description && (
-														<p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">{name.description}</p>
+														<p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
+															{name.description}
+														</p>
 													)}
 													<div className="flex gap-3 mt-0.5 text-[10px] sm:text-xs text-muted-foreground/60">
 														<span>Votes: {name.votes}</span>
 														<span>
 															Score:{" "}
-															{name.popularityScore == null ? "?" : name.popularityScore.toFixed(1)}
+															{name.popularityScore == null
+																? "?"
+																: name.popularityScore.toFixed(1)}
 														</span>
 													</div>
 												</div>
@@ -466,14 +561,18 @@ export function AdminDashboard() {
 
 											<div className="flex items-center gap-1 shrink-0">
 												<Button
-													onClick={() => void handleToggleHidden(name.id, hidden)}
+													onClick={() =>
+														void handleToggleHidden(name.id, hidden)
+													}
 													variant="ghost"
 													size="small"
 												>
 													{hidden ? <Eye size={14} /> : <EyeOff size={14} />}
 												</Button>
 												<Button
-													onClick={() => void handleToggleLocked(name.id, locked)}
+													onClick={() =>
+														void handleToggleLocked(name.id, locked)
+													}
 													variant="ghost"
 													size="small"
 													aria-label={locked ? "Unlock name" : "Lock name"}
@@ -509,8 +608,12 @@ export function AdminDashboard() {
 									/>
 								</div>
 								<div>
-									<h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
-									<p className="text-muted-foreground">Activity tracking coming soon...</p>
+									<h3 className="text-lg font-semibold mb-2">
+										Recent Activity
+									</h3>
+									<p className="text-muted-foreground">
+										Activity tracking coming soon...
+									</p>
 								</div>
 							</div>
 						</div>
@@ -526,7 +629,9 @@ export function AdminDashboard() {
 					>
 						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">User Analytics</h2>
-							<p className="text-muted-foreground">User tracking and analytics coming soon...</p>
+							<p className="text-muted-foreground">
+								User tracking and analytics coming soon...
+							</p>
 						</div>
 					</motion.div>
 				)}
@@ -540,7 +645,9 @@ export function AdminDashboard() {
 					>
 						<div className="p-6">
 							<h2 className="text-2xl font-bold mb-4">Site Analytics</h2>
-							<p className="text-muted-foreground">Advanced analytics coming soon...</p>
+							<p className="text-muted-foreground">
+								Advanced analytics coming soon...
+							</p>
 						</div>
 					</motion.div>
 				)}

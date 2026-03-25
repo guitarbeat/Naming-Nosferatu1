@@ -96,15 +96,21 @@ function TournamentContent({
 	// Calculate winning streaks
 	const calculateWinStreak = useCallback(
 		(contestantId: string | number | null | undefined) => {
-			if (!contestantId || matchHistory.length === 0) return 0;
+			if (!contestantId || matchHistory.length === 0) {
+				return 0;
+			}
 			const targetId = String(contestantId);
 			let streak = 0;
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
-				if (!record) continue;
+				if (!record) {
+					continue;
+				}
 				const leftId = getMatchSideId(record.match, "left");
 				const rightId = getMatchSideId(record.match, "right");
-				if (leftId !== targetId && rightId !== targetId) continue;
+				if (leftId !== targetId && rightId !== targetId) {
+					continue;
+				}
 				if (record.winner === targetId) {
 					streak++;
 				} else {

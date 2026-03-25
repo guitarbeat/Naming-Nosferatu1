@@ -44,7 +44,8 @@ export function useAdminActionConfirmation({
 	isBusy,
 	executeAction,
 }: UseAdminActionConfirmationOptions): UseAdminActionConfirmationResult {
-	const [pendingAdminAction, setPendingAdminAction] = useState<PendingAdminAction | null>(null);
+	const [pendingAdminAction, setPendingAdminAction] =
+		useState<PendingAdminAction | null>(null);
 
 	const requestAdminAction = useCallback(
 		(action: PendingAdminAction) => {
@@ -54,7 +55,9 @@ export function useAdminActionConfirmation({
 			}
 
 			if (!userName?.trim()) {
-				toast.showError("Admin actions require a valid user session. Please log in again.");
+				toast.showError(
+					"Admin actions require a valid user session. Please log in again.",
+				);
 				return;
 			}
 

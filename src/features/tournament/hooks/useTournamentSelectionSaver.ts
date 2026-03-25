@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
-import { isStorageAvailable, readStorageJson, writeStorageJson } from "@/shared/lib/storage";
+import {
+	isStorageAvailable,
+	readStorageJson,
+	writeStorageJson,
+} from "@/shared/lib/storage";
 import type { NameItem } from "@/shared/types";
 
 interface SaverOptions {
@@ -19,12 +23,18 @@ function saveSelectionHash(selectedNames: NameItem[]): string {
 		.join(",");
 }
 
-function isSaverOptions(value: NameItem[] | SaverOptions): value is SaverOptions {
+function isSaverOptions(
+	value: NameItem[] | SaverOptions,
+): value is SaverOptions {
 	return !Array.isArray(value);
 }
 
-export function useTournamentSelectionSaver(options: SaverOptions): SaverApiResult;
-export function useTournamentSelectionSaver(selectedNames: NameItem[]): undefined;
+export function useTournamentSelectionSaver(
+	options: SaverOptions,
+): SaverApiResult;
+export function useTournamentSelectionSaver(
+	selectedNames: NameItem[],
+): undefined;
 export function useTournamentSelectionSaver(
 	input: NameItem[] | SaverOptions,
 ): SaverApiResult | undefined {
@@ -33,7 +43,9 @@ export function useTournamentSelectionSaver(
 	const userName = options?.userName ?? null;
 	const enableAutoSave = options?.enableAutoSave ?? true;
 
-	const saveTimeoutRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
+	const saveTimeoutRef = useRef<ReturnType<
+		typeof globalThis.setTimeout
+	> | null>(null);
 	const lastSavedRef = useRef<string>("");
 
 	const clearPendingSave = useCallback(() => {
@@ -73,7 +85,10 @@ export function useTournamentSelectionSaver(
 			return [];
 		}
 
-		return readStorageJson<Array<string | number>>(`tournament_selection_${userName}`, []);
+		return readStorageJson<Array<string | number>>(
+			`tournament_selection_${userName}`,
+			[],
+		);
 	}, [userName]);
 
 	useEffect(() => clearPendingSave, [clearPendingSave]);

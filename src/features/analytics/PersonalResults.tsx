@@ -34,7 +34,9 @@ export const PersonalResults = ({
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 				<div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
 					<span className="text-4xl select-none">🏆</span>
-					<h3 className="text-sm font-medium text-muted-foreground">Champion</h3>
+					<h3 className="text-sm font-medium text-muted-foreground">
+						Champion
+					</h3>
 					<p className="text-xl font-bold text-foreground truncate max-w-full">
 						{rankings[0]?.name || "-"}
 					</p>
@@ -42,13 +44,19 @@ export const PersonalResults = ({
 
 				<div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
 					<span className="text-4xl select-none">⭐</span>
-					<h3 className="text-sm font-medium text-muted-foreground">Highest Rated</h3>
-					<p className="text-xl font-bold text-foreground">{String(rankings[0]?.rating || 1500)}</p>
+					<h3 className="text-sm font-medium text-muted-foreground">
+						Highest Rated
+					</h3>
+					<p className="text-xl font-bold text-foreground">
+						{String(rankings[0]?.rating || 1500)}
+					</p>
 				</div>
 
 				<div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
 					<span className="text-4xl select-none">📝</span>
-					<h3 className="text-sm font-medium text-muted-foreground">Names Ranked</h3>
+					<h3 className="text-sm font-medium text-muted-foreground">
+						Names Ranked
+					</h3>
 					<p className="text-xl font-bold text-foreground">{rankings.length}</p>
 				</div>
 			</div>

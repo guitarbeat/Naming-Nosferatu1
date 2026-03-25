@@ -16,7 +16,9 @@ describe("LightboxImage", () => {
 
 	it("clears a pending retry timer when the image source changes", () => {
 		const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
-		const { rerender } = render(<LightboxImage src="/cats/one.jpg" alt="Cat one" />);
+		const { rerender } = render(
+			<LightboxImage src="/cats/one.jpg" alt="Cat one" />,
+		);
 
 		fireEvent.error(screen.getByAltText("Cat one"));
 		rerender(<LightboxImage src="/cats/two.jpg" alt="Cat two" />);
@@ -26,7 +28,9 @@ describe("LightboxImage", () => {
 
 	it("clears a pending retry timer when the component unmounts", () => {
 		const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
-		const { unmount } = render(<LightboxImage src="/cats/one.jpg" alt="Cat one" />);
+		const { unmount } = render(
+			<LightboxImage src="/cats/one.jpg" alt="Cat one" />,
+		);
 
 		fireEvent.error(screen.getByAltText("Cat one"));
 		unmount();

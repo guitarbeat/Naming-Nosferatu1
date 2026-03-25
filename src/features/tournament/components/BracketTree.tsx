@@ -11,16 +11,28 @@ interface BracketTreeProps {
 }
 
 function getRoundCaption(stageRound: number, totalRounds: number): string {
-	if (stageRound === totalRounds) return "Final";
-	if (stageRound === totalRounds - 1) return "Semi";
-	if (stageRound === totalRounds - 2) return "Quarter";
+	if (stageRound === totalRounds) {
+		return "Final";
+	}
+	if (stageRound === totalRounds - 1) {
+		return "Semi";
+	}
+	if (stageRound === totalRounds - 2) {
+		return "Quarter";
+	}
 	return `R${stageRound}`;
 }
 
 function getStageFlavor(round: number, totalRounds: number): string {
-	if (round >= totalRounds) return "Crown Fight";
-	if (totalRounds - round === 1) return "Final Four Chaos";
-	if (round <= 2) return "Chaos Ladder";
+	if (round >= totalRounds) {
+		return "Crown Fight";
+	}
+	if (totalRounds - round === 1) {
+		return "Final Four Chaos";
+	}
+	if (round <= 2) {
+		return "Chaos Ladder";
+	}
 	return "Bracket Grind";
 }
 
@@ -29,7 +41,10 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 		() => Array.from({ length: Math.max(1, totalRounds) }, (_, i) => i + 1),
 		[totalRounds],
 	);
-	const stageFlavor = useMemo(() => getStageFlavor(round, totalRounds), [round, totalRounds]);
+	const stageFlavor = useMemo(
+		() => getStageFlavor(round, totalRounds),
+		[round, totalRounds],
+	);
 
 	return (
 		<div className="rounded-xl border border-border/15 bg-foreground/[0.03] px-3 py-2">
@@ -48,15 +63,24 @@ export function BracketTree({ round, totalRounds }: BracketTreeProps) {
 							: "border-border/20 bg-foreground/5 text-foreground/65";
 
 					return (
-						<div key={`bracket-round-${stageRound}`} className="flex items-center gap-1">
-							<div className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}>
+						<div
+							key={`bracket-round-${stageRound}`}
+							className="flex items-center gap-1"
+						>
+							<div
+								className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold ${tone}`}
+							>
 								{getRoundCaption(stageRound, totalRounds)}
 								{isActive ? " ✦" : ""}
 							</div>
 							{index < rounds.length - 1 && (
 								<div
 									className={`h-[1px] w-4 sm:w-6 ${
-										isDone ? "bg-chart-2/70" : isActive ? "bg-primary/70" : "bg-border/20"
+										isDone
+											? "bg-chart-2/70"
+											: isActive
+												? "bg-primary/70"
+												: "bg-border/20"
 									}`}
 								/>
 							)}

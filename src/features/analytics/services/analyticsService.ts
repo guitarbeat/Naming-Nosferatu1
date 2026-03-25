@@ -95,7 +95,9 @@ function mapLeaderboardRow(row: Record<string, unknown>): LeaderboardItem {
 }
 
 export const leaderboardAPI = {
-	getLeaderboard: async (limit: number | null = 50): Promise<LeaderboardItem[]> => {
+	getLeaderboard: async (
+		limit: number | null = 50,
+	): Promise<LeaderboardItem[]> => {
 		try {
 			const rows = await api.get<Array<Record<string, unknown>>>(
 				`/analytics/leaderboard?limit=${limit || 50}`,
@@ -159,7 +161,9 @@ export const statsAPI = {
 		}
 	},
 
-	getDetailedUserStats: async (userName: string): Promise<DetailedUserStats | null> => {
+	getDetailedUserStats: async (
+		userName: string,
+	): Promise<DetailedUserStats | null> => {
 		try {
 			const stats = await api.get<Partial<DetailedUserStats>>(
 				`/analytics/user-stats?userName=${encodeURIComponent(userName)}`,
@@ -177,7 +181,9 @@ export const statsAPI = {
 				totalTournaments: toNumber(stats.totalTournaments),
 				completedTournaments: toNumber(stats.completedTournaments),
 				averageTournamentTime: toNumber(stats.averageTournamentTime),
-				favoriteNames: stats.favoriteNames ? String(stats.favoriteNames).split(",") : [],
+				favoriteNames: stats.favoriteNames
+					? String(stats.favoriteNames).split(",")
+					: [],
 				preferredCategories: stats.preferredCategories
 					? String(stats.preferredCategories).split(",")
 					: [],
@@ -192,7 +198,9 @@ export const statsAPI = {
 		try {
 			const [names, ratings] = await Promise.all([
 				api.get<NameItem[]>("/names?includeHidden=false"),
-				api.get<UserRatingRow[]>(`/analytics/ratings-raw?userName=${encodeURIComponent(userName)}`),
+				api.get<UserRatingRow[]>(
+					`/analytics/ratings-raw?userName=${encodeURIComponent(userName)}`,
+				),
 			]);
 
 			const ratingMap = new Map<string, UserRatingRow>();

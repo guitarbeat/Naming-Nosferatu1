@@ -41,7 +41,9 @@ window.addEventListener("error", (event) => {
 	const errorMsg = event.error
 		? `${event.error.name || "Error"}: ${event.error.message}`
 		: event.message;
-	capturedErrors.push(`[Uncaught] ${errorMsg} at ${event.filename}:${event.lineno}:${event.colno}`);
+	capturedErrors.push(
+		`[Uncaught] ${errorMsg} at ${event.filename}:${event.lineno}:${event.colno}`,
+	);
 });
 
 window.addEventListener("unhandledrejection", (event) => {
@@ -121,7 +123,10 @@ function runDiagnostics(): DiagnosticResult[] {
 	results.push({
 		name: "Console Errors",
 		status: capturedErrors.length === 0 ? "ok" : "error",
-		value: capturedErrors.length === 0 ? "None" : `${capturedErrors.length} error(s)`,
+		value:
+			capturedErrors.length === 0
+				? "None"
+				: `${capturedErrors.length} error(s)`,
 		hint: capturedErrors.length > 0 ? "Check error details below" : undefined,
 	});
 
@@ -231,11 +236,16 @@ function renderDeploymentList(
 }
 
 // Expose copy function globally for the button
-(window as unknown as { copyErrorsToClipboard: () => void }).copyErrorsToClipboard = () => {
+(
+	window as unknown as { copyErrorsToClipboard: () => void }
+).copyErrorsToClipboard = () => {
 	const errorText = capturedErrors.join("\n\n---\n\n");
 	const diagnostics = runDiagnostics();
 	const diagnosticText = diagnostics
-		.map((d) => `${d.name}: ${d.status} - ${d.value}${d.hint ? ` (${d.hint})` : ""}`)
+		.map(
+			(d) =>
+				`${d.name}: ${d.status} - ${d.value}${d.hint ? ` (${d.hint})` : ""}`,
+		)
 		.join("\n");
 
 	const fullReport = `
@@ -317,7 +327,8 @@ export function initDeploymentCheck(): void {
 	if (!root) {
 		showDeploymentError({
 			title: "Root Element Missing",
-			message: "The application root element (#root) was not found in the HTML.",
+			message:
+				"The application root element (#root) was not found in the HTML.",
 			suggestions: [
 				'Verify index.html contains <div id="root"></div>',
 				"Check that the HTML file is being served correctly",
@@ -348,7 +359,8 @@ export function initDeploymentCheck(): void {
 			scriptError = true;
 			showDeploymentError({
 				title: "JavaScript Failed to Load",
-				message: "The application's JavaScript files could not be loaded. This is often caused by:",
+				message:
+					"The application's JavaScript files could not be loaded. This is often caused by:",
 				details: [
 					"Content Security Policy (CSP) blocking scripts",
 					"Incorrect build output paths",
@@ -373,7 +385,9 @@ export function initDeploymentCheck(): void {
 			}
 
 			showDeploymentError({
-				title: scriptLoaded ? "Application Failed to Initialize" : "Application Startup Delayed",
+				title: scriptLoaded
+					? "Application Failed to Initialize"
+					: "Application Startup Delayed",
 				message: scriptLoaded
 					? "The JavaScript loaded but the application failed to mount into the page. Possible causes:"
 					: "The application is taking longer than expected to download or initialize. Possible causes:",
@@ -410,10 +424,14 @@ export function initDeploymentCheck(): void {
 
 	// Monitor CSP violations
 	document.addEventListener("securitypolicyviolation", (event) => {
-		if (event.violatedDirective === "script-src" || event.effectiveDirective === "script-src") {
+		if (
+			event.violatedDirective === "script-src" ||
+			event.effectiveDirective === "script-src"
+		) {
 			showDeploymentError({
 				title: "Content Security Policy Violation",
-				message: "The application's scripts are being blocked by Content Security Policy:",
+				message:
+					"The application's scripts are being blocked by Content Security Policy:",
 				details: [
 					`Blocked resource: ${event.blockedURI || "Unknown"}`,
 					`Violated directive: ${event.violatedDirective}`,

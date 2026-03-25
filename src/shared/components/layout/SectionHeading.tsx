@@ -14,9 +14,19 @@ interface SectionHeadingProps {
 	children?: ReactNode;
 }
 
-export function SectionHeading({ icon: Icon, title, subtitle, className }: SectionHeadingProps) {
+export function SectionHeading({
+	icon: Icon,
+	title,
+	subtitle,
+	className,
+}: SectionHeadingProps) {
 	return (
-		<div className={cn("flex flex-col items-center gap-2 py-1 mb-2 sm:mb-4", className)}>
+		<div
+			className={cn(
+				"flex flex-col items-center gap-2 py-1 mb-2 sm:mb-4",
+				className,
+			)}
+		>
 			{/* Decorative divider */}
 			<div className="flex w-full items-center gap-4" aria-hidden="true">
 				<div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -30,8 +40,12 @@ export function SectionHeading({ icon: Icon, title, subtitle, className }: Secti
 
 			{/* Text */}
 			<div className="text-center">
-				<h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{title}</h2>
-				{subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+				<h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+					{title}
+				</h2>
+				{subtitle && (
+					<p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+				)}
 			</div>
 		</div>
 	);

@@ -6,7 +6,11 @@
  * It handles user authentication, registration, and role management through Supabase.
  */
 
-import type { AuthAdapter, AuthUser, LoginCredentials } from "@/app/providers/Providers";
+import type {
+	AuthAdapter,
+	AuthUser,
+	LoginCredentials,
+} from "@/app/providers/Providers";
 import { STORAGE_KEYS } from "@/shared/lib/constants";
 import {
 	getStorageString,
@@ -100,7 +104,10 @@ export const supabaseAuthAdapter: AuthAdapter = {
 
 			// Store user info in localStorage for compatibility
 			if (data.user) {
-				setStorageString(STORAGE_KEYS.USER, data.user.user_metadata?.user_name || name.trim());
+				setStorageString(
+					STORAGE_KEYS.USER,
+					data.user.user_metadata?.user_name || name.trim(),
+				);
 				setStorageString(STORAGE_KEYS.USER_ID, data.user.id);
 			}
 
@@ -115,7 +122,9 @@ export const supabaseAuthAdapter: AuthAdapter = {
 	 * Register new user with Supabase Auth
 	 */
 	async register(): Promise<void> {
-		throw new Error("Registration not implemented. Please use Supabase Auth directly.");
+		throw new Error(
+			"Registration not implemented. Please use Supabase Auth directly.",
+		);
 	},
 
 	/**

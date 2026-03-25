@@ -7,7 +7,9 @@ interface UseTournamentHandlersProps {
 	tournamentActions: TournamentActions;
 }
 
-export function useTournamentHandlers({ tournamentActions }: UseTournamentHandlersProps) {
+export function useTournamentHandlers({
+	tournamentActions,
+}: UseTournamentHandlersProps) {
 	const handleTournamentComplete = useCallback(
 		(ratings: Record<string, RatingData>) => {
 			tournamentActions.setRatings(ratings);

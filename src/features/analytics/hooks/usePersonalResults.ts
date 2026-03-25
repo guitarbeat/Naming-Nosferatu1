@@ -25,7 +25,9 @@ export function usePersonalResults({
 
 		const processed = Object.entries(personalRatings)
 			.map(([name, rating]: [string, unknown]) => {
-				const r = rating as { rating?: number; wins?: number; losses?: number } | number;
+				const r = rating as
+					| { rating?: number; wins?: number; losses?: number }
+					| number;
 				return {
 					name,
 					rating: Math.round(typeof r === "number" ? r : r?.rating || 1500),

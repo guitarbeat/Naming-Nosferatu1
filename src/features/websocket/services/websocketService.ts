@@ -39,7 +39,10 @@ class WebSocketService {
 	private reconnectAttempts = 0;
 	private maxReconnectAttempts = 5;
 	private reconnectDelay = 1000; // 1 second
-	private messageHandlers = new Map<string, (message: WebSocketMessage) => void>();
+	private messageHandlers = new Map<
+		string,
+		(message: WebSocketMessage) => void
+	>();
 	private isConnecting = false;
 
 	constructor(private url: string) {}
@@ -57,7 +60,7 @@ class WebSocketService {
 				this.ws = new WebSocket(this.url);
 
 				this.ws.onopen = () => {
-						// Suppress log
+					// Suppress log
 					this.isConnecting = false;
 					this.reconnectAttempts = 0;
 					resolve();
@@ -68,20 +71,23 @@ class WebSocketService {
 						const message: WebSocketMessage = JSON.parse(event.data);
 						this.handleMessage(message);
 					} catch (error) {
-							// Suppress error log
+						// Suppress error log
 					}
 				};
 
 				this.ws.onclose = (event) => {
-						// Suppress log
+					// Suppress log
 					this.ws = null;
 
 					// Attempt to reconnect if not a clean close
-					if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+					if (
+						event.code !== 1000 &&
+						this.reconnectAttempts < this.maxReconnectAttempts
+					) {
 						setTimeout(
 							() => {
 								this.reconnectAttempts++;
-									this.connect().catch(() => {});
+								this.connect().catch(() => {});
 							},
 							this.reconnectDelay * 2 ** this.reconnectAttempts,
 						);
@@ -89,7 +95,7 @@ class WebSocketService {
 				};
 
 				this.ws.onerror = (error) => {
-						// Suppress error log
+					// Suppress error log
 					this.isConnecting = false;
 					reject(error);
 				};
@@ -116,7 +122,7 @@ class WebSocketService {
 			};
 			this.ws.send(JSON.stringify(fullMessage));
 		} else {
-				// Suppress warning
+			// Suppress warning
 		}
 	}
 
@@ -142,7 +148,11 @@ class WebSocketService {
 		callback: (update: TournamentUpdate) => void,
 	): () => void {
 		this.onMessage("tournament_update", (message) => {
-			if (message.data && typeof message.data === "object" && "tournamentId" in message.data) {
+			if (
+				message.data &&
+				typeof message.data === "object" &&
+				"tournamentId" in message.data
+			) {
 				const update = message.data as TournamentUpdate;
 				if (update.tournamentId === tournamentId) {
 					callback(update);
@@ -167,7 +177,9 @@ class WebSocketService {
 		};
 	}
 
-	subscribeToUserActivity(callback: (activity: UserActivity) => void): () => void {
+	subscribeToUserActivity(
+		callback: (activity: UserActivity) => void,
+	): () => void {
 		this.onMessage("user_joined", (message) => {
 			if (message.data && typeof message.data === "object") {
 				callback(message.data as UserActivity);

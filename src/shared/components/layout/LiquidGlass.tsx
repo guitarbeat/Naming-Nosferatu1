@@ -144,7 +144,9 @@ function LiquidGlass({
 				const encoded = encodeURIComponent(serialized);
 				const dataUri = `data:image/svg+xml,${encoded}`;
 
-				const feImage = filterRef.current.querySelector("feImage") as SVGFEImageElement | null;
+				const feImage = filterRef.current.querySelector(
+					"feImage",
+				) as SVGFEImageElement | null;
 				if (feImage) {
 					feImage.setAttribute("href", dataUri);
 				}
@@ -199,7 +201,10 @@ function LiquidGlass({
 			const backdropFilterValue = supportsBackdropFilterUrl
 				? `url(#${id}) saturate(${saturation})`
 				: `blur(8px) saturate(${saturation})`;
-			containerRef.current.style.setProperty("--backdrop-filter", backdropFilterValue);
+			containerRef.current.style.setProperty(
+				"--backdrop-filter",
+				backdropFilterValue,
+			);
 			containerRef.current.style.backdropFilter = backdropFilterValue;
 		}
 
@@ -282,7 +287,9 @@ function LiquidGlass({
 			return;
 		}
 
-		const filterElement = svgRef.current.querySelector(`#${id}`) as SVGFilterElement | null;
+		const filterElement = svgRef.current.querySelector(
+			`#${id}`,
+		) as SVGFilterElement | null;
 		if (!filterElement) {
 			return;
 		}
@@ -323,15 +330,22 @@ function LiquidGlass({
 			className={`liquid-glass ${className}`}
 			style={
 				{
-					width: (style as { width?: string | number })?.width || `${validWidth}px`,
-					height: (style as { height?: string | number })?.height || `${validHeight}px`,
+					width:
+						(style as { width?: string | number })?.width || `${validWidth}px`,
+					height:
+						(style as { height?: string | number })?.height ||
+						`${validHeight}px`,
 					...(style as React.CSSProperties),
 				} as React.CSSProperties
 			}
 			{...props}
 		>
 			{children}
-			<svg ref={svgRef} className="liquid-glass-filter" xmlns="http://www.w3.org/2000/svg">
+			<svg
+				ref={svgRef}
+				className="liquid-glass-filter"
+				xmlns="http://www.w3.org/2000/svg"
+			>
 				<defs>
 					<filter id={id} colorInterpolationFilters="sRGB">
 						<feImage x="0" y="0" width="100%" height="100%" result="map" />
@@ -393,11 +407,18 @@ function LiquidGlass({
 						<feBlend in="red" in2="green" mode="screen" result="rg" />
 						<feBlend in="rg" in2="blue" mode="screen" result="output" />
 
-						<feGaussianBlur id={feGaussianBlurId} in="output" stdDeviation={outputBlur} />
+						<feGaussianBlur
+							id={feGaussianBlurId}
+							in="output"
+							stdDeviation={outputBlur}
+						/>
 					</filter>
 				</defs>
 			</svg>
-			<div ref={displacementImageRef} className="displacement-image-container" />
+			<div
+				ref={displacementImageRef}
+				className="displacement-image-container"
+			/>
 			{showCrosshair && (
 				<div
 					className="liquid-glass-crosshair"
