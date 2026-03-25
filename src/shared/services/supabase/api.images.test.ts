@@ -77,11 +77,7 @@ describe("imagesAPI", () => {
 
 		it("should fail if file size exceeds 5MB", async () => {
 			// Mock a large file
-			const largeFile = {
-				size: 6 * 1024 * 1024,
-				type: "image/jpeg",
-				name: "large.jpg"
-			} as unknown as File;
+			const largeFile = new File([new Blob(["a".repeat(6 * 1024 * 1024)])], "large.jpg", { type: "image/jpeg" });
 			
 			const result = await imagesAPI.upload(largeFile, userName);
 
