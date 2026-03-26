@@ -62,7 +62,7 @@ const trendingNamesRequests = new Map<string, PendingRequest<NameItem[]>>();
 function mapNameRow(item: ApiNameRow): NameItem {
 	// Use automated field mapping for snake_case to camelCase conversion
 	const mappedItem = mapSnakeToCamel(item);
-	
+
 	return {
 		id: String(mappedItem.id),
 		name: mappedItem.name,
@@ -132,6 +132,25 @@ export const imagesAPI = {
 
 	upload: async (file: File | Blob, userName: string) => {
 		try {
+			const maxSize = 5 * 1024 * 1024; // 5MB
+			const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+			if (file.size > maxSize) {
+				return {
+					path: null,
+					error: "File size exceeds 5MB limit",
+					success: false,
+				};
+			}
+
+			if (!allowedTypes.includes(file.type)) {
+				return {
+					path: null,
+					error: "Only JPEG, PNG, GIF, and WebP images are allowed",
+					success: false,
+				};
+			}
+
 			const client = (await resolveSupabaseClient()) as any;
 			if (!client) {
 				return {
@@ -141,30 +160,9 @@ export const imagesAPI = {
 				};
 			}
 
-			// Validate file
-			if (file instanceof File) {
-				const maxSize = 5 * 1024 * 1024; // 5MB
-				const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-
-				if (file.size > maxSize) {
-					return {
-						path: null,
-						error: "File size exceeds 5MB limit",
-						success: false,
-					};
-				}
-
-				if (!allowedTypes.includes(file.type)) {
-					return {
-						path: null,
-						error: "Only JPEG, PNG, GIF, and WebP images are allowed",
-						success: false,
-					};
-				}
-			}
-
 			// Generate unique filename
-			const fileExt = file instanceof File ? file.name.split(".").pop() : "jpg";
+			const fileExt =
+				"name" in file && typeof file.name === "string" ? file.name.split(".").pop() : "jpg";
 			const timestamp = Date.now();
 			const randomId = Math.random().toString(36).substring(2, 8);
 			const fileName = `${userName}_${timestamp}_${randomId}.${fileExt}`;
@@ -173,7 +171,7 @@ export const imagesAPI = {
 			const { error } = await client.storage.from("cat-images").upload(fileName, file, {
 				cacheControl: "3600",
 				upsert: false,
-				contentType: file instanceof File ? file.type : "image/jpeg",
+				contentType: file.type || "image/jpeg",
 			});
 
 			if (error) {
@@ -431,12 +429,12 @@ const snakeToCamelCase = (str: string): string => {
 };
 
 const camelToSnakeCase = (str: string): string => {
-	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
+	return str.replace(/([A-Z])/g, "_$1").toLowerCase();
 };
 
 const mapFields = <T extends Record<string, any>>(
 	obj: T,
-	mapper: (key: string) => string
+	mapper: (key: string) => string,
 ): Record<string, any> => {
 	const mapped: Record<string, any> = {};
 	for (const [key, value] of Object.entries(obj)) {
@@ -450,7 +448,7 @@ const mapSnakeToCamel = <T extends Record<string, any>>(obj: T): Record<string, 
 	return mapFields(obj, snakeToCamelCase);
 };
 
-const mapCamelToSnake = <T extends Record<string, any>>(obj: T): Record<string, any> => {
+const _mapCamelToSnake = <T extends Record<string, any>>(obj: T): Record<string, any> => {
 	return mapFields(obj, camelToSnakeCase);
 };
 
@@ -460,19 +458,19 @@ const LOCALSTORAGE_CLEANUP_THRESHOLD = 0.8; // Clean at 80% capacity
 
 const checkLocalStorageQuota = (): { available: boolean; usage: number; percentage: number } => {
 	try {
-		const testKey = 'quota_test_' + Date.now();
-		const testData = 'x'.repeat(1024); // 1KB test data
-		
+		const testKey = `quota_test_${Date.now()}`;
+		const testData = "x".repeat(1024); // 1KB test data
+
 		// Check current usage
 		let totalSize = 0;
-		for (let key in localStorage) {
-			if (localStorage.hasOwnProperty(key)) {
+		for (const key in localStorage) {
+			if (Object.hasOwn(localStorage, key)) {
 				totalSize += localStorage[key].length + key.length;
 			}
 		}
-		
+
 		const usagePercentage = totalSize / LOCALSTORAGE_QUOTA_BYTES;
-		
+
 		// Test if we can write more data
 		try {
 			localStorage.setItem(testKey, testData);
@@ -488,52 +486,69 @@ const checkLocalStorageQuota = (): { available: boolean; usage: number; percenta
 
 const cleanupLocalStorage = (priorityKeys: string[] = []): void => {
 	const quota = checkLocalStorageQuota();
-	
+
 	// Only cleanup if we're over threshold
 	if (quota.percentage < LOCALSTORAGE_CLEANUP_THRESHOLD) {
 		return;
 	}
-	
+
 	// Collect all keys with their metadata
-	const keysWithMeta: Array<{ key: string; size: number; isPriority: boolean; timestamp?: number }> = [];
-	
-	for (let key in localStorage) {
-		if (localStorage.hasOwnProperty(key)) {
+	const keysWithMeta: Array<{
+		key: string;
+		size: number;
+		isPriority: boolean;
+		timestamp?: number;
+	}> = [];
+
+	for (const key in localStorage) {
+		if (Object.hasOwn(localStorage, key)) {
 			const value = localStorage[key];
 			const size = value.length + key.length;
 			const isPriority = priorityKeys.includes(key);
-			
+
 			let timestamp: number | undefined;
 			try {
 				const parsed = JSON.parse(value);
-				if (parsed && typeof parsed === 'object' && 'timestamp' in parsed) {
+				if (parsed && typeof parsed === "object" && "timestamp" in parsed) {
 					timestamp = parsed.timestamp;
 				}
 			} catch {
 				// Not JSON, skip timestamp extraction
 			}
-			
+
 			keysWithMeta.push({ key, size, isPriority, timestamp });
 		}
 	}
-	
+
 	// Sort by priority (keep priority keys) then by timestamp (oldest first)
 	keysWithMeta.sort((a, b) => {
-		if (a.isPriority && !b.isPriority) return 1;
-		if (!a.isPriority && b.isPriority) return -1;
-		if (a.timestamp && b.timestamp) return a.timestamp - b.timestamp;
-		if (a.timestamp && !b.timestamp) return 1;
-		if (!a.timestamp && b.timestamp) return -1;
+		if (a.isPriority && !b.isPriority) {
+			return 1;
+		}
+		if (!a.isPriority && b.isPriority) {
+			return -1;
+		}
+		if (a.timestamp && b.timestamp) {
+			return a.timestamp - b.timestamp;
+		}
+		if (a.timestamp && !b.timestamp) {
+			return 1;
+		}
+		if (!a.timestamp && b.timestamp) {
+			return -1;
+		}
 		return 0;
 	});
-	
+
 	// Remove old non-priority keys until we're under threshold
 	let removedSize = 0;
 	const targetSize = LOCALSTORAGE_QUOTA_BYTES * 0.6; // Target 60% capacity
-	
+
 	for (const { key, size } of keysWithMeta) {
-		if (quota.usage - removedSize <= targetSize) break;
-		
+		if (quota.usage - removedSize <= targetSize) {
+			break;
+		}
+
 		try {
 			localStorage.removeItem(key);
 			removedSize += size;
@@ -541,32 +556,32 @@ const cleanupLocalStorage = (priorityKeys: string[] = []): void => {
 			console.warn(`Failed to remove localStorage key ${key}:`, error);
 		}
 	}
-	
+
 	console.log(`localStorage cleanup: removed ${Math.round(removedSize / 1024)}KB`);
 };
 
 const safeLocalStorageSet = (key: string, value: string, isPriority: boolean = false): boolean => {
 	const quota = checkLocalStorageQuota();
-	
+
 	// Cleanup if needed
 	if (!quota.available || quota.percentage > LOCALSTORAGE_CLEANUP_THRESHOLD) {
 		cleanupLocalStorage(isPriority ? [key] : []);
 	}
-	
+
 	// Try to set the value
 	try {
 		localStorage.setItem(key, value);
 		return true;
 	} catch (error) {
 		console.warn(`localStorage quota exceeded for key ${key}:`, error);
-		
+
 		// Force cleanup and retry
 		cleanupLocalStorage(isPriority ? [key] : []);
 		try {
 			localStorage.setItem(key, value);
 			return true;
 		} catch (retryError) {
-			console.error(`Failed to store data in localStorage even after cleanup:`, retryError);
+			console.error("Failed to store data in localStorage even after cleanup:", retryError);
 			return false;
 		}
 	}
@@ -575,60 +590,60 @@ const safeLocalStorageSet = (key: string, value: string, isPriority: boolean = f
 // Validation utilities
 const validateRatingsData = (
 	userId: string,
-	ratings: Record<string, { rating: number; wins: number; losses: number }>
+	ratings: Record<string, { rating: number; wins: number; losses: number }>,
 ): { isValid: boolean; error?: string } => {
 	// Validate userId
-	if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
-		return { isValid: false, error: 'Invalid userId: must be a non-empty string' };
+	if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
+		return { isValid: false, error: "Invalid userId: must be a non-empty string" };
 	}
 
 	// Validate ratings object
-	if (!ratings || typeof ratings !== 'object') {
-		return { isValid: false, error: 'Invalid ratings: must be an object' };
+	if (!ratings || typeof ratings !== "object") {
+		return { isValid: false, error: "Invalid ratings: must be an object" };
 	}
 
 	const ratingsCount = Object.keys(ratings).length;
 	if (ratingsCount === 0) {
-		return { isValid: false, error: 'Invalid ratings: cannot be empty' };
+		return { isValid: false, error: "Invalid ratings: cannot be empty" };
 	}
 
 	if (ratingsCount > 1000) {
-		return { isValid: false, error: 'Invalid ratings: exceeds maximum limit of 1000 entries' };
+		return { isValid: false, error: "Invalid ratings: exceeds maximum limit of 1000 entries" };
 	}
 
 	// Validate each rating entry
 	for (const [nameId, data] of Object.entries(ratings)) {
-		if (!nameId || typeof nameId !== 'string') {
-			return { isValid: false, error: `Invalid nameId: must be a non-empty string` };
+		if (!nameId || typeof nameId !== "string") {
+			return { isValid: false, error: "Invalid nameId: must be a non-empty string" };
 		}
 
-		if (!data || typeof data !== 'object') {
+		if (!data || typeof data !== "object") {
 			return { isValid: false, error: `Invalid rating data for ${nameId}: must be an object` };
 		}
 
 		const { rating, wins, losses } = data;
 
 		// Validate rating value
-		if (typeof rating !== 'number' || isNaN(rating) || rating < 800 || rating > 2400) {
-			return { 
-				isValid: false, 
-				error: `Invalid rating for ${nameId}: must be a number between 800 and 2400` 
+		if (typeof rating !== "number" || Number.isNaN(rating) || rating < 800 || rating > 2400) {
+			return {
+				isValid: false,
+				error: `Invalid rating for ${nameId}: must be a number between 800 and 2400`,
 			};
 		}
 
 		// Validate wins
-		if (typeof wins !== 'number' || isNaN(wins) || wins < 0 || wins > 1000) {
-			return { 
-				isValid: false, 
-				error: `Invalid wins for ${nameId}: must be a number between 0 and 1000` 
+		if (typeof wins !== "number" || Number.isNaN(wins) || wins < 0 || wins > 1000) {
+			return {
+				isValid: false,
+				error: `Invalid wins for ${nameId}: must be a number between 0 and 1000`,
 			};
 		}
 
 		// Validate losses
-		if (typeof losses !== 'number' || isNaN(losses) || losses < 0 || losses > 1000) {
-			return { 
-				isValid: false, 
-				error: `Invalid losses for ${nameId}: must be a number between 0 and 1000` 
+		if (typeof losses !== "number" || Number.isNaN(losses) || losses < 0 || losses > 1000) {
+			return {
+				isValid: false,
+				error: `Invalid losses for ${nameId}: must be a number between 0 and 1000`,
 			};
 		}
 	}
@@ -691,7 +706,7 @@ export const ratingsAPI = {
 				// Validate input data before processing
 				const validation = validateRatingsData(userId, ratings);
 				if (!validation.isValid) {
-					throw new Error(validation.error || 'Invalid ratings data');
+					throw new Error(validation.error || "Invalid ratings data");
 				}
 
 				const ratingsList = Object.entries(ratings).map(([nameId, data]) => ({
@@ -725,8 +740,12 @@ export const ratingsAPI = {
 						const existingData = localStorage.getItem("ratings_fallback");
 						const fallbackData = existingData ? JSON.parse(existingData) : {};
 						fallbackData[userId] = { ...ratings, timestamp: Date.now() };
-						
-						const success = safeLocalStorageSet("ratings_fallback", JSON.stringify(fallbackData), true);
+
+						const success = safeLocalStorageSet(
+							"ratings_fallback",
+							JSON.stringify(fallbackData),
+							true,
+						);
 						if (success) {
 							console.warn("Ratings saved to localStorage fallback due to API unavailability");
 							return { success: true, count: Object.keys(ratings).length };

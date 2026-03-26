@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Lightbox } from "./Lightbox";
 
 function LightboxHarness() {
@@ -25,34 +25,24 @@ function LightboxHarness() {
 }
 
 describe("Lightbox", () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.runOnlyPendingTimers();
-		vi.useRealTimers();
-		vi.restoreAllMocks();
-	});
-
-	it("restores focus to the opener after closing", () => {
+	it("restores focus to the opener after closing", async () => {
 		render(<LightboxHarness />);
 		const opener = screen.getByRole("button", { name: "Open lightbox" });
 
 		opener.focus();
 		fireEvent.click(opener);
 
-		act(() => {
-			vi.advanceTimersByTime(100);
-		});
-
-		const closeButton = screen.getByRole("button", {
+		const closeButton = await screen.findByRole("button", {
 			name: "Close lightbox and return to gallery",
 		});
-		expect(closeButton).toHaveFocus();
+		await waitFor(() => {
+			expect(closeButton).toHaveFocus();
+		});
 
 		fireEvent.click(closeButton);
 
-		expect(opener).toHaveFocus();
+		await waitFor(() => {
+			expect(opener).toHaveFocus();
+		});
 	});
 });

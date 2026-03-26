@@ -26,11 +26,13 @@ const { dbMocks } = vi.hoisted(() => {
 		limit: limitMock,
 	};
 	const innerJoinMock = vi.fn().mockReturnValue(joinedChain);
+	const leftJoinMock = vi.fn().mockReturnValue(joinedChain);
 	const fromMock = vi.fn().mockReturnValue({
 		where: whereMock,
 		orderBy: orderByMock,
 		limit: limitMock,
 		innerJoin: innerJoinMock,
+		leftJoin: leftJoinMock,
 	});
 	const selectMock = vi.fn().mockReturnValue({ from: fromMock });
 
@@ -40,6 +42,7 @@ const { dbMocks } = vi.hoisted(() => {
 			from: fromMock,
 			where: whereMock,
 			innerJoin: innerJoinMock,
+			leftJoin: leftJoinMock,
 			groupBy: groupByMock,
 			orderBy: orderByMock,
 			limit: limitMock,

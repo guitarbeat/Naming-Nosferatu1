@@ -69,12 +69,10 @@ function mapNameRow(row: Partial<CatNameRow> & Record<string, unknown>): NameIte
 				: typeof row.losses === "number"
 					? row.losses
 					: 0,
-		status:
-			(typeof row.status === "string" ? row.status : "candidate") as NameItem["status"],
+		status: (typeof row.status === "string" ? row.status : "candidate") as NameItem["status"],
 		provenance: Array.isArray(row.provenance) ? row.provenance : [],
 		has_user_rating: false,
-		popularity_score:
-			typeof row.popularity_score === "number" ? row.popularity_score : undefined,
+		popularity_score: typeof row.popularity_score === "number" ? row.popularity_score : undefined,
 	};
 }
 
@@ -105,7 +103,9 @@ async function fetchNamesFromSupabase(includeHidden: boolean): Promise<NameItem[
 }
 
 async function fetchNamesFromApi(includeHidden: boolean): Promise<NameItem[]> {
-	const rows = await api.get<Array<Record<string, unknown>>>(`/names?includeHidden=${includeHidden}`);
+	const rows = await api.get<Array<Record<string, unknown>>>(
+		`/names?includeHidden=${includeHidden}`,
+	);
 	return (rows ?? []).map((row) => mapNameRow(row));
 }
 

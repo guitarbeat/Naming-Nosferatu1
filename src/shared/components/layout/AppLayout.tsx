@@ -12,7 +12,7 @@ import {
 	OfflineIndicator,
 } from "@/shared/components/layout/Feedback";
 import { FloatingNavbar } from "@/shared/components/layout/FloatingNavbar";
-import { ProfileInner } from "@/features/tournament/components/ProfileSection";
+import { ProfileInner } from "@/shared/components/profile/ProfileInner";
 import { X } from "@/shared/lib/icons";
 import useAppStore from "@/store/appStore";
 
@@ -108,9 +108,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 					<ScrollToTopButton isLoggedIn={isLoggedIn} />
 				</main>
 
-				{ui.isProfileOpen && (
-					<ProfileOverlay onClose={() => uiActions.setProfileOpen(false)} />
-				)}
+				{ui.isProfileOpen && <ProfileOverlay onClose={() => uiActions.setProfileOpen(false)} />}
 			</div>
 		</ErrorBoundary>
 	);

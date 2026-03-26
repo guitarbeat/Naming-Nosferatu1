@@ -3,9 +3,9 @@
  * @description Name selection component with grid and swipe modes, showing cat images from Supabase
  */
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/app/providers/Providers";
 import { toggleNameHidden, toggleNameLocked } from "@/features/names/mutations";
 import { namesQueryKeys, namesQueryOptions } from "@/features/names/queries";
@@ -93,7 +93,7 @@ const useDeferredSync = () => {
 	const deferredSync = useCallback((syncFn: () => void) => {
 		setTimeout(syncFn, 0);
 	}, []);
-	
+
 	return deferredSync;
 };
 
@@ -116,35 +116,35 @@ const SelectionBadge = () => (
 );
 
 // Name content component
-const NameContent = ({ nameItem, variant = "grid" }: { nameItem: NameItem; variant?: "grid" | "swipe" }) => {
+const NameContent = ({
+	nameItem,
+	variant = "grid",
+}: {
+	nameItem: NameItem;
+	variant?: "grid" | "swipe";
+}) => {
 	const isGrid = variant === "grid";
 	const nameClasses = isGrid
 		? "mobile-readable-title font-bold text-foreground text-sm sm:text-base leading-tight drop-shadow-lg"
 		: "font-whimsical text-4xl lg:text-5xl text-foreground tracking-wide drop-shadow-2xl break-words w-full text-center";
-	
+
 	const pronunciationClasses = isGrid
 		? "mobile-readable-meta text-warning/90 text-xs sm:text-sm leading-tight font-bold italic drop-shadow-md"
 		: "text-warning text-2xl lg:text-3xl font-bold italic opacity-90";
-	
+
 	const descriptionClasses = isGrid
 		? "mobile-readable-description text-foreground/85 text-xs sm:text-sm leading-snug line-clamp-2 sm:line-clamp-2 mt-1 drop-shadow-sm font-medium"
 		: "text-foreground/90 text-sm md:text-base leading-relaxed max-w-md mt-3 drop-shadow-sm line-clamp-3 text-center";
 
 	return (
 		<>
-			<span className={nameClasses}>
-				{nameItem.name}
-			</span>
+			<span className={nameClasses}>{nameItem.name}</span>
 			{nameItem.pronunciation && (
 				<span className={isGrid ? pronunciationClasses : `${pronunciationClasses} block mt-2`}>
 					[{nameItem.pronunciation}]
 				</span>
 			)}
-			{nameItem.description && (
-				<p className={descriptionClasses}>
-					{nameItem.description}
-				</p>
-			)}
+			{nameItem.description && <p className={descriptionClasses}>{nameItem.description}</p>}
 		</>
 	);
 };
@@ -165,21 +165,21 @@ const ZoomButton = ({ nameId, onClick }: { nameId: IdType; onClick: (id: IdType)
 );
 
 // Admin action button component
-const AdminActionButton = ({ 
-	nameItem, 
-	actionType, 
-	isProcessing, 
-	onClick 
-}: { 
-	nameItem: NameItem; 
-	actionType: "toggle-hidden" | "toggle-locked"; 
-	isProcessing: boolean; 
-	onClick: () => void; 
+const AdminActionButton = ({
+	nameItem,
+	actionType,
+	isProcessing,
+	onClick,
+}: {
+	nameItem: NameItem;
+	actionType: "toggle-hidden" | "toggle-locked";
+	isProcessing: boolean;
+	onClick: () => void;
 }) => {
 	const isHidden = actionType === "toggle-hidden";
-	const isLocked = actionType === "toggle-locked";
+	const _isLocked = actionType === "toggle-locked";
 	const isEnabled = isHidden ? isNameHidden(nameItem) : isNameLocked(nameItem);
-	
+
 	const buttonClasses = `flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
 		isHidden
 			? isEnabled
@@ -217,26 +217,30 @@ const AdminActionButton = ({
 				</>
 			)}
 		</motion.button>
-);
+	);
 };
 
 // Card styles utility
 const getCardStyles = (isSelected: boolean, isLocked: boolean) => {
-	const baseClasses = "mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
+	const baseClasses =
+		"mobile-readable-card relative group rounded-xl sm:rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300";
 	const selectedClasses = isSelected
 		? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-xl shadow-primary/20 ring-4 ring-primary/30 scale-[1.02] z-10"
 		: "border-border/20 bg-gradient-to-br from-foreground/5 to-foreground/0 hover:border-border/40 hover:bg-gradient-to-br hover:from-foreground/10 hover:to-foreground/5 hover:shadow-xl hover:shadow-foreground/10";
 	const lockedClasses = isLocked ? "opacity-60 cursor-not-allowed" : "";
-	
+
 	return `${baseClasses} ${selectedClasses} ${lockedClasses}`;
 };
 
 // Name overlay styles utility
 const getNameOverlayClasses = (variant: "grid" | "swipe") => {
-	const baseClasses = "absolute flex flex-col justify-center items-center text-center pointer-events-none";
-	const gridClasses = "inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent";
-	const swipeClasses = "inset-0 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
-	
+	const baseClasses =
+		"absolute flex flex-col justify-center items-center text-center pointer-events-none";
+	const gridClasses =
+		"inset-0 p-3 sm:p-4 bg-gradient-to-t from-background/98 via-background/70 to-transparent";
+	const swipeClasses =
+		"inset-0 p-8 bg-gradient-to-t from-background/95 via-background/40 to-transparent z-10";
+
 	return `${baseClasses} ${variant === "grid" ? gridClasses : swipeClasses}`;
 };
 
@@ -477,13 +481,8 @@ export function NameSelector() {
 	}, [swipeHistory, syncSelectionToStore, triggerHaptic, deferredSync]);
 
 	const toggleHiddenMutation = useMutation({
-		mutationFn: ({
-			nameId,
-			isCurrentlyHidden,
-		}: {
-			nameId: IdType;
-			isCurrentlyHidden: boolean;
-		}) => toggleNameHidden({ nameId, isCurrentlyHidden, userName }),
+		mutationFn: ({ nameId, isCurrentlyHidden }: { nameId: IdType; isCurrentlyHidden: boolean }) =>
+			toggleNameHidden({ nameId, isCurrentlyHidden, userName }),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({ queryKey: namesQueryKeys.all });
 			toast.showSuccess(
@@ -493,13 +492,8 @@ export function NameSelector() {
 	});
 
 	const toggleLockedMutation = useMutation({
-		mutationFn: ({
-			nameId,
-			isCurrentlyLocked,
-		}: {
-			nameId: IdType;
-			isCurrentlyLocked: boolean;
-		}) => toggleNameLocked({ nameId, isCurrentlyLocked, userName }),
+		mutationFn: ({ nameId, isCurrentlyLocked }: { nameId: IdType; isCurrentlyLocked: boolean }) =>
+			toggleNameLocked({ nameId, isCurrentlyLocked, userName }),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({ queryKey: namesQueryKeys.all });
 			toast.showSuccess(variables.isCurrentlyLocked ? "Name unlocked." : "Name locked in.");
@@ -699,7 +693,7 @@ export function NameSelector() {
 				setLightboxOpen(true);
 			}
 		},
-		[names, setLightboxIndex, setLightboxOpen],
+		[names],
 	);
 
 	const handleSelectAllAvailable = useCallback(() => {
@@ -769,11 +763,11 @@ export function NameSelector() {
 						<p className="text-lg font-medium">Failed to load names</p>
 						<p className="text-sm opacity-75 mt-1">{error}</p>
 					</div>
-						<Button onClick={() => void namesQuery.refetch()} variant="glass" size="small">
-							Try Again
-						</Button>
-					</div>
+					<Button onClick={() => void namesQuery.refetch()} variant="glass" size="small">
+						Try Again
+					</Button>
 				</div>
+			</div>
 		);
 	}
 
@@ -832,9 +826,7 @@ export function NameSelector() {
 					{/* Progress Bar - compact on mobile */}
 					<div className="mb-3 sm:mb-4">
 						<div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2">
-							<span className="font-medium">
-								{selectedAvailableCount} selected
-							</span>
+							<span className="font-medium">{selectedAvailableCount} selected</span>
 							<div className="flex items-center gap-2">
 								{/* Mode toggle inline on mobile */}
 								<button
@@ -848,14 +840,18 @@ export function NameSelector() {
 								>
 									{isSwipeMode ? "Swipe" : "Grid"}
 								</button>
-								<span className="tabular-nums font-mono">{selectedAvailableCount}/{availableNames.length}</span>
+								<span className="tabular-nums font-mono">
+									{selectedAvailableCount}/{availableNames.length}
+								</span>
 							</div>
 						</div>
 						<div className="w-full h-1.5 sm:h-2 bg-border/20 rounded-full overflow-hidden">
 							<motion.div
 								className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
 								initial={{ width: 0 }}
-								animate={{ width: `${(selectedAvailableCount / Math.max(availableNames.length, 1)) * 100}%` }}
+								animate={{
+									width: `${(selectedAvailableCount / Math.max(availableNames.length, 1)) * 100}%`,
+								}}
 								transition={{ duration: 0.5, ease: "easeOut" }}
 							/>
 						</div>
@@ -873,7 +869,12 @@ export function NameSelector() {
 					<div className="flex items-center justify-center">
 						{isSwipeMode && swipeHistory.length > 0 ? (
 							<div className="flex items-center gap-3">
-								<Button onClick={handleUndo} variant="outline" size="small" className="gap-2 border-warning/20 text-warning hover:bg-warning/10 hover:border-warning">
+								<Button
+									onClick={handleUndo}
+									variant="outline"
+									size="small"
+									className="gap-2 border-warning/20 text-warning hover:bg-warning/10 hover:border-warning"
+								>
 									<Undo2 size={14} />
 									Undo ({swipeHistory.length})
 								</Button>
@@ -891,10 +892,10 @@ export function NameSelector() {
 									All
 								</Button>
 								<div className="hidden sm:block w-px h-4 bg-border/30" />
-								<Button 
-									variant="ghost" 
-									size="sm" 
-									onClick={handleSelectRandomAvailable} 
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleSelectRandomAvailable}
 									className="gap-1.5 h-8 px-2.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium hover:bg-accent/50 transition-colors"
 								>
 									<Shuffle size={14} />
@@ -916,7 +917,7 @@ export function NameSelector() {
 					</div>
 				</div>
 
-			{isSwipeMode ? (
+				{isSwipeMode ? (
 					<>
 						<div
 							className="relative w-full flex items-center justify-center"
@@ -967,8 +968,8 @@ export function NameSelector() {
 														scale: 1.02,
 														transition: { duration: 0.15 },
 													}}
-												className="w-full max-w-md"
-												style={{ height: "min(65dvh, 500px)" }}
+													className="w-full max-w-md"
+													style={{ height: "min(65dvh, 500px)" }}
 												>
 													<Card
 														className={`relative overflow-hidden group transition-all duration-200 h-full ${
@@ -1108,7 +1109,7 @@ export function NameSelector() {
 									})
 								) : (
 									<div className="absolute inset-0 flex items-center justify-center">
-										<motion.div 
+										<motion.div
 											initial={{ opacity: 0, y: 20 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ duration: 0.6, ease: "easeOut" }}
@@ -1139,7 +1140,7 @@ export function NameSelector() {
 												<Button
 													onClick={() => {
 														// Navigate to tournament or next step
-														window.location.href = '/tournament';
+														window.location.href = "/tournament";
 													}}
 													className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-105 active:scale-95"
 												>
@@ -1201,9 +1202,9 @@ export function NameSelector() {
 										title="Select (Right Arrow)"
 									>
 										<div className="relative">
-											<Heart 
-												size={28} 
-												className="sm:size-8" 
+											<Heart
+												size={28}
+												className="sm:size-8"
 												strokeWidth={2.5}
 												fill="currentColor"
 											/>
@@ -1278,22 +1279,26 @@ export function NameSelector() {
 																nameItem={nameItem}
 																actionType="toggle-hidden"
 																isProcessing={togglingHidden.has(nameItem.id)}
-																onClick={() => requestAdminAction({
-																	type: "toggle-hidden",
-																	nameId: nameItem.id,
-																	isCurrentlyEnabled: isNameHidden(nameItem),
-																})}
+																onClick={() =>
+																	requestAdminAction({
+																		type: "toggle-hidden",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled: isNameHidden(nameItem),
+																	})
+																}
 															/>
 
 															<AdminActionButton
 																nameItem={nameItem}
 																actionType="toggle-locked"
 																isProcessing={togglingLocked.has(nameItem.id)}
-																onClick={() => requestAdminAction({
-																	type: "toggle-locked",
-																	nameId: nameItem.id,
-																	isCurrentlyEnabled: isNameLocked(nameItem),
-																})}
+																onClick={() =>
+																	requestAdminAction({
+																		type: "toggle-locked",
+																		nameId: nameItem.id,
+																		isCurrentlyEnabled: isNameLocked(nameItem),
+																	})
+																}
 															/>
 														</motion.div>
 													)}

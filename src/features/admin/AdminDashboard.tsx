@@ -3,9 +3,9 @@
  * @description Comprehensive admin dashboard for managing names and viewing analytics
  */
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { type ChangeEvent, useCallback, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toggleNameHidden, toggleNameLocked } from "@/features/names/mutations";
 import { namesQueryKeys, namesQueryOptions } from "@/features/names/queries";
 import Button from "@/shared/components/layout/Button";
@@ -444,7 +444,9 @@ export function AdminDashboard() {
 												/>
 												<div className="min-w-0">
 													<div className="flex items-center gap-2 flex-wrap">
-														<h3 className="font-semibold text-foreground text-sm sm:text-base">{name.name}</h3>
+														<h3 className="font-semibold text-foreground text-sm sm:text-base">
+															{name.name}
+														</h3>
 														{locked && (
 															<span className="text-[10px] text-chart-4 font-semibold inline-flex items-center gap-0.5">
 																<Lock size={10} /> Locked
@@ -457,7 +459,9 @@ export function AdminDashboard() {
 														)}
 													</div>
 													{name.description && (
-														<p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">{name.description}</p>
+														<p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
+															{name.description}
+														</p>
 													)}
 													<div className="flex gap-3 mt-0.5 text-[10px] sm:text-xs text-muted-foreground/60">
 														<span>Votes: {name.votes}</span>

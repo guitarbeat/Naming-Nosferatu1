@@ -80,15 +80,15 @@ const LiquidGlass = React.forwardRef<HTMLDivElement, LiquidGlassProps>(
 			...props
 		},
 		ref,
-		) => {
-			const resolvedWidth = style?.width ?? `${Math.max(1, width)}px`;
-			const resolvedHeight = style?.height ?? `${Math.max(1, height)}px`;
-			const glassStyle = {
-				width: resolvedWidth,
-				height: resolvedHeight,
-				"--width": typeof width === "number" ? width : String(width),
-				"--height": typeof height === "number" ? height : String(height),
-				"--glass-radius": `${Math.max(0, radius)}px`,
+	) => {
+		const resolvedWidth = style?.width ?? `${Math.max(1, width)}px`;
+		const resolvedHeight = style?.height ?? `${Math.max(1, height)}px`;
+		const glassStyle = {
+			width: resolvedWidth,
+			height: resolvedHeight,
+			"--width": typeof width === "number" ? width : String(width),
+			"--height": typeof height === "number" ? height : String(height),
+			"--glass-radius": `${Math.max(0, radius)}px`,
 			"--glass-blur": `${Math.max(8, inputBlur + outputBlur * 10)}px`,
 			"--glass-saturation": saturation,
 			"--glass-frost": frost,

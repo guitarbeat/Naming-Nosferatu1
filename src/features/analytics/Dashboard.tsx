@@ -222,11 +222,15 @@ export function Dashboard({
 					<div className="grid grid-cols-2 gap-3 sm:gap-4">
 						<div className="py-2">
 							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Ratings</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalRatings}</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.totalRatings}
+							</p>
 						</div>
 						<div className="py-2">
 							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Selected</p>
-							<p className="text-xl sm:text-2xl font-bold text-foreground">{userStats.totalSelections}</p>
+							<p className="text-xl sm:text-2xl font-bold text-foreground">
+								{userStats.totalSelections}
+							</p>
 						</div>
 						<div className="py-2">
 							<p className="text-xs sm:text-sm text-muted-foreground mb-1">Wins</p>

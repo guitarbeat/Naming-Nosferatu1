@@ -4,12 +4,12 @@
  * Uses the shared useNameSuggestion hook for consistent submission logic.
  */
 
-import { useCallback, useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { Button, Input, LiquidGlass, Textarea } from "@/shared/components/layout";
 import { getGlassPreset } from "@/shared/components/layout/GlassPresets";
 import { useNameSuggestion } from "@/shared/hooks";
-import { CheckCircle, Lightbulb, PartyPopper, X } from "@/shared/lib/icons";
+import { CheckCircle, Lightbulb, X } from "@/shared/lib/icons";
 
 // ============================================================================
 // TYPES
@@ -64,7 +64,6 @@ export function NameSuggestionInner() {
 
 				{/* Main Content Container */}
 				<div className="relative bg-gradient-to-br from-background/80 via-background/90 to-background/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-border/20 shadow-2xl p-4 sm:p-8 md:p-12">
-					
 					{/* Header - compact on mobile */}
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -90,7 +89,7 @@ export function NameSuggestionInner() {
 								Submit A Name
 							</span>
 						</motion.div>
-						
+
 						<motion.h1
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -99,7 +98,7 @@ export function NameSuggestionInner() {
 						>
 							Drop Your Best Cat Name
 						</motion.h1>
-						
+
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -140,7 +139,10 @@ export function NameSuggestionInner() {
 					>
 						{/* Name Input */}
 						<div className="space-y-2 sm:space-y-3">
-							<label htmlFor="suggest-name" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+							<label
+								htmlFor="suggest-name"
+								className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+							>
 								<span className="w-2 h-2 bg-primary rounded-full" />
 								Name suggestion
 								<span className="text-destructive">*</span>
@@ -173,7 +175,10 @@ export function NameSuggestionInner() {
 						{/* Description Textarea */}
 						<div className="space-y-2 sm:space-y-3">
 							<div className="flex items-center justify-between gap-2">
-								<label htmlFor="suggest-description" className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+								<label
+									htmlFor="suggest-description"
+									className="flex items-center gap-2 text-sm font-bold text-foreground/90"
+								>
 									<span className="w-2 h-2 bg-accent rounded-full" />
 									Why this name?
 									<span className="text-destructive">*</span>
@@ -195,9 +200,9 @@ export function NameSuggestionInner() {
 									id="suggest-description"
 									value={values.description}
 									onChange={(e) => handleChange("description", e.target.value)}
-								placeholder="Why is this name special?"
-								rows={3}
-								className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
+									placeholder="Why is this name special?"
+									rows={3}
+									className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium bg-gradient-to-r from-foreground/5 to-foreground/10 border-border/30 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 rounded-xl backdrop-blur-sm resize-none transition-all duration-300"
 									disabled={isSubmitting}
 									maxLength={500}
 									showCount={false}
@@ -255,7 +260,7 @@ export function NameSuggestionInner() {
 								</div>
 							</motion.div>
 						)}
-						
+
 						{successMessage && (
 							<motion.div
 								initial={{ opacity: 0, y: -10, scale: 0.95 }}

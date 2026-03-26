@@ -306,12 +306,12 @@ export function FloatingNavbar() {
 							onClick={() => handleNavClick("suggest")}
 						/>
 
-					<FloatingNavItem
-						icon={User}
-						label={profileLabel}
-						isCurrent={ui.isProfileOpen}
-						onClick={() => uiActions.setProfileOpen(true)}
-						customIcon={
+						<FloatingNavItem
+							icon={User}
+							label={profileLabel}
+							isCurrent={ui.isProfileOpen}
+							onClick={() => uiActions.setProfileOpen(true)}
+							customIcon={
 								isLoggedIn && avatarUrl ? (
 									<img src={avatarUrl} alt={profileLabel} className="floating-navbar__avatar" />
 								) : (

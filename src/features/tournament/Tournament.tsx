@@ -19,7 +19,7 @@ import {
 	VolumeX,
 	X,
 } from "@/shared/lib/icons";
-import type { Match, TournamentProps } from "@/shared/types";
+import type { TournamentProps } from "@/shared/types";
 import useAppStore from "@/store/appStore";
 import { BracketTree } from "./components/BracketTree";
 import { MatchSideCard } from "./components/MatchSideCard";
@@ -27,11 +27,11 @@ import { TournamentComplete } from "./components/TournamentComplete";
 import { useAudioManager } from "./hooks";
 import { useTournamentState } from "./hooks/useTournamentState";
 import {
-	type HeatLevel,
-	STREAK_THRESHOLDS,
 	getFlameCount,
 	getHeatLevel,
 	getHeatTextClasses,
+	type HeatLevel,
+	STREAK_THRESHOLDS,
 } from "./utils/heat";
 import { extractMatchData, getMatchSideId } from "./utils/matchHelpers";
 import { useTimedState } from "./utils/useTimedState";
@@ -82,15 +82,21 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	// Calculate winning streaks
 	const calculateWinStreak = useCallback(
 		(contestantId: string | number | null | undefined) => {
-			if (!contestantId || matchHistory.length === 0) return 0;
+			if (!contestantId || matchHistory.length === 0) {
+				return 0;
+			}
 			const targetId = String(contestantId);
 			let streak = 0;
 			for (let i = matchHistory.length - 1; i >= 0; i--) {
 				const record = matchHistory[i];
-				if (!record) continue;
+				if (!record) {
+					continue;
+				}
 				const leftId = getMatchSideId(record.match, "left");
 				const rightId = getMatchSideId(record.match, "right");
-				if (leftId !== targetId && rightId !== targetId) continue;
+				if (leftId !== targetId && rightId !== targetId) {
+					continue;
+				}
 				if (record.winner === targetId) {
 					streak++;
 				} else {
@@ -116,11 +122,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	// Vote adapter for external onVote callback
 	const handleVoteAdapter = useCallback(
 		(winnerId: string, _loserId: string) => {
-			if (!onVote || !currentMatch) return;
+			if (!onVote || !currentMatch) {
+				return;
+			}
 			const sideData = (side: "left" | "right") => {
 				const p = currentMatch[side];
 				const id = typeof p === "object" ? String(p.id) : String(p);
-				const name = currentMatch.mode === "2v2" ? (currentMatch[side] as any).memberNames.join(" + ") : (typeof p === "object" ? p.name : String(p));
+				const name =
+					currentMatch.mode === "2v2"
+						? (currentMatch[side] as any).memberNames.join(" + ")
+						: typeof p === "object"
+							? p.name
+							: String(p);
 				return { name, id, description: "", outcome: winnerId === id ? "winner" : "loser" };
 			};
 			onVote({
@@ -182,7 +195,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 	const handleVoteForSide = useCallback(
 		(side: "left" | "right") => {
-			if (isVoting || !matchData) return;
+			if (isVoting || !matchData) {
+				return;
+			}
 			audioManager.primeAudioExperience();
 
 			const winnerId = side === "left" ? matchData.leftId : matchData.rightId;
@@ -202,9 +217,23 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 			setSelectedSide(side);
 			voteAnnouncement.setTimed(winnerName, prefersReducedMotion ? 250 : 900);
 			handleVoteWithAnimation(winnerId, loserId);
-			if (onVote) handleVoteAdapter(winnerId, loserId);
+			if (onVote) {
+				handleVoteAdapter(winnerId, loserId);
+			}
 		},
-		[isVoting, matchData, audioManager, leftStreak, rightStreak, streakBurst, prefersReducedMotion, voteAnnouncement, handleVoteWithAnimation, onVote, handleVoteAdapter],
+		[
+			isVoting,
+			matchData,
+			audioManager,
+			leftStreak,
+			rightStreak,
+			streakBurst,
+			prefersReducedMotion,
+			voteAnnouncement,
+			handleVoteWithAnimation,
+			onVote,
+			handleVoteAdapter,
+		],
 	);
 
 	const handleKeyDown = useCallback(
@@ -217,8 +246,10 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 		[handleVoteForSide],
 	);
 
-	const leftImg = showCatPictures && matchData ? getRandomCatImage(matchData.leftId, CAT_IMAGES) : null;
-	const rightImg = showCatPictures && matchData ? getRandomCatImage(matchData.rightId, CAT_IMAGES) : null;
+	const leftImg =
+		showCatPictures && matchData ? getRandomCatImage(matchData.leftId, CAT_IMAGES) : null;
+	const rightImg =
+		showCatPictures && matchData ? getRandomCatImage(matchData.rightId, CAT_IMAGES) : null;
 	const hasSelectionFeedback = selectedSide !== null;
 	const currentMatchKey = matchData
 		? `${roundNumber}-${currentMatchNumber}-${matchData.leftId}-${matchData.rightId}`
@@ -252,10 +283,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 	const dominantStreak =
 		leftStreak >= rightStreak
 			? leftStreak >= STREAK_THRESHOLDS.warm
-				? { name: matchData.leftName, streak: leftStreak, heatLevel: leftHeatLevel ?? "warm" as HeatLevel }
+				? {
+						name: matchData.leftName,
+						streak: leftStreak,
+						heatLevel: leftHeatLevel ?? ("warm" as HeatLevel),
+					}
 				: null
 			: rightStreak >= STREAK_THRESHOLDS.warm
-				? { name: matchData.rightName, streak: rightStreak, heatLevel: rightHeatLevel ?? "warm" as HeatLevel }
+				? {
+						name: matchData.rightName,
+						streak: rightStreak,
+						heatLevel: rightHeatLevel ?? ("warm" as HeatLevel),
+					}
 				: null;
 
 	return (
@@ -276,14 +315,18 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 					<div className="flex-1 h-1.5 bg-foreground/5 rounded-full overflow-hidden min-w-0">
 						<div
-							className={`h-full rounded-full transition-all duration-500 bg-primary shadow-[0_0_10px_#a65eed]`}
+							className={
+								"h-full rounded-full transition-all duration-500 bg-primary shadow-[0_0_10px_#a65eed]"
+							}
 							style={{ width: `${progress || (currentMatchNumber / totalMatches) * 100}%` }}
 						/>
 					</div>
 
 					<div className="shrink-0 flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-foreground/70">
 						<Medal className="text-accent size-3.5" />
-						<span>{currentMatchNumber}/{totalMatches}</span>
+						<span>
+							{currentMatchNumber}/{totalMatches}
+						</span>
 						{etaMinutes > 0 && (
 							<>
 								<Clock className="size-3 text-muted-foreground" />
@@ -294,17 +337,35 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 
 					{/* Controls - wrap on mobile */}
 					<div className="shrink-0 flex flex-wrap items-center gap-1">
-						{([
-							{ action: audioManager.handleToggleMute, icon: audioManager.isMuted ? VolumeX : Volume2, label: audioManager.isMuted ? "Unmute" : "Mute" },
-							{ action: audioManager.toggleBackgroundMusic, icon: Music, label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music", active: audioManager.backgroundMusicEnabled },
-							{ action: () => setCatPictures(!showCatPictures), icon: PawPrint, label: showCatPictures ? "Names only" : "Show cats", active: showCatPictures },
-						] as const).map(({ action, icon: Icon, label, active }) => (
+						{(
+							[
+								{
+									action: audioManager.handleToggleMute,
+									icon: audioManager.isMuted ? VolumeX : Volume2,
+									label: audioManager.isMuted ? "Unmute" : "Mute",
+								},
+								{
+									action: audioManager.toggleBackgroundMusic,
+									icon: Music,
+									label: audioManager.backgroundMusicEnabled ? "Stop music" : "Play music",
+									active: audioManager.backgroundMusicEnabled,
+								},
+								{
+									action: () => setCatPictures(!showCatPictures),
+									icon: PawPrint,
+									label: showCatPictures ? "Names only" : "Show cats",
+									active: showCatPictures,
+								},
+							] as const
+						).map(({ action, icon: Icon, label, active }) => (
 							<button
 								key={label}
 								type="button"
 								onClick={action}
 								className={`size-7 sm:size-8 flex items-center justify-center rounded-lg transition-colors ${
-									active ? "bg-primary/20 text-primary" : "bg-foreground/5 text-muted-foreground hover:text-foreground"
+									active
+										? "bg-primary/20 text-primary"
+										: "bg-foreground/5 text-muted-foreground hover:text-foreground"
 								}`}
 								aria-label={label}
 							>
@@ -403,7 +464,9 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 							exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 1.03 }}
 							transition={{ duration: prefersReducedMotion ? 0.01 : 0.28 }}
 							className={`pointer-events-none absolute z-30 top-[20%] ${
-								streakBurst.value.side === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6 text-right"
+								streakBurst.value.side === "left"
+									? "left-3 sm:left-6"
+									: "right-3 sm:right-6 text-right"
 							}`}
 						>
 							<div
@@ -416,15 +479,17 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 									{streakBurst.value.winnerName} x{streakBurst.value.streak}
 								</p>
 								<div className="flex gap-1 mt-1">
-									{Array.from({ length: getFlameCount(streakBurst.value.streak, 9) }).map((_, i) => (
-										<span
-											key={`streak-flame-${streakBurst.value!.key}-${i}`}
-											className="text-sm sm:text-base animate-flame"
-											style={{ animationDelay: `${i * 80}ms` }}
-										>
-											🔥
-										</span>
-									))}
+									{Array.from({ length: getFlameCount(streakBurst.value.streak, 9) }).map(
+										(_, i) => (
+											<span
+												key={`streak-flame-${streakBurst.value?.key}-${i}`}
+												className="text-sm sm:text-base animate-flame"
+												style={{ animationDelay: `${i * 80}ms` }}
+											>
+												🔥
+											</span>
+										),
+									)}
 								</div>
 							</div>
 						</motion.div>
@@ -470,9 +535,15 @@ function TournamentContent({ onComplete, names = [], onVote }: TournamentProps) 
 				<AnimatePresence mode="wait" initial={false}>
 					<motion.div
 						key={currentMatchKey}
-						initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 14, filter: "blur(6px)" }}
-						animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
-						exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(6px)" }}
+						initial={
+							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 14, filter: "blur(6px)" }
+						}
+						animate={
+							prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }
+						}
+						exit={
+							prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(6px)" }
+						}
 						transition={{ duration: prefersReducedMotion ? 0.01 : 0.32 }}
 						className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-stretch gap-4 sm:grid sm:h-full sm:min-h-0 sm:grid-cols-[1fr_auto_1fr] sm:gap-4"
 					>

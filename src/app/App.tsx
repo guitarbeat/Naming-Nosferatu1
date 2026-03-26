@@ -105,10 +105,7 @@ function HomeContent() {
 	return (
 		<>
 			<Section id="pick" variant="minimal" padding="compact" maxWidth="xl" centered={true}>
-				<SectionHeading
-					icon={Trophy}
-					title="Pick Names"
-				/>
+				<SectionHeading icon={Trophy} title="Pick Names" />
 				<Suspense fallback={<Loading variant="skeleton" height={400} />}>
 					<TournamentFlow />
 				</Suspense>
